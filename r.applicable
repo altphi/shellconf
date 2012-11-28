@@ -1,0 +1,3 @@
+#!/bin/sh
+set -x
+sudo sh -c 'fsdiff -A / > new.T'

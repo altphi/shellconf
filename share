@@ -1,0 +1,42 @@
+#!/bin/sh
+usage () {
+	echo "usage: $0 [OPTIONS] FILES
+    -o  add read and execute for others
+    -O  remove read for others
+    -G  just others, not group (ftpdeny)
+    -h  this message
+    -v  verbose"
+	exit 1
+}
+
+die () {
+	echo "$0: $@" 1>&2
+	exit 100
+}
+
+args=`getopt GoOhv $*` ; errcode=$?; set -- $args
+[ $errcode -ne 0 -o $# -lt 1 ] && usage
+
+user=u+rwX
+mode=$user,g+rwX
+
+for i; do
+	case "$i" in
+		-G) mode=$user,g-rwx,o+rX; shift ;;
+		-o) mode=$mode,o+rX; shift ;;
+		-O) mode=$mode,o-rwx; shift ;;
+		-v) verbose=1; shift ;;
+		-h) usage; shift; exit 1 ;;
+		--) shift ;;
+	esac
+done
+
+[ $verbose ] && set -x
+chmod -R $mode "$@" || die chmod failed
+
+## exit here if all the remaining arguments are files
+unset ok;
+for i in "$@"; do [ -d "$i" ] && { ok=1; break; } done
+[ "$ok" ] || exit 0
+
+find "$@" -type d -print0 | xargs -0 chmod g+s || die chmod failed

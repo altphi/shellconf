@@ -1,0 +1,4 @@
+#!/bin/sh
+cd /Applications/Diogenes.app/Contents/Resources/perl
+./diogenes-server.pl
+open http://127.0.0.1:8888

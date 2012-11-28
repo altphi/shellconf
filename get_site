@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ $# -lt 1 ]
+then
+        echo "usage: $0 argument1"; exit 1;
+else
+	wget -E -L -k -m -p -erobots=off $1
+fi
+

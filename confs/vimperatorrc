@@ -1,0 +1,34 @@
+"2.3.1 (created: 2010/04/07 18:56:53)
+
+set gui=none,tabs,bookmarks
+set fs
+
+set runtimepath=/Users/stephen/.vimperator
+set editor=vim
+set titlestring=
+source! /Users/stephen/.vimperatorrc.local
+
+" sb Bookmarks
+" vim: set ft=vimperator:
+
+sty -n=Lexica -append artflx.uchicago.edu,perseus.uchicago.edu,repos.alpheios.net,gargantua.lib.uchicago.edu i { background-color: LightSteelBlue; }
+
+map <C-l> :tabo<CR>
+map <C-h> f13<CR>
+map <C-t> gi
+map <C-r> f5
+map <C-m> <ESC>/definit<CR>
+map Α A
+map <C-s> A
+map γι gi
+map ξ j
+map κ k
+map δ d
+map φ f
+map h f13<CR>
+map η f13<CR>
+map β b
+map mj t https://mail.google.com/a/j38.net/#inbox<CR>
+map μξ t https://mail.google.com/a/j38.net/#inbox<CR>
+map γγ gg
+map Γ G

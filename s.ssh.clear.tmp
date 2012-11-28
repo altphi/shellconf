@@ -1,0 +1,2 @@
+#!/bin/sh
+ls -la /tmp | grep 'stephen.*ssh' | sed -e 's/^.*\ \(.*$\)/\1/g' | xargs rm -rf

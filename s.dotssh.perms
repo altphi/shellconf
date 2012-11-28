@@ -1,0 +1,14 @@
+#!/bin/sh
+if [ $# -lt 1 ]
+then
+        echo "usage: $0 username"; exit 1;
+else
+	dir=/home/$1
+	sshdir=$dir/.ssh
+	sudo mkdir -p $sshdir
+	sudo touch $sshdir/authorized_keys
+	sudo chmod 600 $sshdir/authorized_keys
+	sudo chmod 700 $sshdir
+	sudo chown -R $1:$1 $dir
+	echo "now edit $sshdir/authorized_keys"
+fi

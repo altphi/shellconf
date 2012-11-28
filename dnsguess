@@ -1,0 +1,33 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+if ($#ARGV  < 0)
+{	print "usage: $0 domain.tld\n"; exit 1;  }
+
+my $domain = $ARGV[0];
+my @data = readpipe "dnsmx $domain";
+foreach (@data)
+{
+        chomp($_);
+	my @data2 = split(/ /, $_);
+	my $weight = $data2[0];
+        my $mxdomain = $data2[1];
+	my $mxIP = readpipe "dnsip $mxdomain";
+	print "\@$domain\:\:$mxdomain:$weight:60\n";
+}
+
+
+
+foreach ("", "www.", "ftp.", "pop.", "mail.", "smtp.", "webmail.", "admin.", "data.", "imap.", "shop.")
+{
+	my $subdomainIP = readpipe "dnsip $_$domain";
+	chomp($subdomainIP);
+	$subdomainIP =~ s/\s+$//;
+	
+	if ($subdomainIP ne "")
+	{
+       		print "+$_$domain:$subdomainIP:60\n"; 	
+	}
+}
+
