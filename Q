@@ -1,3 +1,0 @@
-killall -u stephen Quicksilver
-sleep .5
-open /Applications/Quicksilver.app

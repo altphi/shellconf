@@ -1,8 +1,0 @@
-#!/bin/sh
-
-if [ $# -lt 1 ]
-then
-        echo "usage: $0 directory_to_search_and_replace_aliases"; exit 1;
-else
-	mdfind "kMDItemKind == Alias" -onlyin "$1"
-fi

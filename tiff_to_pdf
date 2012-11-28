@@ -1,6 +1,0 @@
-tifflist=( ./*.tiff )
-
-for filename in "${tifflist[@]}"; do
-        outputname=`echo "$filename" | sed -e 's/tiff//g'`;
-        tiff2pdf -o"$outputname"pdf "$outputname"tiff                                                                                                       
-done

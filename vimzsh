@@ -1,1 +1,0 @@
-/usr/bin/exec_with_piped ~/.zshpipe "/bin/zsh"
