@@ -767,8 +767,8 @@ function! s:process_tag_pre(line, pre) "{{{
   let processed = 0
   "XXX huh?
   "if !pre[0] && a:line =~ '^\s*{{{[^\(}}}\)]*\s*$'
-  if !pre[0] && a:line =~ '^\s*{{{'
-    let class = matchstr(a:line, '{{{\zs.*$')
+  if !pre[0] && a:line =~ '^\s*{{{{'
+    let class = matchstr(a:line, '{{{{\zs.*$')
     "FIXME class cannot contain arbitrary strings
     let class = substitute(class, '\s\+$', '', 'g')
     if class != ""
@@ -776,9 +776,9 @@ function! s:process_tag_pre(line, pre) "{{{
     else
       call add(lines, "<pre>")
     endif
-    let pre = [1, len(matchstr(a:line, '^\s*\ze{{{'))]
+    let pre = [1, len(matchstr(a:line, '^\s*\ze{{{{'))]
     let processed = 1
-  elseif pre[0] && a:line =~ '^\s*}}}\s*$'
+  elseif pre[0] && a:line =~ '^\s*}}}}\s*$'
     let pre = [0, 0]
     call add(lines, "</pre>")
     let processed = 1
