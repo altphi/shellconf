@@ -82,3 +82,6 @@ set completeopt=longest,menuone
 " :au BufReadPost * let &dictionary = substitute("~/.vim/dict/FT.dict", "FT", b:current_syntax, "")
 " :au BufReadPost * endif
 "}}}
+
+" include the .org mode conf
+so ~/.vim/extra_conf/vim.org.rc
