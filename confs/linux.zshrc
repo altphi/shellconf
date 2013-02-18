@@ -37,6 +37,7 @@ alias e='emacs'
 #}}}
 
 #{{{ directory shortcuts
+b=/content/quickcue-bucket
 w=/www/html
 c=/coptix/admin/config
 r=/var/radmind/client
