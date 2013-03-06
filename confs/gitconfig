@@ -1,3 +1,5 @@
 [user]
 	email = stephen@quickcue.com
 	name = Stephen Beck
+[push]
+	default = current
