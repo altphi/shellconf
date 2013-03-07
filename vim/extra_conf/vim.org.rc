@@ -31,7 +31,7 @@ let g:org_todo_setup='TODO | DONE'
 "let g:org_todo_setup='TODO NEXT STARTED | DONE CANCELED'
 
 " include a tags setup string if you want:
-let g:org_tags_alist='{@home(h) @work(w) @tennisclub(t)} {easy(e) hard(d)} {computer(c) phone(p)}'
+" let g:org_tags_alist='{@home(h) @work(w) @tennisclub(t)} {easy(e) hard(d)} {computer(c) phone(p)}'
 "
 " g:org_agenda_dirs specify directories that, along with 
 " their subtrees, are searched for list of .org files when
@@ -49,7 +49,7 @@ let g:org_tags_alist='{@home(h) @work(w) @tennisclub(t)} {easy(e) hard(d)} {comp
 " ----------------------
 " To use Emacs you will need to define the client.  On
 " Linux/OSX this is typically simple, just:
-"let g:org_command_for_emacsclient = 'emacsclient'
+let g:org_command_for_emacsclient = 'emacsclient'
 "
 " On Windows it is more complicated, and probably involves creating
 " a 'soft link' to the emacsclient executable (which is 'emacsclientw')
@@ -63,15 +63,15 @@ let g:org_tags_alist='{@home(h) @work(w) @tennisclub(t)} {easy(e) hard(d)} {comp
 " a user can then easily access from the Org menu or the Agenda Dashboard.
 " (Still need to add help on how to define them, assignment below
 " is hopefully illustrative for now. . . . )
-let g:org_custom_searches = [
-            \  { 'name':"Next week's agenda", 'type':'agenda',
-            \    'agenda_date':'+1w', 'agenda_duration':'w' }
-            \, { 'name':"Next week's TODOS", 'type':'agenda',
-            \    'agenda_date':'+1w', 'agenda_duration':'w',
-            \    'spec':'+UNFINISHED_TODOS' }
-            \, { 'name':'Home tags', 'type':'heading_list', 'spec':'+HOME' }
-            \, { 'name':'Home tags', 'type':'sparse_tree', 'spec':'+HOME' }
-            \  ]
+" let g:org_custom_searches = [
+"             \  { 'name':"Next week's agenda", 'type':'agenda',
+"             \    'agenda_date':'+1w', 'agenda_duration':'w' }
+"             \, { 'name':"Next week's TODOS", 'type':'agenda',
+"             \    'agenda_date':'+1w', 'agenda_duration':'w',
+"             \    'spec':'+UNFINISHED_TODOS' }
+"             \, { 'name':'Home tags', 'type':'heading_list', 'spec':'+HOME' }
+"             \, { 'name':'Home tags', 'type':'sparse_tree', 'spec':'+HOME' }
+"             \  ]
 
 " --------------------------------
 " Custom colors

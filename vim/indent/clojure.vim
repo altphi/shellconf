@@ -8,6 +8,7 @@
 " License:      Same as Vim
 " Last Change:  30 January 2013
 
+" Only load this indent file when no other was loaded.
 if exists("b:did_indent")
     finish
 endif
@@ -256,9 +257,9 @@ if exists("*searchpairpos")
         endif
 
         " In case after the paren is a whitespace, we search for the next word.
-        call cursor(0, col('.') + 1)
+        normal! l
         if s:CurrentChar() == ' '
-            call search('\v\S', 'W')
+            normal! w
         endif
 
         " If we moved to another line, there is no word after the (. We
@@ -290,13 +291,12 @@ if exists("*searchpairpos")
             return paren[1] + &shiftwidth - 1
         endif
 
-        call search('\v\s|\n', 'cW')
-        call search('\v\S', 'W')
+        normal! W
         if paren[0] < line(".")
             return paren[1] + &shiftwidth - 1
         endif
 
-        call search('\v\S', 'bW')
+        normal! ge
         return virtcol(".") + 1
     endfunction
 
