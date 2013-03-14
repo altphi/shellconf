@@ -1,4 +1,4 @@
-export PATH="$PATH:$HOME/bin:$HOME/osx-bin"
+export PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin"
 export ANSIBLE_TRANSPORT='ssh'
 
 #{{{ misc
