@@ -1,5 +1,4 @@
-export PATH="$PATH:$HOME/bin:/usr/local/share/python:/usr/local/share/npm/bin"
-export SCHEME_LIBRARY_PATH="/usr/local/share/guile/2.0/slib"
+export PATH="$PATH:$HOME/bin:$HOME/osx-bin"
 export ANSIBLE_TRANSPORT='ssh'
 
 #{{{ misc
