@@ -56,6 +56,10 @@ map gr :grep <cword> *<CR>
 map gr :grep <cword> %:p:h/*<CR>
 map gR :grep \b<cword>\b *<CR>
 map GR :grep \b<cword>\b %:p:h/*<CR>
+" toss the yank register to Guile repl on default port 37146
+"map yr :let replresult = system('nc localhost 37146', @")<CR> :let replresult 
+"map yr :call system('nc localhost 37146', @")<CR>
+map yr :!echo '<C-R>"' <Bar> nc localhost 37146 <CR>
 
 
 " open the file under the cursor

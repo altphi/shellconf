@@ -46,7 +46,7 @@ alias gl='git log --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset
 alias ls='ls -GF'
 alias la='ls -lahGF'
 alias ll='ls -lhGF'
-alias l='ls -lhGF'
+alias l='la'
 alias rm='rm -i'
 alias grep='grep --color=auto'
 alias lg='ls -lah | grep -i'
