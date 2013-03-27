@@ -1,5 +1,8 @@
 export PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin"
 export ANSIBLE_TRANSPORT='ssh'
+HISTSIZE=1000
+SAVEHIST=1000
+HISTFILE=~/.zhistory
 
 #{{{ misc
 # fun from zshguide
@@ -15,7 +18,6 @@ setopt nohup
 GREP_OPTIONS='--binary-files=without-match --directories=skip'
 unset MANPATH
 autoload -U compinit && compinit
-setopt share_history
 
 #}}}
 

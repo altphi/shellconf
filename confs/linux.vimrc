@@ -24,6 +24,7 @@ set showcmd
 set nohls
 " make that backspace key work the way it should
 set backspace=indent,eol,start
+set autochdir
 
 "{{{ Appearance
 if has("gui_running")
@@ -34,17 +35,37 @@ if has("gui_running")
 	set guioptions=egmLtA
 	" set guifont=Bitstream\ Vera\ Sans\ Mono:h16
     " set guifont=Courier\ New:h16
-	set guifont=Menlo\ Regular:h18
+	set guifont=Menlo\ Regular:h14
 	" set columns=164
 	" set lines=41
 	set fuoptions=maxvert,maxhorz
 	au GUIEnter * set fullscreen
- endif
+
+	noremap <D-1> :tabn 1<CR>
+	noremap <D-2> :tabn 2<CR>
+	noremap <D-3> :tabn 3<CR>
+	noremap <D-4> :tabn 4<CR>
+	noremap <D-5> :tabn 5<CR>
+	noremap <D-6> :tabn 6<CR>
+	noremap <D-7> :tabn 7<CR>
+	noremap <D-8> :tabn 8<CR>
+	noremap <D-9> :tabn 9<CR>
+	" Command-0 goes to the last tab
+	noremap <D-0> :tablast<CR>
+endif
+
 
 " show whitespace at end of lines
-highlight WhitespaceEOL ctermbg=lightgray guibg=lightgray
-match WhiteSpaceEOL /\s\+$/
-hi CursorLine  cterm=NONE guibg=#003399
+
+highlight ExtraWhitespace ctermbg=White guibg=White
+autocmd ColorScheme * highlight ExtraWhitespace ctermbg=White guibg=White
+match ExtraWhitespace /\s\+$/
+autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
+autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+autocmd BufWinLeave * call clearmatches()
+"hi CursorLine  cterm=NONE guibg=#003399
+
 "}}}
 
 
@@ -56,10 +77,13 @@ map gr :grep <cword> *<CR>
 map gr :grep <cword> %:p:h/*<CR>
 map gR :grep \b<cword>\b *<CR>
 map GR :grep \b<cword>\b %:p:h/*<CR>
+map yc "*yy
 " toss the yank register to Guile repl on default port 37146
-"map yr :let replresult = system('nc localhost 37146', @")<CR> :let replresult 
-"map yr :call system('nc localhost 37146', @")<CR>
-map yr :!echo '<C-R>"' <Bar> nc localhost 37146 <CR>
+"map yr :let replresult = substitute( system('nc localhost 37146', @"), '\r', '', 'g' )<CR> :verbose let replresult <CR>
+map yr yab :echo system('nc localhost 37146', @")<CR>
+map yv yw :echo system('nc localhost 37146', @")<CR>
+map pr :echo system('nc localhost 37146', @")<CR>
+"map yr :!echo shellescape(<C-R>") <Bar> nc localhost 37146 <CR>
 
 
 " open the file under the cursor
@@ -70,15 +94,14 @@ nmap <F11> /(<CR>
 
 
 " custom commands
-command GREP :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
+command! GREP :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
 map * :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
-
 command! Sh read !cat ~/n/bash_args /!
 command! Cleantail :%s#\s*\r\?$##
 command! WC :w !wc
 
 
-"{{{ Autocompletion 
+"{{{ Autocompletion
 filetype on
 set omnifunc=syntaxcomplete#Complete
 set completeopt=longest,menuone
@@ -89,7 +112,6 @@ set completeopt=longest,menuone
 " autocmd FileType xml set omnifunc=xmlcomplete#CompleteTags
 " autocmd FileType php set omnifunc=phpcomplete#CompletePHP
 " autocmd FileType c set omnifunc=ccomplete#Complete
-
 " load the dictionary according to syntax
 " :au BufReadPost * if exists("b:current_syntax")
 " :au BufReadPost * let &dictionary = substitute("~/.vim/dict/FT.dict", "FT", b:current_syntax, "")
@@ -106,7 +128,7 @@ let g:vimwiki_auto_checkbox = 1
 let g:vimwiki_use_mouse=1
 let g:vimwiki_folding=0 " 0 = off
 nmap <leader>tt <Plug>VimwikiToggleListItem
-let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'default'}] 
+let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'default'}]
 " change these two in default file because override does not seem to work (~/.vim/syntax/vimwiki_default.vim)
 let g:vimwiki_rxPreStart = '{{{{'
 let g:vimwiki_rxPreEnd = '}}}}'
@@ -175,3 +197,7 @@ if fs > v:foldend
 endf
 " }}}
 set foldtext=CustomFoldText()
+
+
+
+
