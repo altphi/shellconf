@@ -25,6 +25,25 @@ set nohls
 " make that backspace key work the way it should
 set backspace=indent,eol,start
 set autochdir
+set hidden
+set wildchar=<Tab> wildmenu wildmode=full
+set wildcharm=<C-Z>
+let Tlist_WinWidth = 50
+nnoremap <silent> <F8> :TlistToggle<CR>
+nnoremap <F9> :b <C-Z>
+set laststatus=2
+
+set statusline=%F         "tail of the filename
+set statusline+=%=        "left/right separator
+set statusline+=[%{strlen(&fenc)?&fenc:'none'}, "file encoding
+set statusline+=%{&ff}]\  "file format
+set statusline+=%h\       "help file flag
+set statusline+=%m\       "modified flag
+set statusline+=%r\       "read only flag
+set statusline+=%y\       "filetype
+set statusline+=%c,\      "cursor column
+set statusline+=%l/%L     "cursor line/total lines
+set statusline+=\ %P      "percent through file
 
 "{{{ Appearance
 if has("gui_running")
@@ -54,20 +73,21 @@ if has("gui_running")
 	noremap <D-0> :tablast<CR>
 endif
 
+" set list
+set lcs=tab:>\ ,nbsp:%,trail:.
 
 " show whitespace at end of lines
 
-highlight ExtraWhitespace ctermbg=White guibg=White
-autocmd ColorScheme * highlight ExtraWhitespace ctermbg=White guibg=White
-match ExtraWhitespace /\s\+$/
-autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
-autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
-autocmd InsertLeave * match ExtraWhitespace /\s\+$/
-autocmd BufWinLeave * call clearmatches()
+"highlight ExtraWhitespace ctermbg=White guibg=White
+"autocmd ColorScheme * highlight ExtraWhitespace ctermbg=White guibg=White
+"match ExtraWhitespace /\s\+$/
+"autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
+"autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+"autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+"autocmd BufWinLeave * call clearmatches()
 "hi CursorLine  cterm=NONE guibg=#003399
 
 "}}}
-
 
 " mappings
 "search for visually highlighted text
