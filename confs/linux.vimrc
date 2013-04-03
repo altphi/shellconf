@@ -23,7 +23,7 @@ set nohls
 set backspace=indent,eol,start
 set autochdir
 set hidden
-set hlsearch
+" set hlsearch
 set wildchar=<Tab> wildmenu wildmode=full
 set wildcharm=<C-Z>
 let Tlist_WinWidth = 50
