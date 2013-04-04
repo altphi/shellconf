@@ -29,6 +29,7 @@ set wildcharm=<C-Z>
 let Tlist_WinWidth = 50
 nnoremap <silent> <F8> :TlistToggle<CR>
 nnoremap <F9> :b <C-Z>
+set wildignore+=*.swp,*.zip
 " }}}
 
 "{{{ Appearance
@@ -86,6 +87,7 @@ set list
 
 " {{{ status line
 set statusline=%F         "tail of the filename
+set statusline+=\ \ \ \ %{fugitive#statusline()}
 set statusline+=%=        "left/right separator
 set statusline+=[%{strlen(&fenc)?&fenc:'none'}, "file encoding
 set statusline+=%{&ff}]\  "file format
@@ -97,10 +99,16 @@ set statusline+=%c,\      "cursor column
 set statusline+=%l/%L     "cursor line/total lines
 set statusline+=\ %P      "percent through file
 set laststatus=2
+
+
+if version >= 700
+  au InsertEnter * hi StatusLine ctermbg=Black ctermfg=White guibg=LightBlue guifg=Black gui=none
+  au InsertLeave * hi StatusLine ctermbg=Brown ctermfg=Black guibg=#c2bfa5 guifg=black gui=none
+endif
 " }}}
 "}}}
 
-" Key Bindings & Mappings
+" {{{ Key Bindings & Mappings
 vmap // y/<C-R>"<CR>
 map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
 map gr :grep <cword> *<CR>
@@ -111,6 +119,7 @@ map yc "*yy
 map yr yab :echo system('nc localhost 37146', @")<CR>
 map yv yw :echo system('nc localhost 37146', @")<CR>
 map pr :echo system('nc localhost 37146', @")<CR>
+" nmap <leader>) f(%a)<ESC><CR>
 
 " Use <C-L> to clear the highlighting of :set hlsearch.
 if maparg('<C-L>', 'n') ==# ''
@@ -122,6 +131,8 @@ endif
 
 nmap <F10> ?(<CR>
 nmap <F11> /(<CR>
+
+" }}}
 
 " custom commands
 command! GREP :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
