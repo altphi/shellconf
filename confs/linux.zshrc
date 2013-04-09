@@ -38,11 +38,11 @@ alias e='emacs'
 
 #{{{ directory shortcuts
 b=/content/quickcue-bucket
+d=/content/quickcue-bucket/deploy
 w=/www/html
 c=/coptix/admin/config
 r=/var/radmind/client
 q=/home/qfilter/domains
-d=/home/dnsrep/data
 #}}}
 
 
