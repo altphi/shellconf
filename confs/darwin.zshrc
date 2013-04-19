@@ -1,4 +1,4 @@
-export PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin"
+export PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin"
 export ANSIBLE_TRANSPORT='ssh'
 HISTSIZE=1000
 SAVEHIST=1000
@@ -27,9 +27,9 @@ j=~/Documents/notes/journal
 s=~/Documents/notes-scholarly
 n=~/Documents/notes
 sc=~/Documents/scripts
-d=~/Documents/scripts/sh/dns
 gsl=~/Sites/gsl.local/www
 b=~/quickcue-bucket
+d=~/quickcue-bucket/deploy
 w=/Library/WebServer/Documents
 c=~/proj/clojure-sandbox
 #}}}
@@ -55,6 +55,11 @@ alias lg='ls -lah | grep -i'
 alias pg='ps aux | grep -i'
 alias g='ls -a | xargs grep --color=auto ';
 alias p='/Applications/MacVim.app/Contents/Resources/vim/runtime/macros/less.sh'
+alias info='info --vi-keys'
+mv () {
+   rsync -aP --remove-source-files "$1" "$2"
+   rm -rf "$1"
+}
 #}}}
 
 # {{{ colors

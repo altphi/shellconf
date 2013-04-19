@@ -31,3 +31,9 @@
 [submodule "vim/bundle/rainbow-paren"]
 	path = vim/bundle/rainbow-paren
 	url = https://github.com/vim-scripts/Rainbow-Parenthesis
+[submodule "vim/bundle/info-vim"]
+	path = vim/bundle/info-vim
+	url = https://github.com/vim-scripts/info.vim.git
+[submodule "vim/bundle/BufOnly"]
+	path = vim/bundle/BufOnly
+	url = https://github.com/duff/vim-bufonly.git
