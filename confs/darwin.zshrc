@@ -32,6 +32,7 @@ b=~/quickcue-bucket
 d=~/quickcue-bucket/deploy
 w=/Library/WebServer/Documents
 c=~/proj/clojure-sandbox
+h=/content/quickcue-bucket/cfmgmt/ansible/hosts
 #}}}
 
 #{{{ alii

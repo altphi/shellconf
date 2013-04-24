@@ -1,3 +1,3 @@
 #!/bin/sh
 cd ~/quickcue-bucket/cfmgmt/ansible/hosts
-ansible all -i beware -m shell -a "cd /home/stephen/bin ; git pull"
+ansible all -i beware -m shell -a "cd /home/stephen/bin ; git pull ; git submodule update --init"
