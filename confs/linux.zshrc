@@ -33,6 +33,7 @@ alias lg='ls -lah | grep'
 alias psg='ps ax | grep'
 alias g='ls -a | xargs grep --color=auto'
 alias e='emacs'
+alias se='sudo -E'
 #alias ip_list="ifconfig | grep 'inet addr:' | perl -p -e 's/^.*?://g' | perl -p -e 's/ .*$//g'"
 #}}}
 
