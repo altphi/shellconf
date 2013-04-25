@@ -4,11 +4,12 @@ HISTSIZE=1000
 SAVEHIST=1000
 HISTFILE=~/.zhistory
 
+
 #{{{ misc
 # fun from zshguide
 zmodload -i zsh/complist
 bindkey '^i' expand-or-complete
-zstyle ':completion:*' menu select=2
+#zstyle ':completion:*' menu select=2
 bindkey -M menuselect '^o' accept-and-infer-next-history
 setopt AUTO_MENU
 setopt AUTO_CD
@@ -57,10 +58,7 @@ alias pg='ps aux | grep -i'
 alias g='ls -a | xargs grep --color=auto ';
 alias p='/Applications/MacVim.app/Contents/Resources/vim/runtime/macros/less.sh'
 alias info='info --vi-keys'
-mv () {
-   rsync -aP --remove-source-files "$1" "$2"
-   rm -rf "$1"
-}
+alias se='sudo -E'
 #}}}
 
 # {{{ colors
@@ -161,37 +159,20 @@ LOGCHECK=0
 #}}}
 
 # {{{ prompt/tab-title
-# PS1=$(print '%{\e[0;32m%}%/ %% %{\e[0m%}')
-# RPS1=$(print '%{\e[0;32m%}%n@%m %? %{\e[0m%}')
+# {{{ Git Info in prompt
+autoload -Uz vcs_info
+zstyle ':vcs_info:*' actionformats '%F{5}(%f%s%F{5})%F{3}-%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
+zstyle ':vcs_info:*' formats '%F{5}(%f%s%F{5})%F{3}-%F{5}[%F{2}%b%F{5}]%f '
+zstyle ':vcs_info:(sv[nk]|bzr):*' branchformat '%b%F{1}:%F{3}%r'
+zstyle ':vcs_info:*' enable git
+setopt PROMPT_SUBST
+# }}}
+
 PS1=$(print '%{\e[0;0m%}%/ %% %{\e[0m%}')
-RPS1=$(print '%{\e[0;0m%}%n@%m %? %{\e[0m%}')
-TERM=xterm-256color
-HOSTNAME=`hostname`;
+RPS1=$(print '${vcs_info_msg_0_}%{\e[0;0m%}%n@%m %? %{\e[0m%}')
+HOSTNAME=`hostname -s`;
  function precmd {
+     vcs_info
      printf "\e]1;${HOSTNAME}\a";
  }
 # }}}
-
-#{{{ extract function
-extract () {
-   if [ -f $1 ] ; then
-       case $1 in
-	*.tar.bz2)	tar xvjf $1 && cd $(basename "$1" .tar.bz2) ;;
-	*.tar.gz)	tar xvzf $1 && cd $(basename "$1" .tar.gz) ;;
-	*.tar.xz)	tar Jxvf $1 && cd $(basename "$1" .tar.xz) ;;
-	*.bz2)		bunzip2 $1 && cd $(basename "$1" /bz2) ;;
-	*.rar)		unrar x $1 && cd $(basename "$1" .rar) ;;
-	*.gz)		gunzip $1 && cd $(basename "$1" .gz) ;;
-	*.tar)		tar xvf $1 && cd $(basename "$1" .tar) ;;
-	*.tbz2)		tar xvjf $1 && cd $(basename "$1" .tbz2) ;;
-	*.tgz)		tar xvzf $1 && cd $(basename "$1" .tgz) ;;
-	*.zip)		unzip $1 && cd $(basename "$1" .zip) ;;
-	*.Z)		uncompress $1 && cd $(basename "$1" .Z) ;;
-	*.7z)		7z x $1 && cd $(basename "$1" .7z) ;;
-	*)		echo "don't know how to extract '$1'..." ;;
-       esac
-   else
-       echo "'$1' is not a valid file!"
-   fi
- }
-#}}}
