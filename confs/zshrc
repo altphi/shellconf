@@ -26,6 +26,7 @@ setopt AUTO_MENU
 setopt AUTO_CD
 setopt CDABLE_VARS
 setopt SHARE_HISTORY
+setopt HIST_NO_STORE
 setopt nohup
 GREP_OPTIONS='--binary-files=without-match --directories=skip'
 unset MANPATH
