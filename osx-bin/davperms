@@ -1,12 +1,13 @@
 #!/bin/sh
 
 
-for folder in ~/Documents/Articles /Users/Stephen/Documents/Bibliographies,\ Booklists,\ Syllabi ~/Documents/CUA-MA ~/Documents/CUA-Teaching ~/Documents/Greek\ Authors:Texts ~/Documents/LEC ~/Documents/Latin\ Authors:Texts ~/Documents/Lexica:Ref ~/Documents/PDF\ Library ~/Documents/vimwiki_textastic ~/Documents/Programming\ Docs ~/Documents/SysAdmin\ Docs 
+for folder in ~/Documents/Articles /Users/Stephen/Documents/Bibliographies,\ Booklists,\ Syllabi ~/Documents/CUA-MA ~/Documents/CUA-Teaching ~/Documents/Greek\ Authors:Texts ~/Documents/LEC ~/Documents/Latin\ Authors:Texts ~/Documents/Lexica:Ref ~/Documents/PDF\ Library ~/Documents/vimwiki_textastic ~/Documents/Programming\ Docs ~/Documents/SysAdmin\ Docs
 
 do
 
-sudo chown -R stephen "$folder"
-sudo chgrp -R www "$folder"
-sudo chmod -R g+w "$folder"
+find "$folder" ! -user stephen -exec sudo chown stephen '{}' \;
+find "$folder" ! -group www -exec sudo chgrp www '{}' \;
+find "$folder" -type d ! -perm 1775 -exec sudo chmod 1775 '{}' \;
+find "$folder" -type f ! -perm 664 -exec sudo chmod 664 '{}' \;
 
 done
