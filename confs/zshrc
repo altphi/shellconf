@@ -49,12 +49,17 @@ p=~/proj/clojure-sandbox/src/clojure_sandbox
 #{{{ alii
 
 [[ "$SYSTYPE" == "Darwin" ]] && {
-alias clj='rlwrap clj'
-alias mvim='mvim --remote-tab '
-alias vi='mvim'
+
+if hash mvim 2>/dev/null
+then
+    alias mvim='mvim --remote-tab '
+    alias vi='mvim'
+fi
+
 alias vim='vi'
 alias ls='ls -GF'
 alias ll='ls -lhGF'
+alias clj='rlwrap clj'
 }
 
 [[ "$SYSTYPE" == "Linux" ]] && {
