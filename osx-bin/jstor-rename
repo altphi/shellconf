@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 rename_pdf () {
 
@@ -10,20 +11,21 @@ rename_pdf () {
 			*Author* )
 				local author=`echo "${LINE}" | sed 's/^.*:\ //g'`;
 				local author_last_first="${author##*\ }, ${author%\ *}";
-				echo "author_last_first=\"$author_last_first\"" >> $tmpfile
+				echo "author_last_first=\"$author_last_first\"" >> "$tmpfile"
 				;;
 			*Source* )
 				source=`echo "${LINE}" | sed 's/^Source:\ //g' | sed 's/,.*$//g' | tr ':' '-'`;
 				source=`echo "$source" | sed 's/Transactions\ and\ Proceedings\ of\ the\ American\ Philological\ Association/TAPA/g'`;
-				echo "source=\"$source\"" >> $tmpfile
+				echo "source=\"$source\"" >> "$tmpfile"
 				local year=`echo "${LINE}" | sed 's/^.*(//g' | sed 's/).*$//g' | sed -e 's/[^0-9]//g'`;
-				echo "year=\"$year\"" >> $tmpfile
+				echo "year=\"$year\"" >> "$tmpfile"
 				;;
 		esac
 	done
 
-	source $tmpfile
-    rm $tmpfile
+    test -s "$tmpfile" && echo $?
+	. "./$tmpfile"
+    rm "$tmpfile"
 	rm "$1.txt"
 
 	local finally=`echo -e "$author_last_first ($source $year) \xe2\x80\xa2 $title"`;
