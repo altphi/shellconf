@@ -18,10 +18,6 @@ SAVEHIST=1000
 HISTFILE=~/.zhistory
 
 #{{{ misc
-zmodload -i zsh/complist
-bindkey '^i' expand-or-complete
-zstyle ':completion:*' menu select=2
-bindkey -M menuselect '^o' accept-and-infer-next-history
 setopt AUTO_MENU
 setopt AUTO_CD
 setopt CDABLE_VARS
@@ -104,9 +100,16 @@ alias -- -='pushd -1'
 #}}}
 
 #{{{ completion
-zstyle ':completion:*' list-colors '${LSCOLORS}'
+zmodload -i zsh/complist
+zstyle ':completion:*' list-colors '$LSCOLORS'
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh/cache
+zstyle ':completion:*' menu select=2
+bindkey '^i' expand-or-complete
+bindkey -M menuselect '^o' accept-and-infer-next-history
+zstyle ':completion:history-words:*' list no
+zstyle ':completion:history-words:*' menu yes
+zstyle ':completion:history-words:*' remove-all-dups yes
 
 autoload -U incremental-complete-word
 zle -N incremental-complete-word
