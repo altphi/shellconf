@@ -60,7 +60,8 @@ alias clj='rlwrap clj'
 
 [[ "$SYSTYPE" == "Linux" ]] && {
 alias ls='ls -F -b -T 0 --color=auto'
-alias ll='ls -F -b -T 0 --color=auto -la'
+alias ll='ls -F -b -T 0 --color=auto -l'
+alias la='ls -F -b -T 0 --color=auto -la'
 }
 
 alias b='git branch -avv'
