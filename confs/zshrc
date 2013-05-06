@@ -55,6 +55,7 @@ fi
 alias vim='vi'
 alias ls='ls -GF'
 alias ll='ls -lhGF'
+alias la='ls -lahGF'
 alias clj='rlwrap clj'
 }
 
@@ -71,8 +72,7 @@ alias gc='git checkout'
 alias gl='git log --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"'
 alias grep='grep --color=auto'
 alias info='info --vi-keys'
-alias la='ls -lahGF'
-alias l='la'
+alias l='ll'
 alias lg='ls -lah | grep -i'
 alias pg='ps aux | grep -i'
 alias rm='rm -i'
