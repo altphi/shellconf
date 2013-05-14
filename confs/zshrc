@@ -131,6 +131,8 @@ _myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
 zstyle ':completion:*' hosts $_myhosts
 
 compdef 'cd /service && compadd - *' taillog
+compdef 'cd /service && compadd -W /service/ - *' svstat
+compdef 'cd /service && compadd -W /service/ - *' svc
 
 #}}}
 
