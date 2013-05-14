@@ -102,28 +102,30 @@ alias -- -='pushd -1'
 #}}}
 
 #{{{ completion
+setopt MENU_COMPLETE
 zmodload -i zsh/complist
 zstyle ':completion:*' list-colors '$LSCOLORS'
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh/cache
 zstyle ':completion:*' menu select=2
-bindkey '^i' expand-or-complete
+#bindkey '^i' expand-or-complete
+bindkey '^i' menu-expand-or-complete
 bindkey -M menuselect '^o' accept-and-infer-next-history
 zstyle ':completion:history-words:*' list no
 zstyle ':completion:history-words:*' menu yes
 zstyle ':completion:history-words:*' remove-all-dups yes
 
-autoload -U incremental-complete-word
-zle -N incremental-complete-word
+#autoload -U incremental-complete-word
+#zle -N incremental-complete-word
 
-function beginning-incremental-search {
-    if [[ $LASTWIDGET == $WIDGET ]]
-    then zle .$WIDGET
-    else zle .$WIDGET $LBUFFER
-    fi
-}
-zle -N history-incremental-search-backward beginning-incremental-search
-zle -N history-incremental-search-forward beginning-incremental-search
+#function beginning-incremental-search {
+#    if [[ $LASTWIDGET == $WIDGET ]]
+#    then zle .$WIDGET
+#    else zle .$WIDGET $LBUFFER
+#    fi
+#}
+#zle -N history-incremental-search-backward beginning-incremental-search
+#zle -N history-incremental-search-forward beginning-incremental-search
 
 # complete SSH hosts
 local _myhosts
