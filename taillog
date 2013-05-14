@@ -1,7 +1,0 @@
-#!/bin/sh
-
-if [ $# -lt 1 ] ; then
-	echo "usage: $0 servicename"
-else
-	tail -f /var/log/$1/current
-fi
