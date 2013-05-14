@@ -26,10 +26,21 @@ set hidden
 " set hlsearch
 set wildchar=<Tab> wildmenu wildmode=full
 set wildcharm=<C-Z>
-let Tlist_WinWidth = 50
-nnoremap <silent> <F8> :TlistToggle<CR>
+nnoremap <silent> <F7> :NERDTreeToggle<CR>
+nnoremap <silent> <F8> :TagbarToggle<CR>
 nnoremap <F9> :b <C-Z>
+set switchbuf+=usetab,newtab
 set wildignore+=*.swp,*.zip
+let g:ctrlp_working_path_mode = '0'
+let g:ctrlp_user_command = 'find %s'
+" let g:ctrlp_user_command = {
+" \    'types': {
+" \    1: ['.git', 'cd %s && git ls-files'],
+" \    },
+" \    'fallback': 'find %s' }
+let g:ctrlp_max_height = 40
+nnoremap ,t  :CtrlPTag <CR>
+
 " }}}
 
 "{{{ Appearance
@@ -109,17 +120,18 @@ endif
 "}}}
 
 " {{{ Key Bindings & Mappings
-vmap // y/<C-R>"<CR>
+map // y/<C-R>"<CR>
 map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
-map gr :grep <cword> *<CR>
-map gr :grep <cword> %:p:h/*<CR>
-map gR :grep \b<cword>\b *<CR>
-map GR :grep \b<cword>\b %:p:h/*<CR>
-map yc "*yy
-map yr yab :echo system('nc localhost 37146', @")<CR>
-map yv yw :echo system('nc localhost 37146', @")<CR>
-map pr :echo system('nc localhost 37146', @")<CR>
+nmap gr :grep <cword> *<CR>
+nmap gr :grep <cword> %:p:h/*<CR>
+nmap gR :grep \b<cword>\b *<CR>
+nmap GR :grep \b<cword>\b %:p:h/*<CR>
+nmap yc "*yy
+nmap yr yab :echo system('nc localhost 37146', @")<CR>
+nmap yv yw :echo system('nc localhost 37146', @")<CR>
+nmap pr :echo system('nc localhost 37146', @")<CR>
 " nmap <leader>) f(%a)<ESC><CR>
+nmap <leader>cd cd %:h<CR>
 
 " Use <C-L> to clear the highlighting of :set hlsearch.
 if maparg('<C-L>', 'n') ==# ''

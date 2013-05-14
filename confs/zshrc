@@ -3,7 +3,7 @@ setopt ALL_EXPORT
 readonly SYSTYPE="`uname`"
 
 [[ "$SYSTYPE" == "Darwin" ]] && {
-readonly PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin"
+readonly PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:/usr/local/share/npm/bin"
 readonly ANSIBLE_TRANSPORT='ssh'
 }
 
@@ -24,10 +24,11 @@ setopt CDABLE_VARS
 setopt SHARE_HISTORY
 setopt HIST_NO_STORE
 setopt nohup
-GREP_OPTIONS='--binary-files=without-match --directories=skip'
+setopt EXTENDED_GLOB
 unset MANPATH
 unset PAGER
 autoload -U compinit && compinit
+GREP_OPTIONS='--binary-files=without-match --directories=skip'
 #}}}
 
 #{{{ directory shortcuts
@@ -37,7 +38,7 @@ h=/content/quickcue-bucket/cfmgmt/ansible/hosts
 
 [[ "$SYSTYPE" == "Darwin" ]] && {
 sc=~/Documents/scripts
-c=~/proj/clojure-sandbox
+c=/content/quickcue-bucket/control-panel/src/control_panel
 p=~/proj/clojure-sandbox/src/clojure_sandbox
 }
 #}}}
@@ -128,6 +129,8 @@ zle -N history-incremental-search-forward beginning-incremental-search
 local _myhosts
 _myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
 zstyle ':completion:*' hosts $_myhosts
+
+compdef 'cd /service && compadd - *' taillog
 
 #}}}
 
