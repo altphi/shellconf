@@ -25,10 +25,22 @@ setopt SHARE_HISTORY
 setopt HIST_NO_STORE
 setopt nohup
 setopt EXTENDED_GLOB
+setopt HIST_IGNORE_SPACE
 unset MANPATH
 unset PAGER
 autoload -U compinit && compinit
 GREP_OPTIONS='--binary-files=without-match --directories=skip'
+
+[[ "$SYSTYPE" == "Darwin" ]] && {
+    taillog () {
+    tail -f "/var/log/$1/current"
+    }
+    autoload -U compinit && compinit
+    compdef 'compadd -- `/bin/ls /service/`' taillog
+    compdef 'compadd -P /service/ -- `/bin/ls /service/`' svstat
+    compdef 'compadd -P /service/ -- `/bin/ls /service/`' svc
+}
+
 #}}}
 
 #{{{ directory shortcuts
@@ -78,6 +90,7 @@ alias lg='ls -lah | grep -i'
 alias pg='ps aux | grep -i'
 alias rm='rm -i'
 alias se='sudo -E'
+alias run-me-everywhere='/content/quickcue-bucket/cfmgmt/run-me-everywhere'
 
 #}}}
 
