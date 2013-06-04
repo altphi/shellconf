@@ -7,9 +7,6 @@
 [submodule "vim/bundle/vim-clojure-static"]
 	path = vim/bundle/vim-clojure-static
 	url = https://github.com/guns/vim-clojure-static.git
-[submodule "vim/bundle/vim-foreplay"]
-	path = vim/bundle/vim-foreplay
-	url = https://github.com/tpope/vim-foreplay.git
 [submodule "vim/bundle/orgmode"]
 	path = vim/bundle/orgmode
 	url = https://github.com/jceb/vim-orgmode.git
