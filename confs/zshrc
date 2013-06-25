@@ -96,9 +96,6 @@ alias rm='rm -i'
 alias se='sudo -E'
 alias run-me-everywhere='/content/quickcue-bucket/cfmgmt/run-me-everywhere'
 
-alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1])"'
-alias urldecode='python -c "import sys, urllib as ul; print ul.unquote_plus(sys.argv[1])"'
-
 #}}}
 
 #{{{ colors

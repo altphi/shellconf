@@ -1,3 +1,2 @@
 #!/bin/sh
-HOSTS=~/quickcue-bucket/cfmgmt/all-hosts
-ansible all -i "$HOSTS" -m shell -a "cd /home/stephen/bin ; git pull ; git submodule update --init"
+/content/quickcue-bucket/cfmgmt/run-me-everywhere "cd /home/stephen/bin ; git pull ; git submodule update --recursive --init"
