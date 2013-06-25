@@ -122,10 +122,8 @@ endif
 " {{{ Key Bindings & Mappings
 map // y/<C-R>"<CR>
 map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
-nmap gr :grep <cword> *<CR>
-nmap gr :grep <cword> %:p:h/*<CR>
-nmap gR :grep \b<cword>\b *<CR>
-nmap GR :grep \b<cword>\b %:p:h/*<CR>
+command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
+
 nmap yc "*yy
 nmap yr yab :echo system('nc localhost 37146', @")<CR>
 nmap yv yw :echo system('nc localhost 37146', @")<CR>

@@ -5,8 +5,8 @@ for folder in ~/Documents/Articles /Users/Stephen/Documents/Bibliographies,\ Boo
 do
 
 find "$folder" -name 'temp[0-9]' -exec rm '{}' \;
-find "$folder" ! -user stephen -exec sudo chown stephen '{}' \;
-find "$folder" ! -group www -exec sudo chgrp www '{}' \;
+find "$folder" ! -user www -exec sudo chown www '{}' \;
+find "$folder" ! -group wheel -exec sudo chgrp wheel '{}' \;
 find "$folder" -type d ! -perm 0775 -exec sudo chmod 0775 '{}' \;
 find "$folder" -type f ! -perm 664 -exec sudo chmod 664 '{}' \;
 

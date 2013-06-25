@@ -35,8 +35,12 @@ GREP_OPTIONS='--binary-files=without-match --directories=skip'
     taillog () {
     tail -f "/var/log/$1/current"
     }
+    taillog_sans_date () {
+    tail -f "/var/log/$1/current" | perl -p -e 's/^.*?\ //g'
+    }
     autoload -U compinit && compinit
     compdef 'compadd -- `/bin/ls /service/`' taillog
+    compdef 'compadd -- `/bin/ls /service/`' taillog_without_date
     compdef 'compadd -P /service/ -- `/bin/ls /service/`' svstat
     compdef 'compadd -P /service/ -- `/bin/ls /service/`' svc
 }
@@ -91,6 +95,9 @@ alias pg='ps aux | grep -i'
 alias rm='rm -i'
 alias se='sudo -E'
 alias run-me-everywhere='/content/quickcue-bucket/cfmgmt/run-me-everywhere'
+
+alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1])"'
+alias urldecode='python -c "import sys, urllib as ul; print ul.unquote_plus(sys.argv[1])"'
 
 #}}}
 
