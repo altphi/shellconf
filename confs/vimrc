@@ -179,9 +179,10 @@ let g:vimwiki_use_mouse=1
 let g:vimwiki_folding=0 " 0 = off
 nmap <leader>tt <Plug>VimwikiToggleListItem
 let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'default'}]
-" change these two in default file because override does not seem to work (~/.vim/syntax/vimwiki_default.vim)
+" change these two in default file because override does not seem to work ( ~/.vim/bundle/vimwiki/syntax/vimwiki_default.vim )
 let g:vimwiki_rxPreStart = '{{{{'
 let g:vimwiki_rxPreEnd = '}}}}'
+
 " also, for HTML output, change the below in autoload/vimwiki/html.vim (and
 " the lines between these two as well
 " if !pre[0] && a:line =~ '^\s*{{{'   AND
@@ -239,3 +240,9 @@ function! CustomFoldText()
     return line . expansionString . foldSizeStr . foldPercentage . foldLevelStr
 endf
 "set foldtext=CustomFoldText()
+
+"imap <C-S> <Plug>snipMateNextOrTrigger
+"smap <C-S> <Plug>snipMateNextOrTrigger
+"
+imap <C-J> <Plug>snipMateNextOrTrigger
+smap <C-J> <Plug>snipMateNextOrTrigger
