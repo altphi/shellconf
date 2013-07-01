@@ -1,55 +1,54 @@
 #!/bin/sh
 set -e
+set -x
 
 rename_pdf () {
-
-	local title=`grep -B 1 -A 6 -e '^Author' "$1.txt" | head -n 1 | iconv -s -f utf-8 -t ascii//translit | tr ':' '-'`;
-	local tmpfile=".`uuidgen`";
-	grep -B 1 -A 6 -e '^Author' "$1.txt" | while read LINERAW ; do
-	    local LINE=`echo $LINERAW | iconv -s -f utf-8 -t ascii//translit`;
-		case "$LINE" in
-			*Author* )
-				local author=`echo "${LINE}" | sed 's/^.*:\ //g'`;
-				local author_last_first="${author##*\ }, ${author%\ *}";
-				echo "author_last_first=\"$author_last_first\"" >> "$tmpfile"
-				;;
-			*Source* )
-				source=`echo "${LINE}" | sed 's/^Source:\ //g' | sed 's/,.*$//g' | tr ':' '-'`;
-				source=`echo "$source" | sed 's/Transactions\ and\ Proceedings\ of\ the\ American\ Philological\ Association/TAPA/g'`;
-				echo "source=\"$source\"" >> "$tmpfile"
-				local year=`echo "${LINE}" | sed 's/^.*(//g' | sed 's/).*$//g' | sed -e 's/[^0-9]//g'`;
-				echo "year=\"$year\"" >> "$tmpfile"
-				;;
-		esac
-	done
+    local title=`grep -B 1 -A 6 -e '^Author' "$1.txt" | head -n 1 | iconv -s -f utf-8 -t ascii//translit | tr ':' '-'`;
+    local tmpfile=".`uuidgen`";
+    grep -B 1 -A 6 -e '^Author' "$1.txt" | while read LINERAW ; do
+        local LINE=`echo $LINERAW | iconv -s -f utf-8 -t ascii//translit`;
+        case "$LINE" in
+            *Author* )
+                local author=`echo "${LINE}" | sed 's/^.*:\ //g'`;
+                local author_last_first="${author##*\ }, ${author%\ *}";
+                echo "author_last_first=\"$author_last_first\"" >> "$tmpfile"
+                ;;
+            *Source* )
+                source=`echo "${LINE}" | sed 's/^Source:\ //g' | sed 's/,.*$//g' | tr ':' '-'`;
+                source=`echo "$source" | sed 's/Transactions\ and\ Proceedings\ of\ the\ American\ Philological\ Association/TAPA/g'`;
+                echo "source=\"$source\"" >> "$tmpfile"
+                local year=`echo "${LINE}" | sed 's/^.*(//g' | sed 's/).*$//g' | sed -e 's/[^0-9]//g'`;
+                echo "year=\"$year\"" >> "$tmpfile"
+                ;;
+        esac
+    done
 
     test -s "$tmpfile" && echo $?
-	. "./$tmpfile"
+    . "./$tmpfile"
     rm "$tmpfile"
-	rm "$1.txt"
+    rm "$1.txt"
 
-	local finally=`echo -e "$author_last_first ($source $year) \xe2\x80\xa2 $title"`;
-	mv "$1.pdf" "$finally.pdf"
-#	echo -e "renamed this pdf:\n$1.pdf\n\nto this:\n$finally.pdf\n\n***\n";
-
-	return 0;
+    local finally=`echo -e "$author_last_first ($source $year) \xe2\x80\xa2 $title"`;
+    mv "$1.pdf" "$finally.pdf"
+#    echo -e "renamed this pdf:\n$1.pdf\n\nto this:\n$finally.pdf\n\n***\n";
+    return 0;
 }
 
 pdffiles=( *.pdf )
 for filename in "${pdffiles[@]}"; do
-	pdftotext -f 1 -l 1 -eol "unix" -layout "$filename"
-	shortname=${filename%.pdf};
-	if grep -q 'JSTOR' "$shortname.txt" ; then
-		reviewed_line=`grep -e '^Review' "$shortname.txt" | iconv -s -f utf-8 -t ascii//translit | sed -e 's/^.*://g' | sed -e 's/^ *//g'`;
-		if [ ! ${#reviewed_line} -eq 0 ] ; then
-			title=`head -n 1 "$shortname.txt" | iconv -s -f utf-8 -t ascii//translit | tr ':' '-'`;
-			finally="Review by $reviewed_line of $title"; 
-			mv "$shortname.pdf" "$finally.pdf"
-			rm "$shortname.txt"
-		else
-   	    	rename_pdf "$shortname"
-		fi
-	else 
-	   rm "$shortname.txt"
-	fi
+    pdftotext -f 1 -l 1 -eol "unix" -layout "$filename"
+    shortname=${filename%.pdf};
+    if grep -q 'JSTOR' "$shortname.txt" ; then
+        reviewed_line=`grep -e '^Review' "$shortname.txt" | iconv -s -f utf-8 -t ascii//translit | sed -e 's/^.*://g' | sed -e 's/^ *//g'`;
+        if [ ! ${#reviewed_line} -eq 0 ] ; then
+            title=`head -n 1 "$shortname.txt" | iconv -s -f utf-8 -t ascii//translit | tr ':' '-'`;
+            finally="Review by $reviewed_line of $title";
+            mv "$shortname.pdf" "$finally.pdf"
+            rm "$shortname.txt"
+        else
+               rename_pdf "$shortname"
+        fi
+    else
+       rm "$shortname.txt"
+    fi
 done
