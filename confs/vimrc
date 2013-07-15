@@ -26,6 +26,7 @@ set hidden
 " set hlsearch
 set wildchar=<Tab> wildmenu wildmode=full
 set wildcharm=<C-Z>
+set dictionary=/usr/share/dict/words
 nnoremap <silent> <F7> :NERDTreeToggle<CR>
 nnoremap <silent> <F8> :TagbarToggle<CR>
 nnoremap <F9> :b <C-Z>
