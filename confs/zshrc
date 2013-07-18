@@ -65,7 +65,7 @@ p=~/proj/clojure-sandbox/src/clojure_sandbox
 
 if hash mvim 2>/dev/null
 then
-    #alias mvim='mvim --remote-tab'
+    alias mvim='mvim --remote-tab'
     alias vi='mvim'
 fi
 

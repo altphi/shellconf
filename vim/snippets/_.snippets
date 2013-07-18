@@ -1,8 +1,22 @@
 snippet note
 	{{{ #${1:keyword}
-	citation: ${2:citation}
-	proposition (${3:quotation,paraphrase,summary}): ${4:text}
+	${2:quotation,paraphrase,summary}
+	${3:citation}
+	${4:text}
 	support:
 	sdb:
 	date: `system("date +%Y-%m-%d")`
 	}}}
+
+
+snippet book
+	${1:Surname}, ${2:First}. (${3:Year}). _${4:Title}_. ${5:City}.
+
+snippet article
+	${1:Surname}, ${2:First}. (${3:Year}). _${4:Title}_. ${5:City}.
+snippet args
+	if [ $# -lt ${1:NumberOfArgs} ] ; then
+		echo "usage: $0 argument1"; exit 1;
+	else
+		echo "hi."
+	fi
