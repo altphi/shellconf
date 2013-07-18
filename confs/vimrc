@@ -130,6 +130,8 @@ nmap yr yab :echo system('nc localhost 37146', @")<CR>
 nmap yv yw :echo system('nc localhost 37146', @")<CR>
 nmap pr :echo system('nc localhost 37146', @")<CR>
 vmap ttt y :echo system('ttytter -script', @")<CR>
+nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
+
 " nmap <leader>) f(%a)<ESC><CR>
 nmap <leader>cd cd %:h<CR>
 
@@ -152,6 +154,8 @@ command! GREP :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
 command! Sh read !cat ~/n/bash_args /!
 command! Cleantail :%s#\s*\r\?$##
 command! WC :w !wc
+command! RC :e ~/.vimrc
+command! RCload :so ~/.vimrc
 
 "{{{ Autocompletion
 filetype on
