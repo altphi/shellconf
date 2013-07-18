@@ -129,6 +129,7 @@ nmap yc "*yy
 nmap yr yab :echo system('nc localhost 37146', @")<CR>
 nmap yv yw :echo system('nc localhost 37146', @")<CR>
 nmap pr :echo system('nc localhost 37146', @")<CR>
+vmap ttt y :echo system('ttytter -script', @")<CR>
 " nmap <leader>) f(%a)<ESC><CR>
 nmap <leader>cd cd %:h<CR>
 
