@@ -3,17 +3,14 @@ set -x
 UN=`cat ~/.bitly-un`
 AK=`cat ~/.bitly-apikey`
 
+# read stdin, or if not present read arg1, or if not present read latest clipboard
 if read -t 0 ; then
-    echo "stdin is present! proceed"
     URL=`cat -` ;
 elif [ $# -eq 1 ] ; then
     URL="$1" ;
 else
-#[ "${URL}x" == "x" ] ; then
     URL=`pbpaste` ;
 fi
-
-echo "URL is $URL"
 
 shorturl=$(curl -s --data "login=${UN}&apiKey=${AK}&longUrl=${URL}&format=txt" http://api.bitly.com/v3/shorten)
 echo "$shorturl" | pbcopy
