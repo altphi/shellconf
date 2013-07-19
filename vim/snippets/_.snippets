@@ -16,11 +16,11 @@ snippet article
 	${1:Surname}, ${2:First}. (${3:Year}). _${4:Title}_. ${5:City}.
 snippet args
 	if [ $# -lt ${1:NumberOfArgs} ] ; then
-		echo "usage: $0 argument1"; exit 1;
+		echo "usage: $0 ${2:args}"; exit 1;
 	else
-		echo "hi."
+		${3:#code}
 	fi
 snippet varset
-	if [[ ${MYVAR-x} != x ]] ; then
-		echo 'hi'
+	if [[ ${${1:MYVAR}-x} != x ]] ; then
+		${2:#code}
 	fi
