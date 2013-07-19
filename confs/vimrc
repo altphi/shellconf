@@ -131,6 +131,7 @@ nmap yv yw :echo system('nc localhost 37146', @")<CR>
 nmap pr :echo system('nc localhost 37146', @")<CR>
 vmap ttt y :echo system('ttytter -script', @")<CR>
 nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
+vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>
 
 " nmap <leader>) f(%a)<ESC><CR>
 nmap <leader>cd cd %:h<CR>

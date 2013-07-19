@@ -22,5 +22,5 @@ snippet args
 	fi
 snippet varset
 	if [[ ${${1:MYVAR}-x} != x ]] ; then
-		${2:#code}
+		${2:echo "is set"}
 	fi
