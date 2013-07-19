@@ -53,6 +53,7 @@ d=/content/quickcue-bucket/deploy
 h=/content/quickcue-bucket/cfmgmt/ansible/hosts
 
 [[ "$SYSTYPE" == "Darwin" ]] && {
+l="/Users/stephen/Documents/CUA-Teaching/LAT 505B Fall '13"
 sc=~/Documents/scripts
 c=/content/quickcue-bucket/control-panel/src/control_panel
 p=~/proj/clojure-sandbox/src/clojure_sandbox

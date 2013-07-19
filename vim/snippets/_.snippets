@@ -20,3 +20,7 @@ snippet args
 	else
 		echo "hi."
 	fi
+snippet varset
+	if [[ ${MYVAR-x} != x ]] ; then
+		echo 'hi'
+	fi
