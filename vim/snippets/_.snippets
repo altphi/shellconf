@@ -1,14 +1,17 @@
 snippet note
-	{{{ #${1:keyword}
-	${2:quotation,paraphrase,summary}
-	${3:citation}
+	{{{
+	---
+	type: ${1:quote,text,link}
+	source: ${2:citation}
+	state: published
+	tags: #${3:keyword}
+	---
 	${4:text}
+	
 	support:
 	sdb:
 	date: `system("date +%Y-%m-%d")`
 	}}}
-
-
 snippet book
 	${1:Surname}, ${2:First}. (${3:Year}). _${4:Title}_. ${5:City}.
 
@@ -24,3 +27,9 @@ snippet varset
 	if [[ ${${1:MYVAR}-x} != x ]] ; then
 		${2:echo "is set"}
 	fi
+snippet fold
+	{{{ ${1:heading}
+	
+	}}}
+snippet td
+	* [ ] ${1:to-do-item}

@@ -224,29 +224,55 @@ set foldmethod=marker
 nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
 vnoremap <Space> zf
 " vim custom fold display function
-function! CustomFoldText()
+" {{{
+" function! CustomFoldText()
 " slightly altered function via
 " http://www.gregsexton.org/2011/03/improving-the-text-displayed-in-a-fold/
-"get first non-blank line
-    let fs = v:foldstart
-    while getline(fs) =~ '^\s*$' | let fs = nextnonblank(fs + 1)
-    endwhile
-    "if fs > v:foldend
-    "    let line = getline(v:foldstart)
-    "else
-    "    let line = substitute(getline(fs), '\t', repeat(' ', &tabstop), 'g')
-    "endif
-    let line = substitute(line, "{{{", '', 'g')
-    let w = winwidth(0) - &foldcolumn - (&number ? 8 : 0)
-    let foldSize = 1 + v:foldend - v:foldstart
-    let foldSizeStr = " " . foldSize . " lines "
-    let foldLevelStr = repeat("+--", v:foldlevel)
-    let lineCount = line("$")
-    let foldPercentage = printf("[%.1f", (foldSize*1.0)/lineCount*100) . "%] "
-    let expansionString = repeat(".", w - strwidth(foldSizeStr.line.foldLevelStr.foldPercentage))
-    return line . expansionString . foldSizeStr . foldPercentage . foldLevelStr
-endf
+"    "get first non-blank line
+"    let fs = v:foldstart
+"    while getline(fs) =~ '^\s*$' | let fs = nextnonblank(fs + 1)
+"    endwhile
+"    "if fs > v:foldend
+"    "    let line = getline(v:foldstart)
+"    "else
+"    "    let line = substitute(getline(fs), '\t', repeat(' ', &tabstop), 'g')
+"    "endif
+"    let line = substitute(line, "{{", '', 'g')
+"    let w = winwidth(0) - &foldcolumn - (&number ? 8 : 0)
+"    let foldSize = 1 + v:foldend - v:foldstart
+"    let foldSizeStr = " " . foldSize . " lines "
+"    let foldLevelStr = repeat("+--", v:foldlevel)
+"    let lineCount = line("$")
+"    let foldPercentage = printf("[%.1f", (foldSize*1.0)/lineCount*100) . "%] "
+"    let expansionString = repeat(".", w - strwidth(foldSizeStr.line.foldLevelStr.foldPercentage))
+"    return line . expansionString . foldSizeStr . foldPercentage . foldLevelStr
+"endf
 "set foldtext=CustomFoldText()
+
+set foldtext=MyFoldText()
+function! MyFoldText()
+    let loopy = 0
+    let foldstart = v:foldstart
+    let linenumb = v:foldstart
+    while loopy == 0 && linenumb <= v:foldend
+        let line = getline(linenumb)
+        let matchtest = matchstr(line,"tags: ")
+        if matchtest == "tags: "
+            let loopy = 1
+        else
+            let linenumb = linenumb + 1
+        endif
+    endwhile
+    if loopy == 0
+        let line = getline(foldstart)
+        let line = substitute(line, "{{{ ", "", "")
+    else
+        let line = substitute(line, "tags: ", "", "")
+    endif
+    let linecount = v:foldend - v:foldstart
+    return v:folddashes . " " . linecount . " lines: " . line
+endfunction
+
 
 "imap <C-S> <Plug>snipMateNextOrTrigger
 "smap <C-S> <Plug>snipMateNextOrTrigger
