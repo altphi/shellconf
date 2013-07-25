@@ -43,6 +43,7 @@ let g:ctrlp_max_height = 40
 nnoremap ,t  :CtrlPTag <CR>
 
 " }}}
+" sleep 10
 
 "{{{ Appearance
 colorscheme desert
@@ -131,7 +132,7 @@ nmap yv yw :echo system('nc localhost 37146', @")<CR>
 nmap pr :echo system('nc localhost 37146', @")<CR>
 vmap ttt y :echo system('ttytter -script', @")<CR>
 nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
-vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>
+vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>zo:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>'><CR>otweet: <ESC>"bpJ<CR>
 
 " nmap <leader>) f(%a)<ESC><CR>
 nmap <leader>cd cd %:h<CR>
