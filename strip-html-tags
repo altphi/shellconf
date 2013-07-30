@@ -1,0 +1,2 @@
+#!/bin/sh
+cat - | sed -e :a -e 's/<[^>]*>//g;/</N;//ba'

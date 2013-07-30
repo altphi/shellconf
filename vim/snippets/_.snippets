@@ -1,14 +1,10 @@
 snippet note
-	{{{
-	---
-	source: ${2:citation}
-	state: published
-	tags: #${3:keyword}
-	---
-	${4:text}
+	{{{ #${1:tags}
+	${2:shortline+source}.
 	
-	support:
-	sdb:
+	> ${3:text}
+	
+	
 	date: `system("date +%Y-%m-%d")`
 	}}}
 snippet book
