@@ -43,8 +43,6 @@ let g:ctrlp_max_height = 40
 nnoremap ,t  :CtrlPTag <CR>
 
 " }}}
-" sleep 10
-
 "{{{ Appearance
 colorscheme desert
 syntax on
@@ -120,7 +118,6 @@ if version >= 700
 endif
 " }}}
 "}}}
-
 " {{{ Key Bindings & Mappings
 map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
 command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
@@ -129,11 +126,12 @@ nmap yc "*yy
 nmap yr yab :echo system('nc localhost 37146', @")<CR>
 nmap yv yw :echo system('nc localhost 37146', @")<CR>
 nmap pr :echo system('nc localhost 37146', @")<CR>
-" vmap ttt y :echo system('ttytter -script', @")<CR>
-vmap ttt y'>i <ESC>`<v`>ly :let @a=system('tr -d \\r\\n \| sed -e s/\>\ //g', @")<CR>zo'>0x`<:echo @a<CR>
+" vmap ttt y'>i <ESC>`<v`>ly :let @a=system('tr -d \\r\\n \| markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
+vmap ttt y'>i <ESC>`<v`>ly :let @a=system('tr -d \\r\\n \| markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
 nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
-vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>zo:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`</tags:<CR>oishorturl: <ESC>$a <ESC>"bpkJ<CR>
-vmap fbp y :let @a=system('sed 1,2d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>
+vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>zo:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bp<CR>`<v`>
+vmap fbp y :let @a=system('sed 1,2d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>zo`<v`>
+vmap pall fbptmb'<2yy'>i <ESC>`<v`>ly :let @a=system('tr -d \\r\\n \| markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
 
 " surrounds
 vmap si y`<i_<ESC>`>la_<ESC>
