@@ -127,11 +127,11 @@ nmap yr yab :echo system('nc localhost 37146', @")<CR>
 nmap yv yw :echo system('nc localhost 37146', @")<CR>
 nmap pr :echo system('nc localhost 37146', @")<CR>
 " vmap ttt y'>i <ESC>`<v`>ly :let @a=system('tr -d \\r\\n \| markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
-vmap ttt y'>i <ESC>`<v`>ly :let @a=system('tr -d \\r\\n \| markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
+vmap ttt y'>i <ESC>`<v`>ly :let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
 nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
-vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>zo:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bp<CR>`<v`>
+vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>zo:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bpkJ<CR>`<v`>
 vmap fbp y :let @a=system('sed 1,2d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>zo`<v`>
-vmap pall fbptmb'<2yy'>i <ESC>`<v`>ly :let @a=system('tr -d \\r\\n \| markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
+vmap pall fbptmb<ESC>`<2yy'>0i <ESC>`<v`>ly:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
 
 " surrounds
 vmap si y`<i_<ESC>`>la_<ESC>

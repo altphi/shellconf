@@ -1,0 +1,15 @@
+#!/bin/sh
+target="/Users/stephen/Documents/vimwiki/inbox.wiki"
+
+# read stdin, or if not present read arg1, or if not present read latest clipboard
+if read -t 0 ; then
+    TEXT=`cat -` ;
+elif [ $# -eq 1 ] ; then
+    TEXT="$1" ;
+else
+    TEXT=`pbpaste` ;
+fi
+
+echo -e "---\n\n" >> "$target"
+echo -e "$TEXT" >> "$target"
+echo -e "\n" >> "$target"
