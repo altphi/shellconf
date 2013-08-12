@@ -76,6 +76,7 @@ alias ll='ls -lhGF'
 alias la='ls -lahGF'
 alias clj='rlwrap clj'
 alias bing='terminal-notifier -message "bing bing"'
+alias coreaudiokill='sudo pkill coreaudiod'
 }
 
 [[ "$SYSTYPE" == "Linux" ]] && {
@@ -97,6 +98,7 @@ alias pg='ps aux | grep -i'
 alias rm='rm -i'
 alias se='sudo -E'
 alias run-me-everywhere='/content/quickcue-bucket/cfmgmt/run-me-everywhere'
+alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 
 #}}}
 

@@ -127,17 +127,18 @@ nmap yr yab :echo system('nc localhost 37146', @")<CR>
 nmap yv yw :echo system('nc localhost 37146', @")<CR>
 nmap pr :echo system('nc localhost 37146', @")<CR>
 " vmap ttt y'>i <ESC>`<v`>ly :let @a=system('tr -d \\r\\n \| markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
-vmap ttt y'>i <ESC>`<v`>ly :let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
+vmap ttt y:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
 nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
 vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>zo:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bpkJ<CR>`<v`>
-vmap fbp y :let @a=system('sed 1,2d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>zo`<v`>
-vmap pall fbptmb<ESC>`<2yy'>0i <ESC>`<v`>ly:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
+vmap fbp y :let @a=system('sed 1d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>zo`<v`>
+vmap pall fbptmb<ESC>`<yy:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
 
 " surrounds
 vmap si y`<i_<ESC>`>la_<ESC>
 vmap sp y`<i(<ESC>`>la)<ESC>
 vmap sq y`<i"<ESC>`>la"<ESC>
 vmap s[ y`<i[[<ESC>`>lla]]<ESC>
+vmap s{ y`<i{{{ <ESC>`>o}}}<ESC>
 
 " nmap <leader>) f(%a)<ESC><CR>
 nmap <leader>cd cd %:h<CR>
@@ -152,6 +153,23 @@ endif
 
 nmap <F10> ?(<CR>
 nmap <F11> /(<CR>
+
+" command mode in Greek
+nmap χ x
+nmap ι i
+nmap δς dw
+nmap ξ j
+nmap κ k
+nmap η h
+nmap λ l
+nmap δδ dd
+nmap ο o
+nmap Π P
+nmap π p
+nmap β b
+nmap ¨ :
+nmap α a
+nmap ε e
 
 " }}}
 
