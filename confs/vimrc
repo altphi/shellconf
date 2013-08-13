@@ -1,3 +1,5 @@
+execute pathogen#infect()
+
 " {{{ vim variables
 set tabstop=4
 set shiftwidth=4
@@ -207,12 +209,8 @@ let g:vimwiki_table_mappings = 0
 let g:vimwiki_camel_case = 1
 let g:vimwiki_auto_checkbox = 1
 let g:vimwiki_use_mouse=1
-let g:vimwiki_folding=0 " 0 = off
 nmap <leader>tt <Plug>VimwikiToggleListItem
 let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'default'}]
-" change these two in default file because override does not seem to work ( ~/.vim/bundle/vimwiki/syntax/vimwiki_default.vim )
-let g:vimwiki_rxPreStart = '{{{{'
-let g:vimwiki_rxPreEnd = '}}}}'
 
 " also, for HTML output, change the below in autoload/vimwiki/html.vim (and
 " the lines between these two as well
@@ -240,8 +238,6 @@ inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
 
 " include the .org mode conf
 " so ~/.vim/extra_conf/vim.org.rc
-
-execute pathogen#infect()
 
 " Folding
 set foldmethod=marker
@@ -273,7 +269,6 @@ vnoremap <Space> zf
 "endf
 "set foldtext=CustomFoldText()
 
-set foldtext=MyFoldText()
 function! MyFoldText()
     let loopy = 0
     let foldstart = v:foldstart
@@ -296,6 +291,7 @@ function! MyFoldText()
     let linecount = v:foldend - v:foldstart
     return v:folddashes . " " . linecount . " lines: " . line
 endfunction
+set foldtext=MyFoldText()
 
 
 "imap <C-S> <Plug>snipMateNextOrTrigger
