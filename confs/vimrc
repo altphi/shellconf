@@ -1,63 +1,61 @@
+" vim:tabstop=2:shiftwidth=2:expandtab:foldenable:textwidth=79:foldmethod=indent:foldtext=
+
 execute pathogen#infect()
 
-" {{{ vim variables
-set tabstop=4
-set shiftwidth=4
-set expandtab
-set nocompatible
-set cursorline
-set autoread
-set viminfo='1000,f1,<500
-set showmatch
-set ignorecase smartcase
-set autoindent
-set smartindent
-set shiftround
-set lisp
-set vb t_vb=
-set ruler
-set incsearch
-set virtualedit=all
-set background=dark
-set complete=.,w,b,u,i,]
-set showcmd
-set nohls
-set backspace=indent,eol,start
-set autochdir
-set hidden
-" set hlsearch
-set wildchar=<Tab> wildmenu wildmode=full
-set wildcharm=<C-Z>
-set dictionary=/usr/share/dict/words
-nnoremap <silent> <F7> :NERDTreeToggle<CR>
-nnoremap <silent> <F8> :TagbarToggle<CR>
-nnoremap <F9> :b <C-Z>
-set switchbuf+=usetab,newtab
-set wildignore+=*.swp,*.zip
-let g:ctrlp_working_path_mode = '0'
-let g:ctrlp_user_command = 'find %s'
-" let g:ctrlp_user_command = {
-" \    'types': {
-" \    1: ['.git', 'cd %s && git ls-files'],
-" \    },
-" \    'fallback': 'find %s' }
-let g:ctrlp_max_height = 40
-nnoremap ,t  :CtrlPTag <CR>
+" vim variables
+  set tabstop=2
+  set shiftwidth=2
+  set expandtab
+  set nocompatible
+  set cursorline
+  set autoread
+  set viminfo='1000,f1,<500
+  set showmatch
+  set ignorecase smartcase
+  set autoindent
+  set smartindent
+  set shiftround
+  set lisp
+  set vb t_vb=
+  set ruler
+  set incsearch
+  set virtualedit=all
+  set background=dark
+  set complete=.,w,b,u,i,]
+  set showcmd
+  set nohls
+  set backspace=indent,eol,start
+  set autochdir
+  set hidden
+  " set hlsearch
+  set wildchar=<Tab> wildmenu wildmode=full
+  set wildcharm=<C-Z>
+  set dictionary=/usr/share/dict/words
+  nnoremap <silent> <F7> :NERDTreeToggle<CR>
+  nnoremap <silent> <F8> :TagbarToggle<CR>
+  nnoremap <F9> :b <C-Z>
+  set switchbuf+=usetab,newtab
+  set wildignore+=*.swp,*.zip
+  let g:ctrlp_working_path_mode = '0'
+  let g:ctrlp_user_command = 'find %s'
+  " let g:ctrlp_user_command = {
+  " \    'types': {
+  " \    1: ['.git', 'cd %s && git ls-files'],
+  " \    },
+  " \    'fallback': 'find %s' }
+  let g:ctrlp_max_height = 40
+  nnoremap ,t  :CtrlPTag <CR>
 
-" }}}
-"{{{ Appearance
-colorscheme desert
-syntax on
-
-if &t_Co == 8 && $TERM !~# '^linux'
-  set t_Co=16
-endif
-
-if &encoding ==# 'latin1' && has('gui_running')
-  set encoding=utf-8
-endif
-
-if has("gui_running")
+" Appearance
+  colorscheme desert
+  syntax on
+  if &t_Co == 8 && $TERM !~# '^linux'
+    set t_Co=16
+  endif
+  if &encoding ==# 'latin1' && has('gui_running')
+    set encoding=utf-8
+  endif
+  if has("gui_running")
     set transparency=30
     set guioptions=egmLtA
     set guifont=Menlo\ Regular:h14
@@ -77,50 +75,45 @@ if has("gui_running")
     noremap <D-8> :tabn 8<CR>
     noremap <D-9> :tabn 9<CR>
     noremap <D-0> :tablast<CR>
-endif
-
-if &listchars ==# 'eol:$'
-  set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-  if &termencoding ==# 'utf-8' || &encoding ==# 'utf-8'
-    let &listchars = "tab:\u21e5 ,trail:\u2423,extends:\u21c9,precedes:\u21c7,nbsp:\u00b7"
   endif
-endif
-set list
+  if &listchars ==# 'eol:$'
+    set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
+    if &termencoding ==# 'utf-8' || &encoding ==# 'utf-8'
+      let &listchars = "tab:\u21e5 ,trail:\u2423,extends:\u21c9,precedes:\u21c7,nbsp:\u00b7"
+    endif
+  endif
+  set list
 
-" {{{ OLD: show whitespace at end of lines
-" highlight ExtraWhitespace ctermbg=White guibg=White
-" autocmd ColorScheme * highlight ExtraWhitespace ctermbg=White guibg=White
-" match ExtraWhitespace /\s\+$/
-" autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
-" autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
-" autocmd InsertLeave * match ExtraWhitespace /\s\+$/
-" autocmd BufWinLeave * call clearmatches()
-" hi CursorLine  cterm=NONE guibg=#003399
-" }}}
+  " OLD: show whitespace at end of lines
+  " highlight ExtraWhitespace ctermbg=White guibg=White
+  " autocmd ColorScheme * highlight ExtraWhitespace ctermbg=White guibg=White
+  " match ExtraWhitespace /\s\+$/
+  " autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
+  " autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+  " autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+  " autocmd BufWinLeave * call clearmatches()
+  " hi CursorLine  cterm=NONE guibg=#003399
 
-" {{{ status line
-set statusline=%F         "tail of the filename
-set statusline+=\ \ \ \ %{fugitive#statusline()}
-set statusline+=%=        "left/right separator
-set statusline+=[%{strlen(&fenc)?&fenc:'none'}, "file encoding
-set statusline+=%{&ff}]\  "file format
-set statusline+=%h\       "help file flag
-set statusline+=%m\       "modified flag
-set statusline+=%r\       "read only flag
-set statusline+=%y\       "filetype
-set statusline+=%c,\      "cursor column
-set statusline+=%l/%L     "cursor line/total lines
-set statusline+=\ %P      "percent through file
-set laststatus=2
-
+  " status line
+  set statusline=%F         "tail of the filename
+  set statusline+=\ \ \ \ %{fugitive#statusline()}
+  set statusline+=%=        "left/right separator
+  set statusline+=[%{strlen(&fenc)?&fenc:'none'}, "file encoding
+  set statusline+=%{&ff}]\  "file format
+  set statusline+=%h\       "help file flag
+  set statusline+=%m\       "modified flag
+  set statusline+=%r\       "read only flag
+  set statusline+=%y\       "filetype
+  set statusline+=%c,\      "cursor column
+  set statusline+=%l/%L     "cursor line/total lines
+  set statusline+=\ %P      "percent through file
+  set laststatus=2
 
 if version >= 700
   au InsertEnter * hi StatusLine ctermbg=Black ctermfg=White guibg=LightBlue guifg=Black gui=none
   au InsertLeave * hi StatusLine ctermbg=Brown ctermfg=Black guibg=#c2bfa5 guifg=black gui=none
 endif
-" }}}
-"}}}
-" {{{ Key Bindings & Mappings
+"Key Bindings & Mappings
 map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
 command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
 
@@ -132,7 +125,8 @@ nmap pr :echo system('nc localhost 37146', @")<CR>
 vmap ttt y:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
 nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
 vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>zo:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bpkJ<CR>`<v`>
-vmap fbp y :let @a=system('sed 1d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>zo`<v`>
+map fbp y :let @a=system('sed 1d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>zo`<v`>
+vmap fbs y :let @b=system('markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd status " . shellescape(@b)<CR>`<v`>
 vmap pall fbptmb<ESC>`<yy:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
 
 " surrounds
@@ -141,6 +135,7 @@ vmap sp y`<i(<ESC>`>la)<ESC>
 vmap sq y`<i"<ESC>`>la"<ESC>
 vmap s[ y`<i[[<ESC>`>lla]]<ESC>
 vmap s{ y`<i{{{ <ESC>`>o}}}<ESC>
+nmap ,) f(%a)<ESC>
 
 " nmap <leader>) f(%a)<ESC><CR>
 nmap <leader>cd cd %:h<CR>
@@ -153,8 +148,8 @@ endif
 " open the file under the cursor
 " map gf :!open <C-R><C-P><CR>
 
-nmap <F10> ?(<CR>
-nmap <F11> /(<CR>
+nmap <S-F11> ?(<CR>
+nmap <F11>/(<CR>%/(<CR>
 
 " command mode in Greek
 nmap χ x
@@ -172,6 +167,7 @@ nmap β b
 nmap ¨ :
 nmap α a
 nmap ε e
+nmap υς yw
 
 " }}}
 
@@ -211,6 +207,9 @@ let g:vimwiki_auto_checkbox = 1
 let g:vimwiki_use_mouse=1
 nmap <leader>tt <Plug>VimwikiToggleListItem
 let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'default'}]
+
+
+" vim:nofoldenable
 
 " also, for HTML output, change the below in autoload/vimwiki/html.vim (and
 " the lines between these two as well

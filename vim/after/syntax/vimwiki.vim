@@ -8,7 +8,3 @@ set foldtext=MyFoldText()
 setlocal foldmethod=marker
 setlocal foldexpr=0
 setlocal foldtext=MyFoldText()
-
-:set foldmethod
-:set foldexpr
-:set foldtext
