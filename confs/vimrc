@@ -134,7 +134,8 @@ vmap si y`<i_<ESC>`>la_<ESC>
 vmap sp y`<i(<ESC>`>la)<ESC>
 vmap sq y`<i"<ESC>`>la"<ESC>
 vmap s[ y`<i[[<ESC>`>lla]]<ESC>
-vmap s{ y`<i{{{ <ESC>`>o}}}<ESC>
+vmap s{ y`<i{<ESC>`>la}<ESC>
+vmap sf y`<i{{{ <ESC>`>o}}}<ESC>
 nmap ,) f(%a)<ESC>
 
 " nmap <leader>) f(%a)<ESC><CR>
@@ -149,25 +150,27 @@ endif
 " map gf :!open <C-R><C-P><CR>
 
 nmap <S-F11> ?(<CR>
-nmap <F11>/(<CR>%/(<CR>
+nmap <F11> /(<CR>
 
 " command mode in Greek
-nmap χ x
-nmap ι i
-nmap δς dw
-nmap ξ j
-nmap κ k
-nmap η h
-nmap λ l
-nmap δδ dd
-nmap ο o
-nmap Π P
-nmap π p
-nmap β b
-nmap ¨ :
-nmap α a
-nmap ε e
-nmap υς yw
+if &encoding ==# 'latin1' && has('gui_running')
+  nmap χ x
+  nmap ι i
+  nmap δς dw
+  nmap ξ j
+  nmap κ k
+  nmap η h
+  nmap λ l
+  nmap δδ dd
+  nmap ο o
+  nmap Π P
+  nmap π p
+  nmap β b
+  nmap ¨ :
+  nmap α a
+  nmap ε e
+  nmap υς yw
+endif
 
 " }}}
 
