@@ -126,8 +126,8 @@ vmap ttt y:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo syste
 nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
 vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>zo:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bpkJ<CR>`<v`>
 map fbp y :let @a=system('sed 1d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>zo`<v`>
-vmap fbs y :let @b=system('markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd status " . shellescape(@b)<CR>`<v`>
-vmap pall fbptmb<ESC>`<yy:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
+map fbs y :let @b=system('markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd status " . shellescape(@b)<CR>zo`<v`>
+map pall fbptmb<ESC>`<yy:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
 
 " surrounds
 vmap si y`<i_<ESC>`>la_<ESC>
