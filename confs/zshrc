@@ -5,7 +5,7 @@ readonly SYSTYPE="`uname`"
 [[ "$SYSTYPE" == "Darwin" ]] && {
 readonly PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:/usr/local/share/npm/bin:/usr/local/sbin"
 readonly ANSIBLE_TRANSPORT='ssh'
-readonly HOMEBREW_GITHUB_API_TOKEN="480878dd34587260faabfa735e30e9a382bd8d34"
+. .homebrew_github_api_token
 }
 
 [[ "$SYSTYPE" == "Linux" ]] && {
