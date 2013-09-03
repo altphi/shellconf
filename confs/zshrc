@@ -149,9 +149,12 @@ zstyle ':completion:history-words:*' remove-all-dups yes
 #zle -N history-incremental-search-forward beginning-incremental-search
 
 # complete SSH hosts
-local _myhosts
-_myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
-zstyle ':completion:*' hosts $_myhosts
+if test -s "$HOME/.ssh/known_hosts"
+then
+  local _myhosts
+  _myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
+  zstyle ':completion:*' hosts $_myhosts
+fi
 
 #}}}
 
