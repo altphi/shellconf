@@ -12,8 +12,8 @@ readonly ANSIBLE_TRANSPORT='ssh'
 readonly PATH=$PATH:/usr/local/sbin:$HOME/bin
 }
 
-EDITOR=vi
-GIT_EDITOR=vi
+EDITOR=vim
+GIT_EDITOR=vim
 HISTSIZE=1000
 SAVEHIST=1000
 HISTFILE=~/.zhistory
@@ -68,10 +68,11 @@ p=~/proj/clojure-sandbox/src/clojure_sandbox
 if hash mvim 2>/dev/null
 then
     alias mvim='mvim --remote-tab'
-    alias vi='mvim'
+#    alias vi='vim'
 fi
 
-alias vim='vi'
+alias vi='/usr/bin/vim'
+alias vim='/usr/bin/vim'
 alias ls='ls -GF'
 alias ll='ls -lhGF'
 alias la='ls -lahGF'

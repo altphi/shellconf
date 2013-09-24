@@ -3,7 +3,7 @@ UN=`cat ~/.bitly-un`
 AK=`cat ~/.bitly-apikey`
 
 # read stdin, or if not present read arg1, or if not present read latest clipboard
-if read -t 0 ; then
+if ! [[ -t 0 ]] ; then
     URL=`cat -` ;
 elif [ $# -eq 1 ] ; then
     URL="$1" ;

@@ -37,6 +37,7 @@ execute pathogen#infect()
   set switchbuf+=usetab,newtab
   set wildignore+=*.swp,*.zip
   let g:ctrlp_working_path_mode = '0'
+  let g:ctrlp_by_filename = 1
   let g:ctrlp_user_command = 'find %s'
   " let g:ctrlp_user_command = {
   " \    'types': {
@@ -59,6 +60,7 @@ execute pathogen#infect()
     set transparency=30
     set guioptions=egmLtA
     set guifont=Menlo\ Regular:h14
+    "set guifont=Source\ Code\ Pro:h14
     set fuoptions=maxvert,maxhorz
     au GUIEnter * set fullscreen
 
@@ -153,7 +155,7 @@ nmap <S-F11> ?(<CR>
 nmap <F11> /(<CR>
 
 " command mode in Greek
-if &encoding ==# 'latin1' && has('gui_running')
+if has('gui_running')
   nmap χ x
   nmap ι i
   nmap δς dw
@@ -166,10 +168,12 @@ if &encoding ==# 'latin1' && has('gui_running')
   nmap Π P
   nmap π p
   nmap β b
+  nmap Β B
   nmap ¨ :
   nmap α a
   nmap ε e
   nmap υς yw
+  nmap ρ r
 endif
 
 " }}}
