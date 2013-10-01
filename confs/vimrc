@@ -67,9 +67,13 @@ execute pathogen#infect()
     " gvim tab switching
     :macm Window.Select\ Previous\ Tab  key=<D-Left>
     :macm Window.Select\ Next\ Tab  key=<D-Right>
-    noremap <D-1> :tabn 1<CR>
-    noremap <D-2> :tabn 2<CR>
-    noremap <D-3> :tabn 3<CR>
+    " use this for apple key + number: noremap <D-1> :tabn 1<CR>
+  endif
+    noremap <C-N> :tabprevious<CR>
+    noremap <C-P> :tabNext<CR>
+    noremap <C-N> :tabn 1<CR>
+    noremap <C-2> :tabn 2<CR>
+    noremap <C-3> :tabn 3<CR>
     noremap <D-4> :tabn 4<CR>
     noremap <D-5> :tabn 5<CR>
     noremap <D-6> :tabn 6<CR>
@@ -77,7 +81,6 @@ execute pathogen#infect()
     noremap <D-8> :tabn 8<CR>
     noremap <D-9> :tabn 9<CR>
     noremap <D-0> :tablast<CR>
-  endif
   if &listchars ==# 'eol:$'
     set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
     if &termencoding ==# 'utf-8' || &encoding ==# 'utf-8'
@@ -119,17 +122,20 @@ endif
 map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
 command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
 
+vmap YY y:echo system('pbcopy', @")<CR>
 nmap yc "*yy
 nmap yr yab :echo system('nc localhost 37146', @")<CR>
 nmap yv yw :echo system('nc localhost 37146', @")<CR>
 nmap pr :echo system('nc localhost 37146', @")<CR>
 " vmap ttt y'>i <ESC>`<v`>ly :let @a=system('tr -d \\r\\n \| markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
 vmap ttt y:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
-nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
-vmap tmb y :echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>zo:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bpkJ<CR>`<v`>
-map fbp y :let @a=system('sed 1d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>zo`<v`>
-map fbs y :let @b=system('markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd status " . shellescape(@b)<CR>zo`<v`>
+"nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
+nmap ybb viWx:let @a=system('sed "s/&/\%26/g"', @")<CR>:let @b=system('~/bin/bitly', @a)<CR>"bp
+vmap tmb y:echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bpkJ<CR>`<v`>
+map fbp y:let @a=system('sed 1d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "\!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>`<v`>
+map fbs y:let @b=system('markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd status " . shellescape(@b)<CR>`<v`>
 map pall fbptmb<ESC>`<yy:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
+map fff ?{{<CR>i{<ESC>
 
 " surrounds
 vmap si y`<i_<ESC>`>la_<ESC>
@@ -155,7 +161,7 @@ nmap <S-F11> ?(<CR>
 nmap <F11> /(<CR>
 
 " command mode in Greek
-if has('gui_running')
+" if has('gui_running')
   nmap χ x
   nmap ι i
   nmap δς dw
@@ -174,7 +180,7 @@ if has('gui_running')
   nmap ε e
   nmap υς yw
   nmap ρ r
-endif
+" endif
 
 " }}}
 
@@ -249,6 +255,11 @@ inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
 set foldmethod=marker
 nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
 vnoremap <Space> zf
+
+" see http://vim.wikia.com/wiki/Keep_folds_closed_while_inserting_text
+autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
+autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
+
 " vim custom fold display function
 " {{{
 " function! CustomFoldText()
