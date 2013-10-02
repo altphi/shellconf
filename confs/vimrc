@@ -59,7 +59,8 @@ execute pathogen#infect()
   if has("gui_running")
     set transparency=30
     set guioptions=egmLtA
-    set guifont=Menlo\ Regular:h14
+    " set guifont=Menlo\ Regular:h16
+    set guifont=Inconsolata:h22
     "set guifont=Source\ Code\ Pro:h14
     set fuoptions=maxvert,maxhorz
     au GUIEnter * set fullscreen
@@ -255,6 +256,9 @@ inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
 set foldmethod=marker
 nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
 vnoremap <Space> zf
+
+" leave insert mode for new buffers
+autocmd BufNewFile * stopinsert
 
 " see http://vim.wikia.com/wiki/Keep_folds_closed_while_inserting_text
 autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
