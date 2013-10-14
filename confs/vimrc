@@ -1,5 +1,3 @@
-" vim:tabstop=2:shiftwidth=2:expandtab:foldenable:textwidth=79:foldmethod=indent:foldtext=
-
 execute pathogen#infect()
 
 " vim variables
@@ -59,8 +57,7 @@ execute pathogen#infect()
   if has("gui_running")
     set transparency=30
     set guioptions=egmLtA
-    " set guifont=Menlo\ Regular:h16
-    set guifont=Inconsolata:h22
+    set guifont=Menlo\ Regular:h16
     "set guifont=Source\ Code\ Pro:h14
     set fuoptions=maxvert,maxhorz
     au GUIEnter * set fullscreen
@@ -70,11 +67,9 @@ execute pathogen#infect()
     :macm Window.Select\ Next\ Tab  key=<D-Right>
     " use this for apple key + number: noremap <D-1> :tabn 1<CR>
   endif
-    noremap <C-N> :tabprevious<CR>
-    noremap <C-P> :tabNext<CR>
-    noremap <C-N> :tabn 1<CR>
-    noremap <C-2> :tabn 2<CR>
-    noremap <C-3> :tabn 3<CR>
+    noremap <D-1> :tabn 1<CR>
+    noremap <D-2> :tabn 2<CR>
+    noremap <D-3> :tabn 3<CR>
     noremap <D-4> :tabn 4<CR>
     noremap <D-5> :tabn 5<CR>
     noremap <D-6> :tabn 6<CR>
@@ -122,6 +117,9 @@ endif
 "Key Bindings & Mappings
 map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
 command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
+
+map <D-[> <C-W>h
+map <D-]> <C-W>l
 
 vmap YY y:echo system('pbcopy', @")<CR>
 nmap yc "*yy
@@ -314,9 +312,7 @@ function! MyFoldText()
 endfunction
 set foldtext=MyFoldText()
 
-
 "imap <C-S> <Plug>snipMateNextOrTrigger
 "smap <C-S> <Plug>snipMateNextOrTrigger
-"
 imap <C-J> <Plug>snipMateNextOrTrigger
 smap <C-J> <Plug>snipMateNextOrTrigger
