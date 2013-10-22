@@ -1,0 +1,7 @@
+#!/bin/sh
+apikey=`cat ~/.tumblr-apikey`
+alias json=/usr/local/share/npm/bin/json
+
+latesturl=`curl -s "https://api.tumblr.com/v2/blog/wisdomdrought.tumblr.com/posts?api_key=${apikey}&limit=1" | json response.posts | json -ga post_url`;
+
+echo "$latesturl"
