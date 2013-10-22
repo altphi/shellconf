@@ -1,3 +1,0 @@
-#!/bin/sh
-
-sed -i.orig -e 's/PermitRootLogin\ no/PermitRootLogin\ yes/g;s/PasswordAuthentication\ no/PasswordAuthentication\ yes/g' /etc/ssh/sshd_config 

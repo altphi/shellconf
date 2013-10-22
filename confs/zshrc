@@ -49,7 +49,7 @@ GREP_OPTIONS='--binary-files=without-match --directories=skip'
 #}}}
 
 #{{{ directory shortcuts
-p=/content/quickcue-bucket/platform
+p=/content/quickcue-bucket/platform/src/platform
 b=/content/quickcue-bucket
 d=/content/quickcue-bucket/deploy
 h=/content/quickcue-bucket/cfmgmt/ansible/hosts
