@@ -32,19 +32,16 @@ unset PAGER
 autoload -U compinit && compinit
 GREP_OPTIONS='--binary-files=without-match --directories=skip'
 
-[[ "$SYSTYPE" == "Darwin" ]] && {
-    taillog () {
-    tail -f "/var/log/$1/current"
-    }
-    taillog_sans_date () {
-    tail -f "/var/log/$1/current" | perl -p -e 's/^.*?\ //g'
-    }
-    autoload -U compinit && compinit
-    compdef 'compadd -- `/bin/ls /service/`' taillog
-    compdef 'compadd -- `/bin/ls /service/`' taillog_without_date
-    compdef 'compadd -P /service/ -- `/bin/ls /service/`' svstat
-    compdef 'compadd -P /service/ -- `/bin/ls /service/`' svc
+taillog () {
+tail -f "/var/log/$1/current"
 }
+taillog_sans_date () {
+tail -f "/var/log/$1/current" | perl -p -e 's/^.*?\ //g'
+}
+compdef 'compadd -- `/bin/ls /service/`' taillog
+compdef 'compadd -- `/bin/ls /service/`' taillog_without_date
+compdef 'compadd -P /service/ -- `/bin/ls /service/`' svstat
+compdef 'compadd -P /service/ -- `/bin/ls /service/`' svc
 
 #}}}
 
@@ -58,6 +55,7 @@ h=/content/quickcue-bucket/cfmgmt/ansible/hosts
 l="/Users/stephen/Documents/CUA-Teaching/LAT 505B Fall '13"
 sc=~/Documents/scripts
 c=/content/quickcue-bucket/control-panel/src/control_panel
+q=~/Documents/Quickcue
 }
 #}}}
 

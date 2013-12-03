@@ -12,7 +12,7 @@ set titlestring=
 
 sty -n=Lexica -append artflx.uchicago.edu,perseus.uchicago.edu,repos.alpheios.net,gargantua.lib.uchicago.edu i { background-color: LightSteelBlue; }
 
-" map <C-l> :tabo<CR>
+map <C-l> :tabo<CR>
 map <C-h> f13<CR>
 map <C-t> gi
 map <C-r> f5
