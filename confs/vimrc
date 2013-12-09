@@ -48,6 +48,8 @@ execute pathogen#infect()
   " \    'fallback': 'find %s' }
   let g:ctrlp_max_height = 40
   nnoremap ,t  :CtrlPTag <CR>
+  filetype plugin indent on
+  let g:clojure_align_multiline_strings = 1
 
 " Appearance
   colorscheme desert
@@ -64,7 +66,7 @@ execute pathogen#infect()
     set guifont=Menlo\ Regular:h16
     "set guifont=Source\ Code\ Pro:h14
     set fuoptions=maxvert,maxhorz
-    au GUIEnter * set fullscreen
+    " au GUIEnter * set fullscreen
 
     " gvim tab switching
     :macm Window.Select\ Previous\ Tab  key=<D-Left>
