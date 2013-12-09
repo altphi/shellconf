@@ -1,0 +1,14 @@
+#!/bin/sh
+if [[ ${SYSTYPE-x} == x ]]; then
+  declare -r SYSTYPE=`uname`
+fi
+
+[[ "$SYSTYPE" == "Darwin" ]] && test -s /etc/bashrc && source /etc/bashrc
+
+[[ "$SYSTYPE" == "Linux" ]] && test -s /etc/bash.bashrc && /etc/bash.bashrc
+
+export PROMPT_COMMAND=__prompt_command
+
+function __prompt_command() {
+PS1="\u@\h:\w\n\! : $? % "
+}
