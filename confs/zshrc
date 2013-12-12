@@ -72,36 +72,36 @@ fi
 
 alias vi='/usr/bin/vim'
 alias vim='/usr/bin/vim'
-alias ls='ls -GF'
-alias ll='ls -lhGF'
-alias la='ls -lahGF'
+alias ls=' ls -GF'
+alias ll=' ls -lhGF'
+alias la=' ls -lahGF'
 alias clj='rlwrap clj'
 alias bing='terminal-notifier -message "bing bing"'
 alias coreaudiokill='sudo pkill coreaudiod'
 }
 
 [[ "$SYSTYPE" == "Linux" ]] && {
-alias ls='ls -F -b -T 0 --color=auto'
-alias ll='ls -F -b -T 0 --color=auto -l'
-alias la='ls -F -b -T 0 --color=auto -la'
+alias ls=' ls -F -b -T 0 --color=auto'
+alias ll=' ls -F -b -T 0 --color=auto -l'
+alias la=' ls -F -b -T 0 --color=auto -la'
 }
 
-alias b='git branch -avv'
-alias s='git status --ignore-submodules'
-alias g='ls -a | xargs grep --color=auto ';
+alias b=' git branch -avv'
+alias s=' git status --ignore-submodules'
+alias g=' ls -a | xargs grep --color=auto ';
 alias gc='git checkout'
 alias gl='git log --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"'
 alias grep='grep --color=auto'
 alias info='info --vi-keys'
-alias l='ll'
+alias l=' ll'
 alias lg='ls -lah | grep -i'
 alias pg='ps aux | grep -i'
 alias rm='rm -i'
 alias se='sudo -E'
 alias run-me-everywhere='/content/quickcue-bucket/cfmgmt/run-me-everywhere'
 alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
-alias d='dirs -pvl'
-alias h='history 0'
+alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
+alias h=' history 0'
 
 #}}}
 
@@ -123,6 +123,15 @@ setopt PUSHD_TO_HOME
 setopt PUSHD_IGNOREDUPS
 #alias -- +='pushd +0'
 #alias -- -='pushd -1'
+DIRSTACKFILE=~/.zdirs
+# this bit + chpwd() is for directory stack persistent across multiple shells
+if [[ -f $DIRSTACKFILE ]] && [[ $#dirstack -eq 0 ]]; then
+  dirstack=( ${(f)"$(< $DIRSTACKFILE)"} )
+  [[ -d $dirstack[1] ]] && cd $dirstack[1] && cd $OLDPWD
+fi
+chpwd() {
+  print -l $PWD ${(u)dirstack} >$DIRSTACKFILE
+}
 #}}}
 
 #{{{ completion
@@ -228,4 +237,8 @@ function precmd {
 
 shuffle() {
     awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8-
+}
+
+zman() {
+    PAGER="less -g -s '+/^       "$1"'" man zshall
 }
