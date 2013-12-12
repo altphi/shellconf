@@ -100,6 +100,8 @@ alias rm='rm -i'
 alias se='sudo -E'
 alias run-me-everywhere='/content/quickcue-bucket/cfmgmt/run-me-everywhere'
 alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
+alias d='dirs -pvl'
+alias h='history 0'
 
 #}}}
 
@@ -119,8 +121,8 @@ setopt PUSHD_MINUS
 setopt PUSHD_SILENT
 setopt PUSHD_TO_HOME
 setopt PUSHD_IGNOREDUPS
-alias -- +='pushd +0'
-alias -- -='pushd -1'
+#alias -- +='pushd +0'
+#alias -- -='pushd -1'
 #}}}
 
 #{{{ completion
