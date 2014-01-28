@@ -133,7 +133,7 @@ execute pathogen#infect()
   vmap ttt y:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
   "nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
   nmap ybb viWx:let @a=system('sed "s/&/\%26/g"', @")<CR>:let @b=system('~/bin/bitly', @a)<CR>"bp
-  vmap tmb y:echo system('tumblr pipe --host=wisdomdrought.tumblr.com', @")<CR>:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bpkJ<CR>`<v`>
+  vmap tmb y:echo system('tumblr pipe --host=altphi.tumblr.com', @")<CR>:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bpkJ<CR>`<v`>
   map fbp y:let @a=system('sed 1d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "\!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>`<v`>
   map fbs y:let @b=system('markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd status " . shellescape(@b)<CR>`<v`>
   map pall fbptmb<ESC>`<yy:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>

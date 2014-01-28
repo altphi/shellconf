@@ -3,9 +3,20 @@ setopt ALL_EXPORT
 readonly SYSTYPE="`uname`"
 
 [[ "$SYSTYPE" == "Darwin" ]] && {
-readonly PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:/usr/local/share/npm/bin:/usr/local/sbin"
+readonly PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:/usr/local/share/npm/bin:/usr/local/sbin:/Applications/Racket/bin"
 readonly ANSIBLE_TRANSPORT='ssh'
 . $HOME/.homebrew_github_api_token
+
+. $HOME/.ec2/credential-file-path
+export JAVA_HOME="$(/usr/libexec/java_home)"
+export EC2_PRIVATE_KEY="$(/bin/ls "$HOME"/.ec2/pk-*.pem | /usr/bin/head -1)"
+export EC2_CERT="$(/bin/ls "$HOME"/.ec2/cert-*.pem | /usr/bin/head -1)"
+export EC2_HOME="/usr/local/Cellar/ec2-api-tools/1.6.12.0/libexec"
+export AWS_RDS_HOME="/usr/local/Cellar/rds-command-line-tools/1.14.001/libexec"
+export AWS_CREDENTIAL_FILE="$HOME/.ec2/credential-file-path"
+export AWS_DEFAULT_REGION="us-west-1"
+export EC2_URL="https://ec2.us-west-1.amazonaws.com"
+
 }
 
 [[ "$SYSTYPE" == "Linux" ]] && {
@@ -19,7 +30,6 @@ SAVEHIST=1000
 HISTFILE=~/.zhistory
 
 #{{{ misc
-setopt AUTO_MENU
 setopt AUTO_CD
 setopt CDABLE_VARS
 setopt SHARE_HISTORY
@@ -102,6 +112,7 @@ alias run-me-everywhere='/content/quickcue-bucket/cfmgmt/run-me-everywhere'
 alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
+alias ec2d='ec2-describe-instances'
 
 #}}}
 
@@ -135,18 +146,11 @@ chpwd() {
 #}}}
 
 #{{{ completion
-setopt MENU_COMPLETE
 zmodload -i zsh/complist
 zstyle ':completion:*' list-colors '$LSCOLORS'
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh/cache
 zstyle ':completion:*' menu select=2
-#bindkey '^i' expand-or-complete
-bindkey '^i' menu-expand-or-complete
-bindkey -M menuselect '^o' accept-and-infer-next-history
-zstyle ':completion:history-words:*' list no
-zstyle ':completion:history-words:*' menu yes
-zstyle ':completion:history-words:*' remove-all-dups yes
 
 #autoload -U incremental-complete-word
 #zle -N incremental-complete-word

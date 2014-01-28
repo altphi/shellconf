@@ -1,0 +1,11 @@
+#!/bin/sh
+set -x
+
+key="$HOME/.ec2/aws-${USER}.pem"
+host=`ec2-describe-instances $1 | grep '^INSTANCE' | cut -f4`
+
+if [[ "$2" == "admin" ]]; then
+  host="admin@${host}"
+fi
+
+mosh --ssh="ssh -i $key" ${host}
