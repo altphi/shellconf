@@ -213,6 +213,7 @@ bindkey "^K" kill-line
 bindkey "^P" up-line-or-history
 bindkey "^R" history-incremental-search-backward
 bindkey "^Y" yank
+bindkey "^[/" _history-complete-older
 #}}}
 
 #{{{ watch settings
