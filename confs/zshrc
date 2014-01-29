@@ -100,6 +100,7 @@ alias s=' svstat /service/*'
 alias b=' git branch -avv'
 alias g=' ls -a | xargs grep --color=auto ';
 alias gc='git checkout'
+alias gp='git pull'
 alias gs=' git status --ignore-submodules'
 alias gl=' git log --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"'
 alias grep='grep --color=auto'
