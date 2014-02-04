@@ -56,7 +56,8 @@ compdef 'compadd -P /service/ -- `/bin/ls /service/`' svc
 #}}}
 
 #{{{ directory shortcuts
-p=/content/quickcue-bucket/platform/src/platform
+p=/content/quickcue-bucket/platform/
+ps=/content/quickcue-bucket/platform/src/platform
 b=/content/quickcue-bucket
 d=/content/quickcue-bucket/deploy
 h=/content/quickcue-bucket/cfmgmt/ansible/hosts
