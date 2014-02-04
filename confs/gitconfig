@@ -1,5 +1,5 @@
 [user]
-	email = stephen@quickcue.com
+	email = beck@j38.net
 	name = Stephen Beck
 [push]
 	default = current
@@ -7,3 +7,6 @@
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 [core]
 	editor = /usr/bin/vi
+[filter "media"]
+	clean = git-media-clean %f
+	smudge = git-media-smudge %f
