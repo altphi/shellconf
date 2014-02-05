@@ -262,3 +262,7 @@ zman() {
     PAGER="less -g -s '+/^       "$1"'" man zshall
 }
 
+fname() {
+  echo "searching for *${1}*"
+  find . -iname "*${1}*"
+}
