@@ -2,6 +2,8 @@
 setopt ALL_EXPORT
 readonly SYSTYPE="`uname`"
 
+
+#{{{ Darwin Only
 [[ "$SYSTYPE" == "Darwin" ]] && {
 readonly PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:/usr/local/share/npm/bin:/usr/local/sbin:/Applications/Racket/bin"
 readonly ANSIBLE_TRANSPORT='ssh'
@@ -22,10 +24,13 @@ rightnow() {
 }
 
 }
+#}}}
 
+#{{{ Linux Only
 [[ "$SYSTYPE" == "Linux" ]] && {
 readonly PATH=$PATH:/usr/local/sbin:$HOME/bin
 }
+#}}}
 
 EDITOR=vim
 GIT_EDITOR=vim
@@ -65,11 +70,11 @@ ps=/content/quickcue-bucket/platform/src/platform
 b=/content/quickcue-bucket
 d=/content/quickcue-bucket/deploy
 h=/content/quickcue-bucket/cfmgmt/ansible/hosts
+c=/content/quickcue-bucket/control-panel/src/control_panel
 
 [[ "$SYSTYPE" == "Darwin" ]] && {
 l="/Users/stephen/Documents/CUA-Teaching/LAT 505B Fall '13"
 sc=~/Documents/scripts
-c=/content/quickcue-bucket/control-panel/src/control_panel
 q=~/Documents/Quickcue
 sicp=~/code/sicp/src/sicp
 }
