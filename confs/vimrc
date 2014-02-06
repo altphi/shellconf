@@ -50,6 +50,8 @@ execute pathogen#infect()
   nnoremap ,t  :CtrlPTag <CR>
   filetype plugin indent on
   let g:clojure_align_multiline_strings = 1
+  let g:clojure_align_subforms = 1
+"  let g:clojure_fold = 1
 
 " Appearance
   colorscheme desert

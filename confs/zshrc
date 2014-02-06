@@ -258,6 +258,16 @@ function precmd {
 }
 # }}}
 
+#{{{ persistent ssh socket location
+SOCK="/tmp/ssh-agent-$USER-tmux"
+if test $SSH_AUTH_SOCK && [ $SSH_AUTH_SOCK != $SOCK ]
+then
+    rm -f "$SOCK"
+    ln -sf "$SSH_AUTH_SOCK" "$SOCK"
+    export SSH_AUTH_SOCK="$SOCK"
+fi
+
+#}}}
 shuffle() {
     awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8-
 }
