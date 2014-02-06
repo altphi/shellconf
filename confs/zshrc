@@ -46,6 +46,7 @@ setopt HIST_NO_STORE
 setopt nohup
 setopt EXTENDED_GLOB
 setopt HIST_IGNORE_SPACE
+setopt interactivecomments
 unset MANPATH
 unset PAGER
 autoload -U compinit && compinit
@@ -98,12 +99,16 @@ alias la=' ls -lahGF'
 alias clj='rlwrap clj'
 alias bing=' terminal-notifier -message "bing bing"'
 alias coreaudiokill='sudo pkill coreaudiod'
+rgrep () {
+  grep --color=auto -r "$1" .
+  }
 }
 
 [[ "$SYSTYPE" == "Linux" ]] && {
 alias ls=' ls -F -b -T 0 --color=auto'
 alias ll=' ls -F -b -T 0 --color=auto -l'
 alias la=' ls -F -b -T 0 --color=auto -la'
+alias rgrep='rgrep --color=auto'
 }
 
 alias s=' svstat /service/*'
@@ -115,7 +120,6 @@ alias gd=' git diff'
 alias gs=' git status --ignore-submodules'
 alias gl=' git log --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"'
 alias grep='grep --color=auto'
-alias rgrep='rgrep --color=auto'
 alias info='info --vi-keys'
 alias l=' ll'
 alias lg=' ls -lah | grep -i'
