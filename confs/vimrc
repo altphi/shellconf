@@ -5,6 +5,7 @@ execute pathogen#infect()
   command! Platform :execute PlatformEdit()
 
 " vim variables
+  set term=xterm-256color
   set tabstop=2
   set shiftwidth=2
   set expandtab
@@ -144,6 +145,7 @@ execute pathogen#infect()
   map fff ?{{<CR>i{<ESC>
   " yank current file's directory
   map yfd :let @a = expand("%:p:h")<CR>:echo system('pbcopy', @a)<CR>
+  nmap <F10> ?(<CR>
   nmap <S-F11> ?(<CR>
   nmap <F11> /(<CR>
   imap <C-J> <Plug>snipMateNextOrTrigger
