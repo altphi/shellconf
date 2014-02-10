@@ -153,7 +153,7 @@ execute pathogen#infect()
   smap <C-J> <Plug>snipMateNextOrTrigger
   nmap H :h <C-R>=expand("<cword>")<CR><CR>
   nmap ' <Plug>(easymotion-bd-f)(
-  nmap ; <Plug>(easymotion-bd-jk)
+  nmap <M-Space> <Plug>(easymotion-bd-jk)
 
 " surrounds
   vmap si y`<i_<ESC>`>la_<ESC>
