@@ -122,6 +122,10 @@ execute pathogen#infect()
     au InsertEnter * hi StatusLine ctermbg=Black ctermfg=White guibg=LightBlue guifg=Black gui=none
     au InsertLeave * hi StatusLine ctermbg=Brown ctermfg=Black guibg=#c2bfa5 guifg=black gui=none
   endif
+  hi link EasyMotionTarget ErrorMsg
+  hi link EasyMotionShade Comment
+  hi link EasyMotionTarget2First MatchParen
+  hi link EasyMotionTarget2Second MatchParen
 
 " Key Bindings & Mappings
   map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
@@ -154,6 +158,7 @@ execute pathogen#infect()
   nmap H :h <C-R>=expand("<cword>")<CR><CR>
   nmap ' <Plug>(easymotion-bd-f)(
   nmap <M-Space> <Plug>(easymotion-bd-jk)
+  nmap <M-F> <Plug>(easymotion-bd-f)
 
 " surrounds
   vmap si y`<i_<ESC>`>la_<ESC>
