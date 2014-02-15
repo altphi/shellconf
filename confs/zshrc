@@ -136,7 +136,7 @@ alias run-me-everywhere='/content/quickcue-bucket/cfmgmt/run-me-everywhere'
 alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
-alias ec2d='ec2-describe-instances'
+alias ta=' tmux attach'
 
 #}}}
 
