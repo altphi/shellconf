@@ -23,6 +23,12 @@ rightnow() {
   echo "$@" > /etc/motd
 }
 
+arinwhois() {
+  ( cd /usr/local/arinr/bin
+  ./arininfo "$1"
+  )
+}
+
 }
 #}}}
 
