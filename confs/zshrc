@@ -19,15 +19,24 @@ export AWS_CREDENTIAL_FILE="$HOME/.ec2/credential-file-path"
 export AWS_DEFAULT_REGION="us-west-1"
 export EC2_URL="https://ec2.us-west-1.amazonaws.com"
 
-rightnow() {
-  echo "$@" > /etc/motd
+start() {
+  echo "$@" > "$HOME"/.motd
+  svc -ut /service/oneminute
 }
+
+stop() {
+  svc -d /service/oneminute
+  echo "" > "$HOME"/.motd
+}
+
+test -s "$HOME"/.motd && cat "$HOME"/.motd
 
 arinwhois() {
   ( cd /usr/local/arinr/bin
   ./arininfo "$1"
   )
 }
+
 
 }
 #}}}
