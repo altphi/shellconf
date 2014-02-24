@@ -1,5 +1,5 @@
 #!/bin/sh
-target="/Users/stephen/Documents/vimwiki/inbox.wiki"
+target="~/Documents/vimwiki/inbox.wiki"
 
 # copy from clipboard only
 TEXT=`pbpaste` ;
