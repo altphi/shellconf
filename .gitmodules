@@ -61,3 +61,6 @@
 [submodule "vim/bundle/vim-speeddating"]
 	path = vim/bundle/vim-speeddating
 	url = git@github.com:tpope/vim-speeddating.git
+[submodule "vim/bundle/auto-pairs"]
+	path = vim/bundle/auto-pairs
+	url = git@github.com:jiangmiao/auto-pairs.git
