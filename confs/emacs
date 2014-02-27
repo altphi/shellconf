@@ -1,0 +1,120 @@
+;; -*- mode: elisp -*-
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(initial-frame-alist (quote ((fullscreen . maximized))))
+ '(org-agenda-files (quote ("/content/quickcue-bucket/doc/services-spec.org")))
+ '(safe-local-variable-values (quote ((org-hierarchical-todo-statistics) (org-hierarchical-checkbox-statistics) (org-adapt-indentation)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+(set-face-attribute 'default nil :height 160)
+(menu-bar-mode -1)
+;;(add-to-list 'load-path "~/.emacs.d/elpa")  
+(add-to-list 'load-path "~/.emacs.d/elpa/evil-1.0.8")  
+(require 'evil)  
+(evil-mode 1)
+;(require 'evil-visualstar)
+
+(add-to-list 'load-path "~/.emacs.d/elpa/undo-tree-0.6.5")
+(require 'undo-tree)
+
+(global-set-key "\C-w" nil)
+(global-set-key (kbd "C-w <left>")  'windmove-left)
+(global-set-key (kbd "C-w <right>") 'windmove-right)
+(global-set-key (kbd "C-w <up>")    'windmove-up)
+(global-set-key (kbd "C-w <down>")  'windmove-down)
+
+(global-set-key (kbd "C-w h")  'windmove-left)
+(global-set-key (kbd "C-w l") 'windmove-right)
+(global-set-key (kbd "C-w k")    'windmove-up)
+(global-set-key (kbd "C-w j")  'windmove-down)
+
+(global-set-key (kbd "C-x C-b") 'ace-jump-buffer)
+
+(winner-mode)
+
+(global-set-key (kbd "C-c a") 'org-agenda)
+
+(show-paren-mode)
+
+(defun kill-other-buffers ()
+  "Kill all other buffers."
+  (interactive)
+  (mapc 'kill-buffer 
+	(delq (current-buffer) (buffer-list))))
+
+(require 'package) 
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/")) 
+(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
+(package-initialize)
+
+;(load-theme 'solarized-dark t)
+;(load-theme 'afternoon t)
+;(load-theme 'zenburn t)
+;(load-theme 'color-theme-sanityinc-tomorrow-day)
+;(color-theme-sanityinc-tomorrow-night)
+;(load-theme 'color-theme-sanityinc-tomorrow-bright)
+;(load-theme 'color-theme-sanityinc-tomorrow-eighties)
+;(add-to-list 'load-path "~/.emacs.d/elpa/base16-theme-20130413.1655")
+;(load-theme 'base16-default t)
+;(load-theme 'base16-tomorrow t)
+
+(if window-system
+    (load-theme 'base16-tomorrow t)
+)
+
+(add-hook 'after-init-hook (lambda ()
+      (when (fboundp 'auto-dim-other-buffers-mode)
+        (auto-dim-other-buffers-mode t))))
+
+(setq savehist-file "~/.emacshistory")
+(savehist-mode 1)
+
+(add-to-list 'exec-path "/usr/local/bin")
+(add-to-list 'load-path "/usr/local/Cellar/mu/0.9.9.5/share/emacs/site-lisp/mu4e")
+(require 'mu4e)
+(setq mu4e-maildir       "/Users/stephen/Library/offline-imap/j38"  ;; top-level Maildir
+      mu4e-sent-folder   "/sent"       ;; folder for sent messages
+      mu4e-drafts-folder "/drafts"     ;; unfinished messages
+      mu4e-trash-folder  "/trash" 
+      mu4e-html2text-command "w3m -dump -T text/html"
+      mu4e-get-mail-command "offlineimap"
+      mu4e-update-interval 300)
+
+;; ace-jump
+(autoload
+  'ace-jump-mode
+  "ace-jump-mode"
+  "Emacs quick move minor mode"
+  t)
+(autoload
+  'ace-jump-mode-pop-mark
+  "ace-jump-mode"
+  "Ace jump back:-)"
+  t)
+(define-key evil-normal-state-map (kbd "SPC") 'ace-jump-mode)
+
+(add-to-list 'load-path "~/srcs/evil-org-mode")
+(require 'evil-org)
+
+;;(add-to-list 'evil-emacs-state-modes "org-mode")
+
+(add-hook 'org-mode-hook (define-key evil-normal-state-map (kbd "TAB") 'org-cycle))
+
+(require 'remember)
+
+(require 'mouse)
+(xterm-mouse-mode t)
+(defun track-mouse (e))
+(setq mouse-sel-mode t)
+
+(require 'surround)
+(global-surround-mode 1)

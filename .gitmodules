@@ -58,3 +58,6 @@
 [submodule "vim/bundle/vim-easymotion"]
 	path = vim/bundle/vim-easymotion
 	url = git@github.com:Lokaltog/vim-easymotion.git
+[submodule "vim/bundle/vim-speeddating"]
+	path = vim/bundle/vim-speeddating
+	url = git@github.com:tpope/vim-speeddating.git

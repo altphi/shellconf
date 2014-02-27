@@ -31,3 +31,8 @@ snippet sh
 	#!/bin/sh
 snippet datecmd
 	readonly pretty_date=`date "+%y-%m-%d_%H-%M-%S"`;
+snippet jot
+	---
+	`system("date +%Y-%m-%d")`
+	${1:jots}
+	---

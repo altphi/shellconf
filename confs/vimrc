@@ -69,7 +69,7 @@ execute pathogen#infect()
     set guifont=Menlo\ Regular:h13
     "set guifont=Source\ Code\ Pro:h14
     set fuoptions=maxvert,maxhorz
-    "au GUIEnter * set fullscreen
+    au GUIEnter * set fullscreen
 
     " gvim tab switching
     :macm Window.Select\ Previous\ Tab  key=<D-Left>

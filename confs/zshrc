@@ -103,9 +103,11 @@ sicp=~/code/sicp/src/sicp
 if hash mvim 2>/dev/null
 then
     alias mvim='mvim --remote-tab'
-#    alias vi='vim'
 fi
 
+alias mu4e='emacs -execute "(progn (mu4e) (evil-mode -1))"'
+alias kill-emacs='emacsclient -e "(kill-emacs)"'
+alias e='emacsclient -t'
 alias vi='/usr/bin/vim'
 alias vim='/usr/bin/vim'
 alias ls=' ls -GF'

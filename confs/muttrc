@@ -1,0 +1,104 @@
+set folder           = ~/Library/offline-imap
+set alias_file       = ~/.mutt/alias         # where to store aliases
+set header_cache     = ~/.mutt/cache/headers # where to store headers
+set message_cachedir = ~/.mutt/cache/bodies  # where to store bodies
+set certificate_file = ~/.mutt/certificates  # where to store certs
+set mailcap_path     = ~/.mailcap            # entries for filetypes
+set tmpdir           = ~/.mutt/temp          # where to keep temp files
+set signature        = ~/.mutt/sig           # my signature file
+
+source ~/.mutt/muttrc.mailboxes
+
+folder-hook =j38 'set sendmail="/usr/local/bin/msmtp" ;\
+                  set from=beck@j38.net'
+folder-hook =opentable 'set sendmail="/usr/local/bin/msmtp -a opentable" ;\
+                        set from=sbeck@opentable.com'
+
+# Basic Options --------------------------------------
+set wait_key = no        # shut up, mutt
+set mbox_type = Maildir  # mailbox type
+set timeout = 3          # idle time before scanning
+set mail_check = 0       # minimum time between scans
+unset move               # gmail does that
+set delete               # don't ask, just do
+unset confirmappend      # don't ask, just do!
+set quit                 # don't ask, just do!!
+unset mark_old           # read/new is good enough for me
+set beep_new             # bell on new mails
+set pipe_decode          # strip headers and eval mimes when piping
+set thorough_search      # strip headers and eval mimes before searching
+
+# Sidebar Patch --------------------------------------
+# set sidebar_delim   = '  │'
+# set sidebar_visible = yes
+# set sidebar_width   = 24
+# set sidebar_format  = "%B%* (%N)"
+
+# Status Bar -----------------------------------------
+set status_chars  = " *%A"
+set status_format = "───[ Folder: %f ]───[%r%m messages%?n? (%n new)?%?d? (%d to delete)?%?t? (%t tagged)? ]───%>─%?p?( %p postponed )?───"
+
+# Header Options -------------------------------------
+ignore *                                # ignore all headers
+unignore from: to: cc: date: subject:   # show only these
+unhdr_order *                           # some distros order things by default
+hdr_order from: to: cc: date: subject:  # and in this order
+
+# Accounts -------------------------------------------
+set spoolfile = "+j38/INBOX"
+
+# Color scheme ---------------------------------------
+source ~/.mutt/colors/mutt-colors-solarized-dark-16.muttrc
+
+# Index View -----------------------------------------
+set date_format = "%d/%m/%Y"
+set index_format = "[%Z]  %D  %-20.20F  %s"
+set sort = threads
+set sort_aux = last-date-received
+set sort_browser = reverse-date
+set uncollapse_jump
+set sort_re
+set reply_regexp = "^(([Rr][Ee]?(\[[0-9]+\])?: *)?(\[[^]]+\] *)?)*"
+
+# Pager View -----------------------------------------
+set pager_index_lines = 10
+set pager_context = 3
+set pager_stop
+set menu_scroll
+set tilde
+unset markers
+set quote_regexp = "^( {0,4}[>|:#%]| {0,4}[a-z0-9]+[>|]+)+"
+#alternative_order text/enriched text/plain text text/html
+auto_view text/html text/Html
+
+# Compose View ---------------------------------------
+set realname = "Stephen Beck"
+set envelope_from
+set sig_dashes
+set edit_headers
+set fast_reply
+set askcc
+set fcc_attach
+unset mime_forward
+set forward_format = "Fwd: %s"
+set forward_decode
+set attribution = "On %d, %n wrote:"
+set reply_to
+set reverse_name
+set include
+set forward_quote
+
+# Key Bindings ---------------------------------------
+bind index <tab>    sync-mailbox
+bind compose p postpone-message
+bind index p recall-message
+macro index O "<shell-escape>offlineimap<enter>" "run offline imap to sync all mail"
+macro index C "<copy-message>?<toggle-mailboxes>" "copy a message to a mailbox"
+macro index M "<save-message>?<toggle-mailboxes>" "move a message to a mailbox"
+macro pager \Cu "|urlview<enter>" "call urlview to open links"
+bind generic a noop
+macro index ao <change-folder>+opentable/INBOX
+macro index aj <change-folder>+j38/INBOX
+# bind index \Cn sidebar-next
+# bind index \Cp sidebar-prev
+# bind index \Ce sidebar-open
