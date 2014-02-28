@@ -39,9 +39,10 @@ execute pathogen#infect()
   nnoremap <F9> :b <C-Z>
   set switchbuf+=useopen,usetab
   set wildignore+=*.swp,*.zip
-  let g:ctrlp_working_path_mode = '0'
+  let g:ctrlp_working_path_mode = 'ra'
   let g:ctrlp_by_filename = 1
-  let g:ctrlp_user_command = 'find %s'
+  "let g:ctrlp_user_command = 'find %s'
+  let g:ctrlp_cmd = 'CtrlPMixed'
   " let g:ctrlp_user_command = {
   " \    'types': {
   " \    1: ['.git', 'cd %s && git ls-files'],
