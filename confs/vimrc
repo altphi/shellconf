@@ -56,7 +56,7 @@ execute pathogen#infect()
 "  let g:clojure_fold = 1
 
 " Appearance
-  colorscheme desert
+  colorscheme wombat256mod
   syntax on
   if &t_Co == 8 && $TERM !~# '^linux'
     set t_Co=16
