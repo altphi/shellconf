@@ -42,7 +42,7 @@ execute pathogen#infect()
   let g:ctrlp_working_path_mode = 'ra'
   let g:ctrlp_by_filename = 1
   "let g:ctrlp_user_command = 'find %s'
-  let g:ctrlp_cmd = 'CtrlPMixed'
+  let g:ctrlp_cmd = 'CtrlPBuffer'
   " let g:ctrlp_user_command = {
   " \    'types': {
   " \    1: ['.git', 'cd %s && git ls-files'],
@@ -54,6 +54,7 @@ execute pathogen#infect()
   let g:clojure_align_multiline_strings = 1
   let g:clojure_align_subforms = 1
 "  let g:clojure_fold = 1
+"  let g:AutoPairsShortcutFastWrap = '<C-e>'
 
 " Appearance
   colorscheme wombat256mod
@@ -63,11 +64,13 @@ execute pathogen#infect()
   endif
   if &encoding ==# 'latin1' && has('gui_running')
     set encoding=utf-8
+    set macmeta
   endif
   if has("gui_running")
     set transparency=30
     set guioptions=egmLtA
     set guifont=Menlo\ Regular:h13
+    "set guifont=SimSun-ExtB:h15
     "set guifont=Source\ Code\ Pro:h14
     set fuoptions=maxvert,maxhorz
     au GUIEnter * set fullscreen
@@ -157,9 +160,9 @@ execute pathogen#infect()
   imap <C-J> <Plug>snipMateNextOrTrigger
   smap <C-J> <Plug>snipMateNextOrTrigger
   nmap H :h <C-R>=expand("<cword>")<CR><CR>
-  nmap ' <Plug>(easymotion-bd-f)(
-  nmap <M-Space> <Plug>(easymotion-bd-jk)
-  nmap <M-F> <Plug>(easymotion-bd-f)
+  "nmap ' <Plug>(easymotion-bd-f)(
+  " nmap <Space> <Plug>(easymotion-bd-jk)
+  " nmap <Space> <Plug>(easymotion-bd-f)
 
 " surrounds
   vmap si y`<i_<ESC>`>la_<ESC>
@@ -211,6 +214,7 @@ endif
   command! WC :w !wc
   command! RC :e ~/.vimrc
   command! RCload :so ~/.vimrc
+  command! CDcurrent :cd %:p:h
 
 " Autocompletion
   filetype on
@@ -237,7 +241,7 @@ endif
   let g:vimwiki_auto_checkbox = 1
   let g:vimwiki_use_mouse=1
   nmap <leader>tt <Plug>VimwikiToggleListItem
-  let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'default'}]
+  let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'markdown'}]
   " vim:nofoldenable
   " also, for HTML output, change the below in autoload/vimwiki/html.vim (and
   " the lines between these two as well
@@ -330,3 +334,18 @@ vnoremap <Space> zf
   endfunction
   set foldtext=MyFoldText()
 
+" rainbow parens
+au VimEnter * RainbowParenthesesToggle
+au Syntax * RainbowParenthesesLoadRound
+au Syntax * RainbowParenthesesLoadSquare
+au Syntax * RainbowParenthesesLoadBraces
+
+" paredit on by default
+let g:paredit_mode = 1
+au * PareditInitBuffer()
+
+" :h restore-cursor
+autocmd BufReadPost *
+      \ if line("'\"") > 1 && line("'\"") <= line("$") |
+      \   exe "normal! g`\"" |
+      \ endif    
