@@ -76,3 +76,6 @@
 [submodule "vim/bundle/vim-jdaddy"]
 	path = vim/bundle/vim-jdaddy
 	url = git@github.com:tpope/vim-jdaddy.git
+[submodule "vim/bundle/pgsql"]
+	path = vim/bundle/pgsql
+	url = git@github.com:exu/pgsql.vim.git
