@@ -202,7 +202,6 @@ endif
   command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
   command! GREP :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
   command! Sh read !cat ~/n/bash_args /!
-  command! Cleantail :%s#\s*\r\?$##
   command! WC :w !wc
   command! RC :e ~/.vimrc
   command! RCload :so ~/.vimrc
@@ -210,20 +209,12 @@ endif
 
 " Autocompletion
   filetype on
-  set omnifunc=syntaxcomplete#Complete
   set completeopt=longest,menuone
-
- " autocmd FileType python set omnifunc=pythoncomplete#Complete
- " autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
- " autocmd FileType html set omnifunc=htmlcomplete#CompleteTags
- " autocmd FileType css set omnifunc=csscomplete#CompleteCSS
- " autocmd FileType xml set omnifunc=xmlcomplete#CompleteTags
- " autocmd FileType php set omnifunc=phpcomplete#CompletePHP
- " autocmd FileType c set omnifunc=ccomplete#Complete
-  " load the dictionary according to syntax
-  " :au BufReadPost * if exists("b:current_syntax")
-  " :au BufReadPost * let &dictionary = substitute("~/.vim/dict/FT.dict", "FT", b:current_syntax, "")
-  " :au BufReadPost * endif
+  autocmd Filetype * setlocal omnifunc=syntaxcomplete#Complete
+  let g:SuperTabDefaultCompletionType = "context"
+  let g:SuperTabCompletionContexts = ['s:ContextText', 's:ContextDiscover']
+  let g:SuperTabContextTextOmniPrecedence = ['&omnifunc', '&completefunc']
+  let g:SuperTabContextDiscoverDiscovery =  ["&completefunc:<c-x><c-u>", "&omnifunc:<c-x><c-o>"]
 
 " vimWiki
   set nocompatible
@@ -250,18 +241,21 @@ endif
     :cd /content/quickcue-bucket/platform/src/platform
     :e .
   endfunction
-  function! InsertTabWrapper(direction)
-    let col = col('.') - 1
-    if !col || getline('.')[col - 1] !~ '\k'
-        return "\<tab>"
-    elseif "backward" == a:direction
-        return "\<c-p>"
-    else
-        return "\<c-n>"
-    endif
-  endfunction
-  inoremap <tab> <c-r>=InsertTabWrapper ("forward")<cr>
-  inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
+
+  command! Cleantail :exe "normal mj"<CR>:%s#\s*\r\?$##<CR>:exe "normal `j"<CR>
+
+"  function! InsertTabWrapper(direction)
+"    let col = col('.') - 1
+"    if !col || getline('.')[col - 1] !~ '\k'
+"        return "\<tab>"
+"    elseif "backward" == a:direction
+"        return "\<c-p>"
+"    else
+"        return "\<c-n>"
+"    endif
+"  endfunction
+"  inoremap <tab> <c-r>=InsertTabWrapper ("forward")<cr>
+"  inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
 
 " Folding
 set foldmethod=marker
@@ -277,7 +271,7 @@ vnoremap <Space> zf
   " open tagbar for certain filetypes
   autocmd BufNew *.clj TagbarOpen
   " remove trailing spaces always before save
-  au BufWritePre * Cleantail
+  ""au BufWritePre * Cleantail
 
 " vim custom fold display function
   " function! CustomFoldText()
@@ -335,7 +329,7 @@ au Syntax * RainbowParenthesesLoadBraces
 
 " paredit on by default
 let g:paredit_mode = 1
-au BufNew,BufNewFile,BufRead * :execute PareditInitBuffer()
+au BufNew,BufNewFile,BufReadPost * :execute PareditInitBuffer()
 
 " :h restore-cursor
 autocmd BufReadPost *
