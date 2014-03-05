@@ -30,7 +30,7 @@ execute pathogen#infect()
   set backspace=indent,eol,start
   set autochdir
   set hidden
-  " set hlsearch
+  set hlsearch
   set wildchar=<Tab> wildmenu wildmode=full
   set wildcharm=<C-Z>
   set dictionary=/usr/share/dict/words
@@ -57,7 +57,7 @@ execute pathogen#infect()
 "  let g:AutoPairsShortcutFastWrap = '<C-e>'
 
 " Appearance
-  colorscheme wombat256mod
+  colorscheme molokai
   syntax on
   if &t_Co == 8 && $TERM !~# '^linux'
     set t_Co=16
@@ -68,18 +68,10 @@ execute pathogen#infect()
   endif
   if has("gui_running")
     set transparency=30
-    set guioptions=egmLtA
-    set guifont=Menlo\ Regular:h13
-    "set guifont=SimSun-ExtB:h15
-    "set guifont=Source\ Code\ Pro:h14
+    set guioptions=egmtA
+    set guifont=Source\ Code\ Pro:h14
     set fuoptions=maxvert,maxhorz
     au GUIEnter * set fullscreen
-
-    " gvim tab switching
-    :macm Window.Select\ Previous\ Tab  key=<D-Left>
-    :macm Window.Select\ Next\ Tab  key=<D-Right>
-    " use this for apple key + number: noremap <D-1> :tabn 1<CR>
-  endif
     noremap <D-1> :tabn 1<CR>
     noremap <D-2> :tabn 2<CR>
     noremap <D-3> :tabn 3<CR>
@@ -90,6 +82,7 @@ execute pathogen#infect()
     noremap <D-8> :tabn 8<CR>
     noremap <D-9> :tabn 9<CR>
     noremap <D-0> :tablast<CR>
+  endif
   if &listchars ==# 'eol:$'
     set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
     if &termencoding ==# 'utf-8' || &encoding ==# 'utf-8'
@@ -153,8 +146,8 @@ execute pathogen#infect()
   map fff ?{{<CR>i{<ESC>
   " yank current file's directory
   map yfd :let @a = expand("%:p:h")<CR>:echo system('pbcopy', @a)<CR>
-  nmap <F10> /^(<CR>
-  nmap <S-F10> ?^(<CR>
+  " nmap <F10> /^(<CR>
+  " nmap <S-F10> ?^(<CR>
   nmap <F11> /(<CR>
   nmap <S-F11> ?(<CR>
   imap <C-J> <Plug>snipMateNextOrTrigger
@@ -208,7 +201,6 @@ endif
 " custom commands
   command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
   command! GREP :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
-  " map * :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
   command! Sh read !cat ~/n/bash_args /!
   command! Cleantail :%s#\s*\r\?$##
   command! WC :w !wc
@@ -220,13 +212,14 @@ endif
   filetype on
   set omnifunc=syntaxcomplete#Complete
   set completeopt=longest,menuone
-  " autocmd FileType python set omnifunc=pythoncomplete#Complete
-  " autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
-  " autocmd FileType html set omnifunc=htmlcomplete#CompleteTags
-  " autocmd FileType css set omnifunc=csscomplete#CompleteCSS
-  " autocmd FileType xml set omnifunc=xmlcomplete#CompleteTags
-  " autocmd FileType php set omnifunc=phpcomplete#CompletePHP
-  " autocmd FileType c set omnifunc=ccomplete#Complete
+
+ " autocmd FileType python set omnifunc=pythoncomplete#Complete
+ " autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
+ " autocmd FileType html set omnifunc=htmlcomplete#CompleteTags
+ " autocmd FileType css set omnifunc=csscomplete#CompleteCSS
+ " autocmd FileType xml set omnifunc=xmlcomplete#CompleteTags
+ " autocmd FileType php set omnifunc=phpcomplete#CompletePHP
+ " autocmd FileType c set omnifunc=ccomplete#Complete
   " load the dictionary according to syntax
   " :au BufReadPost * if exists("b:current_syntax")
   " :au BufReadPost * let &dictionary = substitute("~/.vim/dict/FT.dict", "FT", b:current_syntax, "")
@@ -249,6 +242,8 @@ endif
   " elseif pre[0] && a:line =~ '^\s*}}}\s*$'
   " nnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
   " vnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
+  let g:vimwiki_folding=''
+  au BufNew *.wiki set foldmethod=indent
 
 " functions
   function! PlatformEdit()
@@ -268,10 +263,6 @@ endif
   inoremap <tab> <c-r>=InsertTabWrapper ("forward")<cr>
   inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
 
-
-" include the .org mode conf
-" so ~/.vim/extra_conf/vim.org.rc
-
 " Folding
 set foldmethod=marker
 nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
@@ -283,8 +274,10 @@ vnoremap <Space> zf
   " see http://vim.wikia.com/wiki/Keep_folds_closed_while_inserting_text
   autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
   autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
-  " open tagbar for certain filetypes 
-  autocmd BufNew *.clj :TagbarOpen<CR>
+  " open tagbar for certain filetypes
+  autocmd BufNew *.clj TagbarOpen
+  " remove trailing spaces always before save
+  au BufWritePre * Cleantail
 
 " vim custom fold display function
   " function! CustomFoldText()
@@ -342,10 +335,12 @@ au Syntax * RainbowParenthesesLoadBraces
 
 " paredit on by default
 let g:paredit_mode = 1
-au * PareditInitBuffer()
+au BufNew,BufNewFile,BufRead * :execute PareditInitBuffer()
 
 " :h restore-cursor
 autocmd BufReadPost *
-      \ if line("'\"") > 1 && line("'\"") <= line("$") |
-      \   exe "normal! g`\"" |
-      \ endif    
+  \ if line("'\"") > 1 && line("'\"") <= line("$") |
+  \   exe "normal! g`\"" |
+  \ endif
+
+au BufNewFile,BufRead *.pgsql setf pgsql
