@@ -1,2 +1,6 @@
 #!/bin/sh
-/content/quickcue-bucket/cfmgmt/run-me-everywhere "cd /home/stephen/bin ; git pull ; git submodule update --recursive --init"
+if [[ "$1" == "-f"  ]] ; then
+  /content/quickcue-bucket/cfmgmt/run-me-everywhere "cd /home/stephen/bin && git pull && git submodule update --recursive --init && git clean -d -f"
+else
+  /content/quickcue-bucket/cfmgmt/run-me-everywhere "cd /home/stephen/bin && git pull && git submodule update --recursive --init"
+fi

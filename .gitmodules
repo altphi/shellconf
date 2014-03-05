@@ -7,9 +7,6 @@
 [submodule "vim/bundle/vim-clojure-static"]
 	path = vim/bundle/vim-clojure-static
 	url = https://github.com/guns/vim-clojure-static.git
-[submodule "vim/bundle/orgmode"]
-	path = vim/bundle/orgmode
-	url = https://github.com/jceb/vim-orgmode.git
 [submodule "vim/bundle/nerdtree"]
 	path = vim/bundle/nerdtree
 	url = https://github.com/scrooloose/nerdtree.git
@@ -22,12 +19,6 @@
 [submodule "vim/bundle/css-color"]
 	path = vim/bundle/css-color
 	url = https://github.com/skammer/vim-css-color
-[submodule "vim/bundle/rainbow-paren"]
-	path = vim/bundle/rainbow-paren
-	url = https://github.com/vim-scripts/Rainbow-Parenthesis
-[submodule "vim/bundle/info-vim"]
-	path = vim/bundle/info-vim
-	url = https://github.com/vim-scripts/info.vim.git
 [submodule "vim/bundle/BufOnly"]
 	path = vim/bundle/BufOnly
 	url = https://github.com/duff/vim-bufonly.git
