@@ -28,7 +28,7 @@ rename_pdf () {
     rm "$tmpfile"
     rm "$1.txt"
 
-    local finally=`echo -e "$author_last_first ($source $year) \xe2\x80\xa2 $title"`;
+    local finally=`echo "$author_last_first ($source $year) \xe2\x80\xa2 $title"`;
     mv "$1.pdf" "$finally.pdf"
 #    echo -e "renamed this pdf:\n$1.pdf\n\nto this:\n$finally.pdf\n\n***\n";
     return 0;
