@@ -64,6 +64,3 @@
 [submodule "vim/bundle/vim-jdaddy"]
 	path = vim/bundle/vim-jdaddy
 	url = git@github.com:tpope/vim-jdaddy.git
-[submodule "vim/bundle/supertab"]
-	path = vim/bundle/supertab
-	url = git@github.com:ervandew/supertab.git
