@@ -31,7 +31,9 @@ execute pathogen#infect()
   set autochdir
   set hidden
   set hlsearch
-  set wildchar=<Tab> wildmenu wildmode=full
+"  set wildchar=<Tab>
+  set wildmenu
+  set wildmode=list:full
   set wildcharm=<C-Z>
   set dictionary=/usr/share/dict/words
   nnoremap <silent> <F7> :NERDTreeToggle<CR>
@@ -72,7 +74,7 @@ execute pathogen#infect()
     "set guifont=Clear\ Sans\ Thin:h14
     set guifont=Source\ Code\ Pro:h14
     set fuoptions=maxvert,maxhorz
-    au GUIEnter * set fullscreen
+    " au GUIEnter * set fullscreen
     noremap <D-1> :tabn 1<CR>
     noremap <D-2> :tabn 2<CR>
     noremap <D-3> :tabn 3<CR>
@@ -209,18 +211,21 @@ endif
   command! CDcurrent :cd %:p:h
 
 " Autocompletion
+  filetype plugin on
   filetype on
   set completeopt=longest,menuone
   autocmd Filetype * setlocal omnifunc=syntaxcomplete#Complete
-  let g:SuperTabDefaultCompletionType = "context"
-  let g:SuperTabCompletionContexts = ['s:ContextText', 's:ContextDiscover']
-  let g:SuperTabContextTextOmniPrecedence = ['&omnifunc', '&completefunc']
-  let g:SuperTabContextDiscoverDiscovery =  ["&omnifunc:<c-x><c-o>", "&omnifunc:<c-x><c-p>"]
-  let g:SuperTabContextDefaultCompletionType = "<c-p>"
+  au FileType php set omnifunc=phpcomplete#CompletePHP
+  autocmd FileType python set omnifunc=pythoncomplete#Complete
+  autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
+  autocmd FileType html set omnifunc=htmlcomplete#CompleteTags
+  autocmd FileType css set omnifunc=csscomplete#CompleteCSS
+  autocmd FileType xml set omnifunc=xmlcomplete#CompleteTags
+  autocmd FileType php set omnifunc=phpcomplete#CompletePHP
+  autocmd FileType c set omnifunc=ccomplete#Complete
 
 " vimWiki
   set nocompatible
-  filetype plugin on
   syntax on
   let g:vimwiki_table_auto_fmt = 0
   let g:vimwiki_table_mappings = 0
@@ -240,25 +245,66 @@ endif
   au BufNew *.wiki set foldmethod=indent
 
 " functions
-  function! PlatformEdit()
-    :cd /content/quickcue-bucket/platform/src/platform
-    :e .
-  endfunction
+function! PlatformEdit()
+  :cd /content/quickcue-bucket/platform/src/platform
+  :e .
+endfunction
+command! Cleantail :exe "normal mj<CR>"%s#\s*\r\?$##<CR>:exe "normal `j<CR>"
 
-  command! Cleantail :exe "normal mj"<CR>:%s#\s*\r\?$##<CR>:exe "normal `j"<CR>
+function! InsertTabWrapper(direction)
+  let col = col('.') - 1
+    if !col || getline('.')[col - 1] !~ '\k'
+        return "\<tab>"
+    elseif "backward" == a:direction
+        return "\<c-p>"
+    else
+        return "\<c-n>"
+    endif
+endfunction
+"inoremap <tab> <c-r>=InsertTabWrapper ("forward")<cr>
+"inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
 
-"  function! InsertTabWrapper(direction)
-"    let col = col('.') - 1
-"    if !col || getline('.')[col - 1] !~ '\k'
-"        return "\<tab>"
-"    elseif "backward" == a:direction
-"        return "\<c-p>"
-"    else
-"        return "\<c-n>"
-"    endif
-"  endfunction
-"  inoremap <tab> <c-r>=InsertTabWrapper ("forward")<cr>
-"  inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
+function! Smart_TabComplete()
+  let line = getline('.')                         " current line
+  let substr = strpart(line, -1, col('.')+1)      " from the start of the current line to one character right of the cursor
+  let substr = matchstr(substr, "[^ \t]*$")       " word till cursor
+  if (strlen(substr)==0)                          " nothing to match on empty string
+    return "\<tab>"
+  endif
+  let has_period = match(substr, '\.') != -1      " position of period, if any
+  let has_slash = match(substr, '\/') != -1       " position of slash, if any
+  if (!has_period && !has_slash)
+    return "\<C-X>\<C-P>"                         " existing text matching
+  elseif ( has_slash )
+    return "\<C-X>\<C-F>"                         " file matching
+  else
+    return "\<C-X>\<C-O>"                         " plugin matching
+  endif
+endfunction
+inoremap <tab> <c-r>=Smart_TabComplete()<cr>
+
+let g:stop_autocomplete=0
+
+function! CleverTab(type)
+    if a:type=='omni'
+        if strpart( getline('.'), 0, col('.')-1 ) =~ '^\s*$'
+            let g:stop_autocomplete=1
+            return "\<TAB>"
+        elseif !pumvisible() && !&omnifunc
+            return "\<C-X>\<C-O>\<C-P>"
+        endif
+    elseif a:type=='keyword' && !pumvisible() && !g:stop_autocomplete
+        return "\<C-X>\<C-N>\<C-P>"
+    elseif a:type=='next'
+        if g:stop_autocomplete
+            let g:stop_autocomplete=0
+        else
+            return "\<C-N>"
+        endif
+    endif
+    return ''
+endfunction
+" inoremap <silent><TAB> <C-R>=CleverTab('omni')<CR><C-R>=CleverTab('keyword')<CR><C-R>=CleverTab('next')<CR>
 
 " Folding
 set foldmethod=marker
@@ -272,7 +318,7 @@ vnoremap <Space> zf
   autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
   autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
   " open tagbar for certain filetypes
-  autocmd BufNew *.clj TagbarOpen
+  autocmd BufNew *.clj *.scm *.c TagbarOpen
   " remove trailing spaces always before save
   ""au BufWritePre * Cleantail
 
@@ -331,8 +377,8 @@ au Syntax * RainbowParenthesesLoadSquare
 au Syntax * RainbowParenthesesLoadBraces
 
 " paredit on by default
-let g:paredit_mode = 1
-au BufNew,BufNewFile,BufReadPost * :execute PareditInitBuffer()
+" let g:paredit_mode = 1
+" au BufNew,BufNewFile,BufReadPost * :execute PareditInitBuffer()
 
 " :h restore-cursor
 autocmd BufReadPost *
@@ -341,3 +387,10 @@ autocmd BufReadPost *
   \ endif
 
 au BufNewFile,BufRead *.pgsql setf pgsql
+
+" tags
+let g:easytags_cmd = '/usr/local/bin/ctags'
+let g:easytags_file = '~/.vimtags'
+set tags=./.tags;
+let g:easytags_dynamic_files = 1
+let g:easytags_always_enabled = 1
