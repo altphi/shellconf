@@ -77,6 +77,7 @@ compdef 'compadd -- `/bin/ls /service/`' taillog
 compdef 'compadd -- `/bin/ls /service/`' taillog_without_date
 compdef 'compadd -P /service/ -- `/bin/ls /service/`' svstat
 compdef 'compadd -P /service/ -- `/bin/ls /service/`' svc
+compdef 'compadd -P /service/ -- `/bin/ls /service/`' s
 
 #}}}
 
@@ -119,6 +120,16 @@ rgrep () {
   grep --color=auto -r "$1" .
   }
 }
+s () {
+  if [[ "$#" -gt 0 ]] 
+  then
+    svstat "$1"
+  else
+    svstat /service/*
+  fi
+}
+
+#alias s=' svstat /service/*'
 
 [[ "$SYSTYPE" == "Linux" ]] && {
 alias ls=' ls -F -b -T 0 --color=auto'
@@ -127,7 +138,6 @@ alias la=' ls -F -b -T 0 --color=auto -la'
 alias rgrep='rgrep --color=auto'
 }
 
-alias s=' svstat /service/*'
 alias g=' ls -a | xargs grep --color=auto ';
 alias gc='git checkout'
 alias gp='git pull'
