@@ -233,7 +233,7 @@ endif
   let g:vimwiki_auto_checkbox = 1
   let g:vimwiki_use_mouse=1
   nmap <leader>tt <Plug>VimwikiToggleListItem
-  let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'markdown'}]
+  let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'markdown', 'ext': '.mkd'}]
   " vim:nofoldenable
   " also, for HTML output, change the below in autoload/vimwiki/html.vim (and
   " the lines between these two as well
@@ -318,7 +318,7 @@ vnoremap <Space> zf
   autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
   autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
   " open tagbar for certain filetypes
-  autocmd BufNew *.clj *.scm *.c TagbarOpen
+  autocmd BufNew *.clj *.scm *.c *.mkd TagbarOpen
   " remove trailing spaces always before save
   ""au BufWritePre * Cleantail
 
@@ -394,3 +394,13 @@ let g:easytags_file = '~/.vimtags'
 set tags=./.tags;
 let g:easytags_dynamic_files = 1
 let g:easytags_always_enabled = 1
+
+let g:tagbar_type_vimwiki = {
+    \ 'ctagstype' : 'vimwiki',
+    \ 'kinds' : [
+        \ 'h:Heading_L1',
+        \ 'i:Heading_L2',
+        \ 'k:Heading_L3',
+        \ 'l:Tag'
+    \ ]
+    \ }
