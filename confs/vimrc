@@ -249,7 +249,13 @@ function! PlatformEdit()
   :cd /content/quickcue-bucket/platform/src/platform
   :e .
 endfunction
-command! Cleantail :exe "normal mj<CR>"%s#\s*\r\?$##<CR>:exe "normal `j<CR>"
+command! Cleantail :execute Cleantail() | :normal `k
+function Cleantail()
+  if !&binary && &filetype != 'diff'
+    :normal mk
+    %s/\s\+$//e
+  endif
+endfunction
 
 function! InsertTabWrapper(direction)
   let col = col('.') - 1
@@ -320,7 +326,7 @@ vnoremap <Space> zf
   " open tagbar for certain filetypes
   autocmd BufNew *.clj *.scm *.c *.mkd TagbarOpen
   " remove trailing spaces always before save
-  ""au BufWritePre * Cleantail
+  au BufWritePre * Cleantail
 
 " vim custom fold display function
   " function! CustomFoldText()
@@ -386,8 +392,6 @@ autocmd BufReadPost *
   \   exe "normal! g`\"" |
   \ endif
 
-au BufNewFile,BufRead *.pgsql setf pgsql
-
 " tags
 let g:easytags_cmd = '/usr/local/bin/ctags'
 let g:easytags_file = '~/.vimtags'
@@ -395,6 +399,7 @@ set tags=./.tags;
 let g:easytags_dynamic_files = 1
 let g:easytags_always_enabled = 1
 let g:easytags_updatetime_min = 20000
+
 let g:tagbar_type_vimwiki = {
     \ 'ctagstype' : 'vimwiki',
     \ 'kinds' : [
