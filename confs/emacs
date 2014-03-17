@@ -5,9 +5,21 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-faces-vector [default bold shadow italic underline bold bold-italic bold])
+ '(ansi-color-names-vector (vector "#eaeaea" "#d54e53" "DarkOliveGreen3" "#e7c547" "DeepSkyBlue1" "#c397d8" "#70c0b1" "#181a26"))
+ '(background-color "#042028")
+ '(background-mode dark)
+ '(cursor-color "#708183")
+ '(custom-enabled-themes (quote (sanityinc-tomorrow-night)))
+ '(custom-safe-themes (quote ("06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" default)))
+ '(fci-rule-color "#14151E")
+ '(foreground-color "#708183")
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(org-agenda-files (quote ("/content/quickcue-bucket/doc/services-spec.org")))
- '(safe-local-variable-values (quote ((org-hierarchical-todo-statistics) (org-hierarchical-checkbox-statistics) (org-adapt-indentation)))))
+ '(safe-local-variable-values (quote ((org-hierarchical-todo-statistics) (org-hierarchical-checkbox-statistics) (org-adapt-indentation))))
+ '(vc-annotate-background nil)
+ '(vc-annotate-color-map (quote ((20 . "#d54e53") (40 . "goldenrod") (60 . "#e7c547") (80 . "DarkOliveGreen3") (100 . "#70c0b1") (120 . "DeepSkyBlue1") (140 . "#c397d8") (160 . "#d54e53") (180 . "goldenrod") (200 . "#e7c547") (220 . "DarkOliveGreen3") (240 . "#70c0b1") (260 . "DeepSkyBlue1") (280 . "#c397d8") (300 . "#d54e53") (320 . "goldenrod") (340 . "#e7c547") (360 . "DarkOliveGreen3"))))
+ '(vc-annotate-very-old-color nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -67,9 +79,12 @@
 ;(load-theme 'base16-default t)
 ;(load-theme 'base16-tomorrow t)
 
-(if window-system
-    (load-theme 'base16-tomorrow t)
-)
+(setq inhibit-startup-message t)
+(line-number-mode 1)
+(column-number-mode 1)
+(set-default-font "Menlo-12")
+(set-default-font "Source\ Code\ Pro-12")
+(load-theme 'molokai t)
 
 (add-hook 'after-init-hook (lambda ()
       (when (fboundp 'auto-dim-other-buffers-mode)
