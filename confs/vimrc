@@ -5,7 +5,6 @@ execute pathogen#infect()
   command! Platform :execute PlatformEdit()
 
 " vim variables
-  set paste
   set term=xterm-256color
   set tabstop=2
   set shiftwidth=2
