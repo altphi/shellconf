@@ -1,0 +1,4 @@
+#!/bin/sh
+
+tasktxt=`cat /Users/stephen/.motd`
+echo "stopped $tasktxt"

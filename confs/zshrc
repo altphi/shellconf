@@ -26,6 +26,7 @@ start() {
 
 stop() {
   svc -d /service/oneminute
+  sleep 1
   echo "" > "$HOME"/.motd
 }
 
@@ -121,7 +122,7 @@ rgrep () {
   }
 }
 s () {
-  if [[ "$#" -gt 0 ]] 
+  if [[ "$#" -gt 0 ]]
   then
     svstat "$1"
   else

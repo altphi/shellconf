@@ -1,0 +1,11 @@
+#!/bin/sh
+cd ..
+svcname=`echo $PWD | sed -e 's/^.*\///g'`
+cd log
+
+logdir=/var/log/$svcname
+mkdir -p $logdir \
+  && chmod 750 $logdir \
+  && chown root:admin $logdir
+
+exec svlogd -tt $logdir
