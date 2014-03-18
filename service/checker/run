@@ -1,0 +1,13 @@
+#!/bin/sh
+
+function notif {
+  gecho -e "$1" | chpst -u stephen terminal-notifier -title "No task set!" -group "sdb_timer" 1>/dev/null 2>/dev/null
+}
+
+while true; do
+  status=`svstat /service/oneminute`
+  if echo "$status" | grep down ; then
+    notif "What are you doing now?"
+  fi
+  sleep 180;
+done

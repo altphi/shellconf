@@ -18,7 +18,7 @@ function paus {
 trap paus ALRM
 
 function sto {
-  notif "stopping..."
+  notif "stopping... at $minutes minutes"
   echo "stopped $tasktxt at $minutes minutes"
 }
 trap sto EXIT
@@ -30,6 +30,7 @@ if [ -s "${HOME}/.motd-paus" ]; then
   ((minutes--)) || true
   notif "resuming at $minutes minutes"
   echo "resuming at $minutes minutes"
+  rm -f "${HOME}/.motd-paus"
   else
   notif "starting..."
 fi
