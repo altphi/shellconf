@@ -21,14 +21,23 @@ export EC2_URL="https://ec2.us-west-1.amazonaws.com"
 
 start() {
   echo "$@" > "$HOME"/.motd
-  svc -ut /service/oneminute
+  svc -tu /service/oneminute
 }
 
 stop() {
   svc -d /service/oneminute
-  sleep 1
-  echo "" > "$HOME"/.motd
+  rm -f "$HOME"/.motd-paus
+  rm -f "$HOME"/.motd
 }
+
+pause() {
+  svc -a /service/oneminute
+}
+
+resume() {
+  svc -u /service/oneminute
+}
+
 
 test -s "$HOME"/.motd && cat "$HOME"/.motd
 

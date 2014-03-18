@@ -1,20 +1,52 @@
 #!/bin/sh
 # this script displays the contents of ~/.motd every 2 minutes in an osx notification
 # ~/.motd is altered by 'start' and 'stop' alius set in .zshrc
+set -x
 
 interim=2;
+HOME="/Users/stephen"
 
-tasktxt=`cat /Users/stephen/.motd`
+function notif {
+  gecho -e "$1" | chpst -u stephen terminal-notifier -title "$tasktxt" -group "sdb_timer" 1>/dev/null 2>/dev/null
+}
+
+function paus {
+  echo "$minutes" > "${HOME}/.motd-paus"
+  echo "paused $tasktxt at $minutes minutes"
+  svc -d /service/oneminute
+}
+trap paus ALRM
+
+function sto {
+  notif "stopping..."
+  echo "stopped $tasktxt at $minutes minutes"
+}
+trap sto EXIT
+
+tasktxt=`cat ${HOME}/.motd`
 echo "started $tasktxt"
+if [ -s "${HOME}/.motd-paus" ]; then
+  minutes=`cat ${HOME}/.motd-paus`
+  ((minutes--)) || true
+  notif "resuming at $minutes minutes"
+  echo "resuming at $minutes minutes"
+  else
+  notif "starting..."
+fi
+
 while true; do
     ((minutes++)) || true
-    sleep 60;
+
+    sleep 60 &     #do this funny business because sleep is uninterruptable by ALRM
+    waitforpid="$!"
+    wait "$waitforpid" || true
+
     if [[ $((${minutes} % $interim)) -eq 0 ]] ; then
       if [[ "$minutes" -eq 1 ]] ; then
         timetxt="1 minute"
       else
         timetxt="$minutes minutes"
       fi
-      gecho -e "$timetxt" | chpst -u stephen terminal-notifier -title "$tasktxt" -group "sdb_timer";
+      notif "$timetxt"
     fi
 done
