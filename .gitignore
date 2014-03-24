@@ -2,3 +2,4 @@ vim/filetype.vim
 .DS_Store
 *.swp
 vim/.netrwhist
+service/nginx
