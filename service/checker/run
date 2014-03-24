@@ -9,5 +9,5 @@ while true; do
   if echo "$status" | grep down ; then
     notif "What are you doing now?"
   fi
-  sleep 180;
+  sleep 200;
 done
