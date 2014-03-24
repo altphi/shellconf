@@ -3,7 +3,7 @@
 # ~/.motd is altered by 'start' and 'stop' alius set in .zshrc
 set -x
 
-interim=2;
+interim=5;
 HOME="/Users/stephen"
 
 function notif {

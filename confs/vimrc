@@ -1,10 +1,13 @@
 " vim:tabstop=2:shiftwidth=2:expandtab:foldenable:textwidth=79:foldmethod=indent:foldtext=
 
 execute pathogen#infect()
+let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
 " current projects
   command! Platform :execute PlatformEdit()
 
 " vim variables
+  set number
+  set gcr=n:blinkon0
   set term=xterm-256color
   set tabstop=2
   set shiftwidth=2
@@ -14,6 +17,7 @@ execute pathogen#infect()
   set autoread
   set viminfo='1000,f1,<500
   set showmatch
+  set matchtime=2
   set ignorecase smartcase
   set autoindent
   set smartindent
@@ -31,15 +35,16 @@ execute pathogen#infect()
   set autochdir
   set hidden
   set hlsearch
+  set linespace=2
 "  set wildchar=<Tab>
   set wildmenu
   set wildmode=list:full
   set wildcharm=<C-Z>
-  set dictionary=/usr/share/dict/words
+  " set dictionary=/usr/share/dict/words
   nnoremap <silent> <F7> :NERDTreeToggle<CR>
   nnoremap <silent> <F8> :TagbarToggle<CR>
   nnoremap <F9> :b <C-Z>
-  set switchbuf+=useopen,usetab
+  set switchbuf+=useopen,usetab,split
   set wildignore+=*.swp,*.zip
   let g:ctrlp_working_path_mode = 'ra'
   let g:ctrlp_by_filename = 1
@@ -72,7 +77,9 @@ execute pathogen#infect()
     set transparency=30
     set guioptions=egmtA
     "set guifont=Clear\ Sans\ Thin:h14
-    set guifont=Source\ Code\ Pro:h14
+    "set guifont=Source\ Code\ Pro:h14
+    set guifont=Droid\ Sans\ Mono:h14
+    " set guifont=Inconsolata:h14
     set fuoptions=maxvert,maxhorz
     " au GUIEnter * set fullscreen
     noremap <D-1> :tabn 1<CR>
@@ -159,6 +166,7 @@ execute pathogen#infect()
   "nmap ' <Plug>(easymotion-bd-f)(
   " nmap <Space> <Plug>(easymotion-bd-jk)
   " nmap <Space> <Plug>(easymotion-bd-f)
+  nmap <C-Space> <Plug>(easymotion-bd-f)
 
 " surrounds
   vmap si y`<i_<ESC>`>la_<ESC>
@@ -202,6 +210,7 @@ endif
   nmap ε e
   nmap υς yw
   nmap ρ r
+  nmap δ d
 
 " custom commands
   command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
@@ -226,25 +235,6 @@ endif
   autocmd FileType php set omnifunc=phpcomplete#CompletePHP
   autocmd FileType c set omnifunc=ccomplete#Complete
 
-" vimWiki
-  set nocompatible
-  syntax on
-  let g:vimwiki_table_auto_fmt = 0
-  let g:vimwiki_table_mappings = 0
-  let g:vimwiki_camel_case = 1
-  let g:vimwiki_auto_checkbox = 1
-  let g:vimwiki_use_mouse=1
-  nmap <leader>tt <Plug>VimwikiToggleListItem
-  let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'markdown', 'ext': '.mkd'}]
-  " vim:nofoldenable
-  " also, for HTML output, change the below in autoload/vimwiki/html.vim (and
-  " the lines between these two as well
-  " if !pre[0] && a:line =~ '^\s*{{{'   AND
-  " elseif pre[0] && a:line =~ '^\s*}}}\s*$'
-  " nnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
-  " vnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
-  let g:vimwiki_folding=''
-  au BufNew *.wiki set foldmethod=indent
 
 " functions
 function! PlatformEdit()
@@ -326,7 +316,7 @@ vnoremap <Space> zf
   autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
   autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
   " open tagbar for certain filetypes
-  autocmd BufNew *.clj *.scm *.c *.mkd TagbarOpen
+  autocmd BufNew *.clj,*.scm,*.c,*.mkd TagbarOpen
   " remove trailing spaces always before save
   au BufWritePre * Cleantail
 
@@ -378,11 +368,7 @@ vnoremap <Space> zf
   endfunction
   set foldtext=MyFoldText()
 
-" rainbow parens
-au VimEnter * RainbowParenthesesToggle
-au Syntax * RainbowParenthesesLoadRound
-au Syntax * RainbowParenthesesLoadSquare
-au Syntax * RainbowParenthesesLoadBraces
+" Plugins
 
 " paredit on by default
 " let g:paredit_mode = 1
@@ -411,3 +397,44 @@ let g:tagbar_type_vimwiki = {
         \ 'l:Tag'
     \ ]
     \ }
+
+" NERDtree
+let NERDTreeShowBookmarks=1
+let NERDTreeShowFiles=1
+let NERDTreeChDirMode=2
+let NERDTreeBookmarksFile=$HOME . "/.vim/NERDTreeBookmarks"
+let NERDTreeMouseMode=3
+let NERDTreeMinimalUI=1
+let NERDTreeShowHidden=1
+" au BufReadPost * NERDTreeToggle
+
+" snipmate
+" runtime $HOME . ".vim/vim-snippets/autoload/vim_snippets.vim"
+"let g:snipMate = {}
+"let g:snipMate['snippets_dirs'] = $HOME . ".vim/vim-snippets/snippets"
+"let g:snipMate.scope_aliases = {}
+"let g:snipMate.scope_aliases['ruby'] = 'ruby,ruby-rails'
+"let g:snipMate.scope_aliases['clojure'] = 'clojure'
+
+" vimWiki
+  set nocompatible
+  syntax on
+  let g:vimwiki_table_auto_fmt = 0
+  let g:vimwiki_table_mappings = 0
+  let g:vimwiki_camel_case = 1
+  let g:vimwiki_auto_checkbox = 1
+  let g:vimwiki_use_mouse=1
+  nmap <leader>tt <Plug>VimwikiToggleListItem
+  let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'markdown', 'ext': '.mkd'}]
+  let g:markdown_folding='yes'
+  autocmd BufNew *.mkd setlocal foldexpr=MarkdownFold()
+  let g:vimwiki_folding='expr'
+  " nnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
+  " vnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
+
+" rainbow parens
+au VimEnter * RainbowParenthesesToggle
+au Syntax * RainbowParenthesesLoadRound
+" au Syntax * RainbowParenthesesLoadSquare
+au Syntax * RainbowParenthesesLoadBraces
+au Syntax * RainbowParenthesesLoadChevrons
