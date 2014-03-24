@@ -17,6 +17,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   set autoread
   set viminfo='1000,f1,<500
   set showmatch
+  set matchtime=2
   set ignorecase smartcase
   set autoindent
   set smartindent
@@ -34,11 +35,12 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   set autochdir
   set hidden
   set hlsearch
+  set linespace=2
 "  set wildchar=<Tab>
   set wildmenu
   set wildmode=list:full
   set wildcharm=<C-Z>
-  set dictionary=/usr/share/dict/words
+  " set dictionary=/usr/share/dict/words
   nnoremap <silent> <F7> :NERDTreeToggle<CR>
   nnoremap <silent> <F8> :TagbarToggle<CR>
   nnoremap <F9> :b <C-Z>
@@ -206,6 +208,7 @@ endif
   nmap ε e
   nmap υς yw
   nmap ρ r
+  nmap δ d
 
 " custom commands
   command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
@@ -364,11 +367,6 @@ vnoremap <Space> zf
   set foldtext=MyFoldText()
 
 " Plugins
-" rainbow parens
-au VimEnter * RainbowParenthesesToggle
-au Syntax * RainbowParenthesesLoadRound
-au Syntax * RainbowParenthesesLoadSquare
-au Syntax * RainbowParenthesesLoadBraces
 
 " paredit on by default
 " let g:paredit_mode = 1
@@ -427,14 +425,14 @@ let NERDTreeShowHidden=1
   nmap <leader>tt <Plug>VimwikiToggleListItem
   let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'markdown', 'ext': '.mkd'}]
   let g:markdown_folding='yes'
-  au Buf
-  " vim:nofoldenable
-  " also, for HTML output, change the below in autoload/vimwiki/html.vim (and
-  " the lines between these two as well
-  " if !pre[0] && a:line =~ '^\s*{{{'   AND
-  " elseif pre[0] && a:line =~ '^\s*}}}\s*$'
-  " nnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
-  " vnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
   autocmd BufNew *.mkd setlocal foldexpr=MarkdownFold()
   let g:vimwiki_folding='expr'
-"  au BufNew *.wiki set foldmethod=indent
+  " nnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
+  " vnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
+
+" rainbow parens
+au VimEnter * RainbowParenthesesToggle
+au Syntax * RainbowParenthesesLoadRound
+" au Syntax * RainbowParenthesesLoadSquare
+au Syntax * RainbowParenthesesLoadBraces
+au Syntax * RainbowParenthesesLoadChevrons
