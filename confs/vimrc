@@ -26,7 +26,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   set vb t_vb=
   set ruler
   set incsearch
-  set virtualedit=all
+  set virtualedit=onemore
   set background=dark
   set complete=.,w,b,u,i,]
   set showcmd
@@ -225,7 +225,6 @@ endif
   filetype plugin on
   filetype on
   set completeopt=longest,menuone
-  autocmd Filetype * setlocal omnifunc=syntaxcomplete#Complete
   au FileType php set omnifunc=phpcomplete#CompletePHP
   autocmd FileType python set omnifunc=pythoncomplete#Complete
   autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
@@ -234,7 +233,8 @@ endif
   autocmd FileType xml set omnifunc=xmlcomplete#CompleteTags
   autocmd FileType php set omnifunc=phpcomplete#CompletePHP
   autocmd FileType c set omnifunc=ccomplete#Complete
-
+  autocmd FileType * if exists("+omnifunc") && &omnifunc == "" | setlocal omnifunc=syntaxcomplete#Complete | endif
+  autocmd FileType * if exists("+completefunc") && &completefunc == "" | setlocal completefunc=syntaxcomplete#Complete | endif
 
 " functions
 function! PlatformEdit()
