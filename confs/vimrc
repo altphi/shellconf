@@ -177,6 +177,8 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   vmap s{ y`<i{<ESC>`>la}<ESC>
   vmap sf y`<i{{{ <ESC>`>o}}}<ESC>
   nmap ,) f(%a)<ESC>
+  nmap dq mzF"xf"x`z
+  nmap dp mzF(xf)x`z
 
 " nmap <leader>) f(%a)<ESC><CR>
 nmap <leader>cd cd %:h<CR>
