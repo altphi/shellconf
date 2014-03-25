@@ -241,7 +241,7 @@ function! PlatformEdit()
   :cd /content/quickcue-bucket/platform/src/platform
   :e .
 endfunction
-command! Cleantail :execute Cleantail() | :normal `k
+command! Cleantail :execute Cleantail() | :normal `kzz
 function Cleantail()
   if !&binary && &filetype != 'diff'
     :normal mk
