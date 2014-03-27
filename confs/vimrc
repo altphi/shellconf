@@ -72,6 +72,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   if &encoding ==# 'latin1' && has('gui_running')
     set encoding=utf-8
     set macmeta
+    let $GVIM="yes"
   endif
   if has("gui_running")
     set transparency=30
@@ -166,7 +167,8 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   "nmap ' <Plug>(easymotion-bd-f)(
   " nmap <Space> <Plug>(easymotion-bd-jk)
   " nmap <Space> <Plug>(easymotion-bd-f)
-  nmap <C-Space> <Plug>(easymotion-bd-f)
+  " nmap <C-Space> <Plug>(easymotion-bd-f)
+  map <C-E> :shell<CR>
 
 " surrounds
   vmap si y`<i_<ESC>`>la_<ESC>
@@ -308,6 +310,10 @@ endfunction
 set foldmethod=marker
 nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
 vnoremap <Space> zf
+function! FoldParagraphs()
+    :set fde=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1
+    :set fdm=expr
+endfunction
 
 " autocmds
   " leave insert mode for new buffers
@@ -344,29 +350,29 @@ vnoremap <Space> zf
   "    return line . expansionString . foldSizeStr . foldPercentage . foldLevelStr
   "endf
   "set foldtext=CustomFoldText()
-  function! MyFoldText()
-      let loopy = 0
-      let foldstart = v:foldstart
-      let linenumb = v:foldstart
-      while loopy == 0 && linenumb <= v:foldend
-          let line = getline(linenumb)
-          let matchtest = matchstr(line,"tags: ")
-          if matchtest == "tags: "
-              let loopy = 1
-          else
-              let linenumb = linenumb + 1
-          endif
-      endwhile
-      if loopy == 0
-          let line = getline(foldstart)
-          let line = substitute(line, "{{{ ", "", "")
-      else
-          let line = substitute(line, "tags: ", "", "")
-      endif
-      let linecount = v:foldend - v:foldstart
-      return v:folddashes . " " . linecount . " lines: " . line
-  endfunction
-  set foldtext=MyFoldText()
+"   function! MyFoldText()
+"       let loopy = 0
+"       let foldstart = v:foldstart
+"       let linenumb = v:foldstart
+"       while loopy == 0 && linenumb <= v:foldend
+"           let line = getline(linenumb)
+"           let matchtest = matchstr(line,"tags: ")
+"           if matchtest == "tags: "
+"               let loopy = 1
+"           else
+"               let linenumb = linenumb + 1
+"           endif
+"       endwhile
+"       if loopy == 0
+"           let line = getline(foldstart)
+"           let line = substitute(line, "{{{ ", "", "")
+"       else
+"           let line = substitute(line, "tags: ", "", "")
+"       endif
+"       let linecount = v:foldend - v:foldstart
+"       return v:folddashes . " " . linecount . " lines: " . line
+"   endfunction
+"   set foldtext=MyFoldText()
 
 " Plugins
 
