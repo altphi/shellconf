@@ -169,6 +169,14 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   " nmap <Space> <Plug>(easymotion-bd-f)
   " nmap <C-Space> <Plug>(easymotion-bd-f)
   map <C-E> :shell<CR>
+  " fugitive
+  nmap gp :Git pull<CR>
+  nmap gs :Gstatus<CR>
+  nmap gx :Gw<CR>:Gcommit<CR>
+  nmap gd :Gdiff<CR>
+  nmap gb :Git branch -avv<CR>
+  nmap gl :Git log --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"<CR>
+  nmap gdf :Git diff --name-only<CR>
 
 " surrounds
   vmap si y`<i_<ESC>`>la_<ESC>

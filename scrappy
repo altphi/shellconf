@@ -1,9 +1,8 @@
 #!/bin/sh
-target="~/Documents/vimwiki/inbox.wiki"
+PATH="${PATH}:/usr/local/bin"
+target="${HOME}/Documents/vimwiki/inbox.mkd"
+text=`pbpaste` ;
 
-# copy from clipboard only
-TEXT=`pbpaste` ;
-
-echo -e "---\n\n" >> "$target"
-echo -e "$TEXT" >> "$target"
-echo -e "\n" >> "$target"
+gecho -e "---\n\n" >> "$target"
+gecho -e "$text" >> "$target"
+gecho -e "\n" >> "$target"
