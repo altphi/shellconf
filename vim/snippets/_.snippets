@@ -2,32 +2,30 @@ snippet topic
 	genus: ${1:genus}
 	specific difference: ${2:specific difference}
 	tags: ${3:tags}
-	
-	# description
-	
+
+
 	# bibliography (primary)
-	
+
 	# bibliography (secondary)
-	
 snippet person
 	years: ${1:birth}, ${2:death}
 	occupation: ${3:occupation}
 	locales: ${4:locales}
 	works: ${5:works}
 	tags: ${6:tags}
-	
+
 	# description
-	
+
 	# bibliography (primary)
-	
+
 	# bibliography (secondary)
-	
+
 snippet note
 	{{ ${1:tags}
 	${2:shortline/source}
-	
+
 	> ${3:text}
-	
+
 	date: `system("date +%Y-%m-%d")`
 	}}}
 #snippet book
@@ -46,7 +44,7 @@ snippet varset
 	fi
 snippet fold
 	{{ ${1:heading}
-	
+
 	}}}
 snippet td
 	* [ ] ${1:to-do-item}

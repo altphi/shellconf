@@ -6,6 +6,7 @@ readonly SYSTYPE="`uname`"
 #{{{ Darwin Only
 [[ "$SYSTYPE" == "Darwin" ]] && {
 readonly PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:/usr/local/share/npm/bin:/usr/local/sbin:/Applications/Racket/bin"
+readonly NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags:${NODE_PATH}"
 readonly ANSIBLE_TRANSPORT='ssh'
 . $HOME/.homebrew_github_api_token
 
@@ -116,7 +117,7 @@ alias clj='rlwrap clj'
 alias bing=' terminal-notifier -message "bing bing"'
 alias coreaudiokill='sudo pkill coreaudiod'
 rgrep () {
-  grep --color=auto -r "$1" .
+  grep -i --color=auto -r "$1" .
   }
 }
 s () {

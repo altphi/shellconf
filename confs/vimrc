@@ -6,7 +6,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   command! Platform :execute PlatformEdit()
 
 " vim variables
-  set number
+  set nonumber
   set gcr=n:blinkon0
   set term=xterm-256color
   set tabstop=2
@@ -30,7 +30,6 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   set background=dark
   set complete=.,w,b,u,i,]
   set showcmd
-  set nohls
   set backspace=indent,eol,start
   set autochdir
   set hidden
@@ -62,6 +61,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   let g:clojure_align_subforms = 1
 "  let g:clojure_fold = 1
 "  let g:AutoPairsShortcutFastWrap = '<C-e>'
+  set sessionoptions=blank,buffers,curdir,tabpages
 
 " Appearance
   colorscheme molokai
@@ -77,10 +77,9 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   if has("gui_running")
     set transparency=30
     set guioptions=egmtA
-    "set guifont=Clear\ Sans\ Thin:h14
     "set guifont=Source\ Code\ Pro:h14
+    "set guifont=Inconsolata:h14
     set guifont=Droid\ Sans\ Mono:h14
-    " set guifont=Inconsolata:h14
     set fuoptions=maxvert,maxhorz
     " au GUIEnter * set fullscreen
     noremap <D-1> :tabn 1<CR>
@@ -113,9 +112,14 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   " hi CursorLine  cterm=NONE guibg=#003399
 
   " status line
+  function ThisSession()
+    if exists(v:this_session) | echo v:this_session | else | return '' | endif
+  endfunction
+
   set statusline=%F         "tail of the filename
   set statusline+=\ \ \ \ %{fugitive#statusline()}
   set statusline+=%=        "left/right separator
+"  set statusline+=%!{fnamemodify(v:this_session, ':t')}
   set statusline+=[%{strlen(&fenc)?&fenc:'none'}, "file encoding
   set statusline+=%{&ff}]\  "file format
   set statusline+=%h\       "help file flag
@@ -136,6 +140,8 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   hi link EasyMotionTarget2Second MatchParen
 
 " Key Bindings & Mappings
+  nmap <F1> :browse so ~/sessions<CR>
+  nmap <F2> :wa<Bar>exe "mksession! " . v:this_session<CR>
   map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
   map <D-[> <C-W>h
   map <D-]> <C-W>l
@@ -168,15 +174,15 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   " nmap <Space> <Plug>(easymotion-bd-jk)
   " nmap <Space> <Plug>(easymotion-bd-f)
   " nmap <C-Space> <Plug>(easymotion-bd-f)
-  map <C-E> :shell<CR>
+  map <C-E> :w<CR>:shell<CR>
   " fugitive
-  nmap gp :Git pull<CR>
-  nmap gs :Gstatus<CR>
-  nmap gx :Gw<CR>:Gcommit<CR>
-  nmap gd :Gdiff<CR>
-  nmap gb :Git branch -avv<CR>
-  nmap gl :Git log --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"<CR>
-  nmap gdf :Git diff --name-only<CR>
+  " nmap gp :Git pull<CR>
+  " nmap gs :Gstatus<CR>
+  " nmap gx :Gw<CR>:Gcommit<CR>
+  " nmap gd :Gdiff<CR>
+  " nmap gb :Git branch -avv<CR>
+  " nmap gl :Git log<CR>
+  " nmap gdf :Git diff --name-only<CR>
 
 " surrounds
   vmap si y`<i_<ESC>`>la_<ESC>
@@ -221,6 +227,8 @@ endif
   nmap υς yw
   nmap ρ r
   nmap δ d
+  nmap Ξ J
+  nmap ς w
 
 " custom commands
   command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
@@ -235,9 +243,10 @@ endif
   filetype plugin on
   filetype on
   set completeopt=longest,menuone
-  au FileType php set omnifunc=phpcomplete#CompletePHP
+  autocmd FileType php set omnifunc=phpcomplete#CompletePHP
   autocmd FileType python set omnifunc=pythoncomplete#Complete
-  autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
+  "autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
+  "autocmd FileType javascript set dictionary+=$HOME/.vim/dict/node-dict/dict/node.dict
   autocmd FileType html set omnifunc=htmlcomplete#CompleteTags
   autocmd FileType css set omnifunc=csscomplete#CompleteCSS
   autocmd FileType xml set omnifunc=xmlcomplete#CompleteTags
@@ -246,13 +255,14 @@ endif
   autocmd FileType * if exists("+omnifunc") && &omnifunc == "" | setlocal omnifunc=syntaxcomplete#Complete | endif
   autocmd FileType * if exists("+completefunc") && &completefunc == "" | setlocal completefunc=syntaxcomplete#Complete | endif
 
+
 " functions
 function! PlatformEdit()
   :cd /content/quickcue-bucket/platform/src/platform
   :e .
 endfunction
 command! Cleantail :execute Cleantail() | :normal `kzz
-function Cleantail()
+function! Cleantail()
   if !&binary && &filetype != 'diff'
     :normal mk
     %s/\s\+$//e
@@ -330,7 +340,7 @@ endfunction
   autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
   autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
   " open tagbar for certain filetypes
-  autocmd BufNew *.clj,*.scm,*.c,*.mkd TagbarOpen
+  autocmd BufNew *.clj,*.scm,*.c TagbarOpen
   " remove trailing spaces always before save
   au BufWritePre * Cleantail
 
@@ -397,7 +407,7 @@ autocmd BufReadPost *
 " tags
 let g:easytags_cmd = '/usr/local/bin/ctags'
 let g:easytags_file = '~/.vimtags'
-set tags=./.tags;
+set tags=./.tags,tags;
 let g:easytags_dynamic_files = 1
 let g:easytags_always_enabled = 1
 let g:easytags_updatetime_min = 20000
@@ -411,6 +421,9 @@ let g:tagbar_type_vimwiki = {
         \ 'l:Tag'
     \ ]
     \ }
+let g:tagbar_type_javascript = {
+    \ 'ctagsbin' : '/usr/local/bin/jsctags'
+    \ }
 
 " NERDtree
 let NERDTreeShowBookmarks=1
@@ -420,6 +433,7 @@ let NERDTreeChDirMode=2
 let NERDTreeMouseMode=3
 let NERDTreeMinimalUI=1
 let NERDTreeShowHidden=1
+let NERDTreeIgnore=['\.vim$', '\~$', '\.swp$']
 " au BufReadPost * NERDTreeToggle
 
 " snipmate
@@ -429,6 +443,14 @@ let NERDTreeShowHidden=1
 "let g:snipMate.scope_aliases = {}
 "let g:snipMate.scope_aliases['ruby'] = 'ruby,ruby-rails'
 "let g:snipMate.scope_aliases['clojure'] = 'clojure'
+
+" buffergator
+" let g:buffergator_display_regime = 'filepath'
+let g:buffergator_sort_regime = 'mru'
+let g:buffergator_vsplit_size=80
+"let g:buffergator_autodismiss_on_select=0
+"let g:buffergator_autoexpand_on_split=0
+"let g:buffergator_split_size=0
 
 " vimWiki
   set nocompatible
@@ -452,3 +474,6 @@ au Syntax * RainbowParenthesesLoadRound
 " au Syntax * RainbowParenthesesLoadSquare
 au Syntax * RainbowParenthesesLoadBraces
 au Syntax * RainbowParenthesesLoadChevrons
+
+" vim-javascript-syntax
+au Syntax javascript call JavaScriptFold()

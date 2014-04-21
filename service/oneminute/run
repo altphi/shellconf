@@ -6,6 +6,9 @@ set -x
 interim=5;
 HOME="/Users/stephen"
 
+svc -d /service/checker
+svc -u /service/checker
+
 function notif {
   gecho -e "$1" | chpst -u stephen terminal-notifier -title "$tasktxt" -group "sdb_timer" 1>/dev/null 2>/dev/null
 }
