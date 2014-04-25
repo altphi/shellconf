@@ -7,7 +7,6 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   set list
   set nonumber
   set gcr=n:blinkon0
-  set term=xterm-256color
   set tabstop=2
   set shiftwidth=2
   set expandtab
@@ -48,17 +47,14 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   filetype plugin indent on
   let g:clojure_align_multiline_strings = 1
   let g:clojure_align_subforms = 1
+  " set term=xterm-256color
   "  let g:clojure_fold = 1
   "  let g:AutoPairsShortcutFastWrap = '<C-e>'
-  set sessionoptions=buffers,curdir,tabpages
+  " set sessionoptions=buffers,curdir,tabpages
 
 " Appearance
-  if has("gui_macvim")
-    set guitablabel=\[%N\]\ %{expand(\"%:p:h:t\")}\/%t\ %M
-  endif
   " colorscheme molokai
   colorscheme jellybeans
-  highlight clear SignColumn
   syntax on
   if &t_Co == 8 && $TERM !~# '^linux'
     set t_Co=16
@@ -69,7 +65,6 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
     let $GVIM="yes"
   endif
   if has("gui_running")
-    set transparency=30
     set guioptions=egmtA
     "set guifont=Source\ Code\ Pro:h14
     "set guifont=Inconsolata:h14
@@ -99,7 +94,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   hi link EasyMotionTarget2Second MatchParen
 
   " status line
-  function ThisSession()
+  function! ThisSession()
     if exists(v:this_session) | echo v:this_session | else | return '' | endif
   endfunction
   set statusline=%F         "tail of the filename
@@ -124,7 +119,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   nnoremap <silent> <F7> :NERDTreeToggle<CR>
   nnoremap <silent> <F8> :TagbarToggle<CR>
   nnoremap <F9> :b <C-Z>
-  nmap <F1> :browse so ~/sessions<CR>:source ~/.vimrc<CR>
+  nmap <F1> :browse so ~/sessions<CR>
   nmap <F2> :wa<Bar>exe "mksession! " . v:this_session<CR>
   map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
   map <D-[> <C-W>h
@@ -224,8 +219,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   set completeopt=longest,menuone
   autocmd FileType php set omnifunc=phpcomplete#CompletePHP
   autocmd FileType python set omnifunc=pythoncomplete#Complete
-  "autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
-  "autocmd FileType javascript set dictionary+=$HOME/.vim/dict/node-dict/dict/node.dict
+  autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
   autocmd FileType html set omnifunc=htmlcomplete#CompleteTags
   autocmd FileType css set omnifunc=csscomplete#CompleteCSS
   autocmd FileType xml set omnifunc=xmlcomplete#CompleteTags
@@ -241,6 +235,9 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
       :normal mk
       %s/\s\+$//e
     endif
+  endfunction
+  function! Guitablabel()
+    set guitablabel=\[%N\]\ %{expand(\"%:p:h:t\")}\/%t\ %M
   endfunction
 
   function! InsertTabWrapper(direction)
@@ -322,6 +319,10 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   \ if line("'\"") > 1 && line("'\"") <= line("$") |
   \   exe "normal! g`\"" |
   \ endif
+  au GUIEnter * :execute Guitablabel()
+  au BufReadPost * highlight clear SignColumn
+
+
   " vim-javascript-syntax
   au Syntax javascript call JavaScriptFold()
 
@@ -421,7 +422,6 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
 
 " vimWiki
   set nocompatible
-  syntax on
   let g:vimwiki_table_auto_fmt = 0
   let g:vimwiki_table_mappings = 0
   let g:vimwiki_camel_case = 1
@@ -441,4 +441,3 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   " " au Syntax * RainbowParenthesesLoadSquare
   " au Syntax * RainbowParenthesesLoadBraces
   " au Syntax * RainbowParenthesesLoadChevrons
-

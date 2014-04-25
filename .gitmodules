@@ -82,3 +82,6 @@
 [submodule "vim/dict/node-dict"]
 	path = vim/dict/node-dict
 	url = git@github.com:guileen/vim-node-dict.git
+[submodule "vim/bundle/dustjs"]
+	path = vim/bundle/dustjs
+	url = git@github.com:jimmyhchan/dustjs.vim.git
