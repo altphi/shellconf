@@ -2,10 +2,9 @@
 
 execute pathogen#infect()
 let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
-" current projects
-  command! Platform :execute PlatformEdit()
 
 " vim variables
+  set list
   set nonumber
   set gcr=n:blinkon0
   set term=xterm-256color
@@ -35,36 +34,31 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   set hidden
   set hlsearch
   set linespace=2
-"  set wildchar=<Tab>
   set wildmenu
   set wildmode=list:full
   set wildcharm=<C-Z>
-  " set dictionary=/usr/share/dict/words
-  nnoremap <silent> <F7> :NERDTreeToggle<CR>
-  nnoremap <silent> <F8> :TagbarToggle<CR>
-  nnoremap <F9> :b <C-Z>
   set switchbuf+=useopen,usetab,split
   set wildignore+=*.swp,*.zip
   let g:ctrlp_working_path_mode = 'ra'
   let g:ctrlp_by_filename = 1
-  "let g:ctrlp_user_command = 'find %s'
   let g:ctrlp_cmd = 'CtrlPBuffer'
-  " let g:ctrlp_user_command = {
-  " \    'types': {
-  " \    1: ['.git', 'cd %s && git ls-files'],
-  " \    },
-  " \    'fallback': 'find %s' }
+  let g:ctrlp_match_window = 'top,order:ttb,min:5,max:20,results:20'
   let g:ctrlp_max_height = 40
   nnoremap ,t  :CtrlPTag <CR>
   filetype plugin indent on
   let g:clojure_align_multiline_strings = 1
   let g:clojure_align_subforms = 1
-"  let g:clojure_fold = 1
-"  let g:AutoPairsShortcutFastWrap = '<C-e>'
-  set sessionoptions=blank,buffers,curdir,tabpages
+  "  let g:clojure_fold = 1
+  "  let g:AutoPairsShortcutFastWrap = '<C-e>'
+  set sessionoptions=buffers,curdir,tabpages
 
 " Appearance
-  colorscheme molokai
+  if has("gui_macvim")
+    set guitablabel=\[%N\]\ %{expand(\"%:p:h:t\")}\/%t\ %M
+  endif
+  " colorscheme molokai
+  colorscheme jellybeans
+  highlight clear SignColumn
   syntax on
   if &t_Co == 8 && $TERM !~# '^linux'
     set t_Co=16
@@ -79,7 +73,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
     set guioptions=egmtA
     "set guifont=Source\ Code\ Pro:h14
     "set guifont=Inconsolata:h14
-    set guifont=Droid\ Sans\ Mono:h14
+    set guifont=Droid\ Sans\ Mono:h13
     set fuoptions=maxvert,maxhorz
     " au GUIEnter * set fullscreen
     noremap <D-1> :tabn 1<CR>
@@ -99,27 +93,18 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
       let &listchars = "tab:\u21e5 ,trail:\u2423,extends:\u21c9,precedes:\u21c7,nbsp:\u00b7"
     endif
   endif
-  set list
-
-  " OLD: show whitespace at end of lines
-  " highlight ExtraWhitespace ctermbg=White guibg=White
-  " autocmd ColorScheme * highlight ExtraWhitespace ctermbg=White guibg=White
-  " match ExtraWhitespace /\s\+$/
-  " autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
-  " autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
-  " autocmd InsertLeave * match ExtraWhitespace /\s\+$/
-  " autocmd BufWinLeave * call clearmatches()
-  " hi CursorLine  cterm=NONE guibg=#003399
+  hi link EasyMotionTarget ErrorMsg
+  hi link EasyMotionShade Comment
+  hi link EasyMotionTarget2First MatchParen
+  hi link EasyMotionTarget2Second MatchParen
 
   " status line
   function ThisSession()
     if exists(v:this_session) | echo v:this_session | else | return '' | endif
   endfunction
-
   set statusline=%F         "tail of the filename
   set statusline+=\ \ \ \ %{fugitive#statusline()}
   set statusline+=%=        "left/right separator
-"  set statusline+=%!{fnamemodify(v:this_session, ':t')}
   set statusline+=[%{strlen(&fenc)?&fenc:'none'}, "file encoding
   set statusline+=%{&ff}]\  "file format
   set statusline+=%h\       "help file flag
@@ -134,13 +119,12 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
     au InsertEnter * hi StatusLine ctermbg=Black ctermfg=White guibg=LightBlue guifg=Black gui=none
     au InsertLeave * hi StatusLine ctermbg=Brown ctermfg=Black guibg=#c2bfa5 guifg=black gui=none
   endif
-  hi link EasyMotionTarget ErrorMsg
-  hi link EasyMotionShade Comment
-  hi link EasyMotionTarget2First MatchParen
-  hi link EasyMotionTarget2Second MatchParen
 
 " Key Bindings & Mappings
-  nmap <F1> :browse so ~/sessions<CR>
+  nnoremap <silent> <F7> :NERDTreeToggle<CR>
+  nnoremap <silent> <F8> :TagbarToggle<CR>
+  nnoremap <F9> :b <C-Z>
+  nmap <F1> :browse so ~/sessions<CR>:source ~/.vimrc<CR>
   nmap <F2> :wa<Bar>exe "mksession! " . v:this_session<CR>
   map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
   map <D-[> <C-W>h
@@ -183,6 +167,12 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   " nmap gb :Git branch -avv<CR>
   " nmap gl :Git log<CR>
   " nmap gdf :Git diff --name-only<CR>
+  " nmap <leader>) f(%a)<ESC><CR>
+  nmap <leader>cd cd %:h<CR>
+  " Use <C-L> to clear the highlighting of :set hlsearch.
+  if maparg('<C-L>', 'n') ==# ''
+    nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
+  endif
 
 " surrounds
   vmap si y`<i_<ESC>`>la_<ESC>
@@ -196,18 +186,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   nmap dq mzF"xf"x`z
   nmap dp mzF(xf)x`z
 
-" nmap <leader>) f(%a)<ESC><CR>
-nmap <leader>cd cd %:h<CR>
-
-" Use <C-L> to clear the highlighting of :set hlsearch.
-if maparg('<C-L>', 'n') ==# ''
-  nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
-endif
-
-" open the file under the cursor
-" map gf :!open <C-R><C-P><CR>
-
-" command mode in Greek
+" Command mode in Greek
   nmap χ x
   nmap ι i
   nmap δς dw
@@ -230,7 +209,7 @@ endif
   nmap Ξ J
   nmap ς w
 
-" custom commands
+" Custom commands
   command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
   command! GREP :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
   command! Sh read !cat ~/n/bash_args /!
@@ -255,85 +234,80 @@ endif
   autocmd FileType * if exists("+omnifunc") && &omnifunc == "" | setlocal omnifunc=syntaxcomplete#Complete | endif
   autocmd FileType * if exists("+completefunc") && &completefunc == "" | setlocal completefunc=syntaxcomplete#Complete | endif
 
-
 " functions
-function! PlatformEdit()
-  :cd /content/quickcue-bucket/platform/src/platform
-  :e .
-endfunction
-command! Cleantail :execute Cleantail() | :normal `kzz
-function! Cleantail()
-  if !&binary && &filetype != 'diff'
-    :normal mk
-    %s/\s\+$//e
-  endif
-endfunction
+  command! Cleantail :execute Cleantail() | :normal `kzz
+  function! Cleantail()
+    if !&binary && &filetype != 'diff'
+      :normal mk
+      %s/\s\+$//e
+    endif
+  endfunction
 
-function! InsertTabWrapper(direction)
-  let col = col('.') - 1
-    if !col || getline('.')[col - 1] !~ '\k'
-        return "\<tab>"
-    elseif "backward" == a:direction
-        return "\<c-p>"
+  function! InsertTabWrapper(direction)
+    let col = col('.') - 1
+      if !col || getline('.')[col - 1] !~ '\k'
+          return "\<tab>"
+      elseif "backward" == a:direction
+          return "\<c-p>"
+      else
+          return "\<c-n>"
+      endif
+  endfunction
+  "inoremap <tab> <c-r>=InsertTabWrapper ("forward")<cr>
+  "inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
+
+  function! Smart_TabComplete()
+    let line = getline('.')                         " current line
+    let substr = strpart(line, -1, col('.')+1)      " from the start of the current line to one character right of the cursor
+    let substr = matchstr(substr, "[^ \t]*$")       " word till cursor
+    if (strlen(substr)==0)                          " nothing to match on empty string
+      return "\<tab>"
+    endif
+    let has_period = match(substr, '\.') != -1      " position of period, if any
+    let has_slash = match(substr, '\/') != -1       " position of slash, if any
+    if (!has_period && !has_slash)
+      return "\<C-X>\<C-P>"                         " existing text matching
+    elseif ( has_slash )
+      return "\<C-X>\<C-F>"                         " file matching
     else
-        return "\<c-n>"
+      return "\<C-X>\<C-O>"                         " plugin matching
     endif
-endfunction
-"inoremap <tab> <c-r>=InsertTabWrapper ("forward")<cr>
-"inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
+  endfunction
+  inoremap <tab> <c-r>=Smart_TabComplete()<cr>
 
-function! Smart_TabComplete()
-  let line = getline('.')                         " current line
-  let substr = strpart(line, -1, col('.')+1)      " from the start of the current line to one character right of the cursor
-  let substr = matchstr(substr, "[^ \t]*$")       " word till cursor
-  if (strlen(substr)==0)                          " nothing to match on empty string
-    return "\<tab>"
-  endif
-  let has_period = match(substr, '\.') != -1      " position of period, if any
-  let has_slash = match(substr, '\/') != -1       " position of slash, if any
-  if (!has_period && !has_slash)
-    return "\<C-X>\<C-P>"                         " existing text matching
-  elseif ( has_slash )
-    return "\<C-X>\<C-F>"                         " file matching
-  else
-    return "\<C-X>\<C-O>"                         " plugin matching
-  endif
-endfunction
-inoremap <tab> <c-r>=Smart_TabComplete()<cr>
+  let g:stop_autocomplete=0
 
-let g:stop_autocomplete=0
-
-function! CleverTab(type)
-    if a:type=='omni'
-        if strpart( getline('.'), 0, col('.')-1 ) =~ '^\s*$'
-            let g:stop_autocomplete=1
-            return "\<TAB>"
-        elseif !pumvisible() && !&omnifunc
-            return "\<C-X>\<C-O>\<C-P>"
-        endif
-    elseif a:type=='keyword' && !pumvisible() && !g:stop_autocomplete
-        return "\<C-X>\<C-N>\<C-P>"
-    elseif a:type=='next'
-        if g:stop_autocomplete
-            let g:stop_autocomplete=0
-        else
-            return "\<C-N>"
-        endif
-    endif
-    return ''
-endfunction
-" inoremap <silent><TAB> <C-R>=CleverTab('omni')<CR><C-R>=CleverTab('keyword')<CR><C-R>=CleverTab('next')<CR>
+  function! CleverTab(type)
+      if a:type=='omni'
+          if strpart( getline('.'), 0, col('.')-1 ) =~ '^\s*$'
+              let g:stop_autocomplete=1
+              return "\<TAB>"
+          elseif !pumvisible() && !&omnifunc
+              return "\<C-X>\<C-O>\<C-P>"
+          endif
+      elseif a:type=='keyword' && !pumvisible() && !g:stop_autocomplete
+          return "\<C-X>\<C-N>\<C-P>"
+      elseif a:type=='next'
+          if g:stop_autocomplete
+              let g:stop_autocomplete=0
+          else
+              return "\<C-N>"
+          endif
+      endif
+      return ''
+  endfunction
+  " inoremap <silent><TAB> <C-R>=CleverTab('omni')<CR><C-R>=CleverTab('keyword')<CR><C-R>=CleverTab('next')<CR>
 
 " Folding
-set foldmethod=marker
-nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
-vnoremap <Space> zf
-function! FoldParagraphs()
-    :set fde=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1
-    :set fdm=expr
-endfunction
+  set foldmethod=marker
+  nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
+  vnoremap <Space> zf
+  function! FoldParagraphs()
+      :set fde=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1
+      :set fdm=expr
+  endfunction
 
-" autocmds
+" Autocmds
   " leave insert mode for new buffers
   autocmd BufNewFile * stopinsert
   " see http://vim.wikia.com/wiki/Keep_folds_closed_while_inserting_text
@@ -343,8 +317,15 @@ endfunction
   autocmd BufNew *.clj,*.scm,*.c TagbarOpen
   " remove trailing spaces always before save
   au BufWritePre * Cleantail
+  " restore cursor position
+  autocmd BufReadPost *
+  \ if line("'\"") > 1 && line("'\"") <= line("$") |
+  \   exe "normal! g`\"" |
+  \ endif
+  " vim-javascript-syntax
+  au Syntax javascript call JavaScriptFold()
 
-" vim custom fold display function
+" Custom fold display functions
   " function! CustomFoldText()
   " slightly altered function via
   " http://www.gregsexton.org/2011/03/improving-the-text-displayed-in-a-fold/
@@ -368,89 +349,75 @@ endfunction
   "    return line . expansionString . foldSizeStr . foldPercentage . foldLevelStr
   "endf
   "set foldtext=CustomFoldText()
-"   function! MyFoldText()
-"       let loopy = 0
-"       let foldstart = v:foldstart
-"       let linenumb = v:foldstart
-"       while loopy == 0 && linenumb <= v:foldend
-"           let line = getline(linenumb)
-"           let matchtest = matchstr(line,"tags: ")
-"           if matchtest == "tags: "
-"               let loopy = 1
-"           else
-"               let linenumb = linenumb + 1
-"           endif
-"       endwhile
-"       if loopy == 0
-"           let line = getline(foldstart)
-"           let line = substitute(line, "{{{ ", "", "")
-"       else
-"           let line = substitute(line, "tags: ", "", "")
-"       endif
-"       let linecount = v:foldend - v:foldstart
-"       return v:folddashes . " " . linecount . " lines: " . line
-"   endfunction
-"   set foldtext=MyFoldText()
+  "   function! MyFoldText()
+  "       let loopy = 0
+  "       let foldstart = v:foldstart
+  "       let linenumb = v:foldstart
+  "       while loopy == 0 && linenumb <= v:foldend
+  "           let line = getline(linenumb)
+  "           let matchtest = matchstr(line,"tags: ")
+  "           if matchtest == "tags: "
+  "               let loopy = 1
+  "           else
+  "               let linenumb = linenumb + 1
+  "           endif
+  "       endwhile
+  "       if loopy == 0
+  "           let line = getline(foldstart)
+  "           let line = substitute(line, "{{{ ", "", "")
+  "       else
+  "           let line = substitute(line, "tags: ", "", "")
+  "       endif
+  "       let linecount = v:foldend - v:foldstart
+  "       return v:folddashes . " " . linecount . " lines: " . line
+  "   endfunction
+  "   set foldtext=MyFoldText()
 
 " Plugins
+  " paredit on by default
+  " let g:paredit_mode = 1
+  " au BufNew,BufNewFile,BufReadPost * :execute PareditInitBuffer()
+  " :h restore-cursor
 
-" paredit on by default
-" let g:paredit_mode = 1
-" au BufNew,BufNewFile,BufReadPost * :execute PareditInitBuffer()
-
-" :h restore-cursor
-autocmd BufReadPost *
-  \ if line("'\"") > 1 && line("'\"") <= line("$") |
-  \   exe "normal! g`\"" |
-  \ endif
-
-" tags
-let g:easytags_cmd = '/usr/local/bin/ctags'
-let g:easytags_file = '~/.vimtags'
-set tags=./.tags,tags;
-let g:easytags_dynamic_files = 1
-let g:easytags_always_enabled = 1
-let g:easytags_updatetime_min = 20000
-
-let g:tagbar_type_vimwiki = {
-    \ 'ctagstype' : 'vimwiki',
-    \ 'kinds' : [
-        \ 'h:Heading_L1',
-        \ 'i:Heading_L2',
-        \ 'k:Heading_L3',
-        \ 'l:Tag'
-    \ ]
-    \ }
-let g:tagbar_type_javascript = {
-    \ 'ctagsbin' : '/usr/local/bin/jsctags'
-    \ }
+" Tags / TagBar
+  let g:easytags_cmd = '/usr/local/bin/ctags'
+  let g:easytags_file = '~/.vimtags'
+  set tags=./.tags,tags;
+  let g:easytags_dynamic_files = 1
+  let g:easytags_always_enabled = 1
+  let g:easytags_updatetime_min = 20000
+  let g:easytags_updatetime_warn = 0
+  let g:tagbar_type_vimwiki = {
+      \ 'ctagstype' : 'vimwiki',
+      \ 'kinds' : [
+          \ 'h:Heading_L1',
+          \ 'i:Heading_L2',
+          \ 'k:Heading_L3',
+          \ 'l:Tag'
+      \ ]
+      \ }
+  let g:tagbar_type_javascript = {
+      \ 'ctagsbin' : '/usr/local/bin/jsctags'
+      \ }
 
 " NERDtree
-let NERDTreeShowBookmarks=1
-let NERDTreeShowFiles=1
-let NERDTreeChDirMode=2
-" let NERDTreeBookmarksFile=$HOME . "/.vim/NERDTreeBookmarks"
-let NERDTreeMouseMode=3
-let NERDTreeMinimalUI=1
-let NERDTreeShowHidden=1
-let NERDTreeIgnore=['\.vim$', '\~$', '\.swp$']
-" au BufReadPost * NERDTreeToggle
-
-" snipmate
-" runtime $HOME . ".vim/vim-snippets/autoload/vim_snippets.vim"
-"let g:snipMate = {}
-"let g:snipMate['snippets_dirs'] = $HOME . ".vim/vim-snippets/snippets"
-"let g:snipMate.scope_aliases = {}
-"let g:snipMate.scope_aliases['ruby'] = 'ruby,ruby-rails'
-"let g:snipMate.scope_aliases['clojure'] = 'clojure'
+  let NERDTreeShowBookmarks=1
+  let NERDTreeShowFiles=1
+  let NERDTreeChDirMode=2
+  " let NERDTreeBookmarksFile=$HOME . "/.vim/NERDTreeBookmarks"
+  let NERDTreeMouseMode=3
+  let NERDTreeMinimalUI=1
+  let NERDTreeShowHidden=1
+  let NERDTreeIgnore=['\.vim$', '\~$', '\.swp$']
+  " au BufReadPost * NERDTreeToggle
 
 " buffergator
-" let g:buffergator_display_regime = 'filepath'
-let g:buffergator_sort_regime = 'mru'
-let g:buffergator_vsplit_size=80
-"let g:buffergator_autodismiss_on_select=0
-"let g:buffergator_autoexpand_on_split=0
-"let g:buffergator_split_size=0
+  " let g:buffergator_display_regime = 'filepath'
+  let g:buffergator_sort_regime = 'filepath'
+  let g:buffergator_vsplit_size=80
+  "let g:buffergator_autodismiss_on_select=0
+  "let g:buffergator_autoexpand_on_split=0
+  "let g:buffergator_split_size=0
 
 " vimWiki
   set nocompatible
@@ -469,11 +436,9 @@ let g:buffergator_vsplit_size=80
   " vnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
 
 " rainbow parens
-au VimEnter * RainbowParenthesesToggle
-au Syntax * RainbowParenthesesLoadRound
-" au Syntax * RainbowParenthesesLoadSquare
-au Syntax * RainbowParenthesesLoadBraces
-au Syntax * RainbowParenthesesLoadChevrons
+  " au VimEnter * RainbowParenthesesToggle
+  " au Syntax * RainbowParenthesesLoadRound
+  " " au Syntax * RainbowParenthesesLoadSquare
+  " au Syntax * RainbowParenthesesLoadBraces
+  " au Syntax * RainbowParenthesesLoadChevrons
 
-" vim-javascript-syntax
-au Syntax javascript call JavaScriptFold()
