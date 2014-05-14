@@ -85,3 +85,6 @@
 [submodule "vim/bundle/dustjs"]
 	path = vim/bundle/dustjs
 	url = git@github.com:jimmyhchan/dustjs.vim.git
+[submodule "vim/bundle/vim-javascript"]
+	path = vim/bundle/vim-javascript
+	url = git@github.com:pangloss/vim-javascript.git

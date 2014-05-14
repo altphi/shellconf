@@ -4,7 +4,7 @@ execute pathogen#infect()
 let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
 
 " vim variables
-  set list
+  set nolist
   set nonumber
   set gcr=n:blinkon0
   set tabstop=2
@@ -42,6 +42,8 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   let g:ctrlp_by_filename = 1
   let g:ctrlp_cmd = 'CtrlPBuffer'
   let g:ctrlp_match_window = 'top,order:ttb,min:5,max:20,results:20'
+  let g:ctrlp_open_new_file = 't'
+  let g:ctrlp_tabpage_position = 'ac'
   let g:ctrlp_max_height = 40
   nnoremap ,t  :CtrlPTag <CR>
   filetype plugin indent on
@@ -50,7 +52,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   " set term=xterm-256color
   "  let g:clojure_fold = 1
   "  let g:AutoPairsShortcutFastWrap = '<C-e>'
-  " set sessionoptions=buffers,curdir,tabpages
+  set sessionoptions=buffers,curdir,tabpages
 
 " Appearance
   " colorscheme molokai
@@ -82,12 +84,13 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
     noremap <D-9> :tabn 9<CR>
     noremap <D-0> :tablast<CR>
   endif
-  if &listchars ==# 'eol:$'
-    set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-    if &termencoding ==# 'utf-8' || &encoding ==# 'utf-8'
-      let &listchars = "tab:\u21e5 ,trail:\u2423,extends:\u21c9,precedes:\u21c7,nbsp:\u00b7"
-    endif
-  endif
+  set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
+  "  if &listchars ==# 'eol:$'
+  "    set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
+  "    if &termencoding ==# 'utf-8' || &encoding ==# 'utf-8'
+  "      let &listchars = "tab:\u21e5 ,trail:\u2423,extends:\u21c9,precedes:\u21c7,nbsp:\u00b7"
+  "    endif
+  "  endif
   hi link EasyMotionTarget ErrorMsg
   hi link EasyMotionShade Comment
   hi link EasyMotionTarget2First MatchParen
@@ -212,6 +215,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   command! RC :e ~/.vimrc
   command! RCload :so ~/.vimrc
   command! CDcurrent :cd %:p:h
+  command! TabToSpace :%s/\t/\ \ /g
 
 " Autocompletion
   filetype plugin on
@@ -321,10 +325,11 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   \ endif
   au GUIEnter * :execute Guitablabel()
   au BufReadPost * highlight clear SignColumn
-
+  hi CursorLine term=underline ctermbg=234 guibg=#384049 guisp=#1c1c1c
 
   " vim-javascript-syntax
-  au Syntax javascript call JavaScriptFold()
+  au Syntax javascript set noexpandtab
+  au Syntax javascript set nolist
 
 " Custom fold display functions
   " function! CustomFoldText()
@@ -441,3 +446,9 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   " " au Syntax * RainbowParenthesesLoadSquare
   " au Syntax * RainbowParenthesesLoadBraces
   " au Syntax * RainbowParenthesesLoadChevrons
+
+" indent guides
+  let g:indent_guides_start_level=2
+  let g:indent_guides_guide_size=1
+  let g:indent_guides_enable_on_vim_startup=1
+

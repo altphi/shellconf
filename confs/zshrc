@@ -13,6 +13,7 @@ readonly ANSIBLE_TRANSPORT='ssh'
 start() {
   echo "$@" > "$HOME"/.motd
   svc -tu /service/oneminute
+  svc -tu /service/checker
 }
 
 stop() {
