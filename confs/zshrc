@@ -1,4 +1,4 @@
-!/bin/zsh
+#!/bin/zsh
 setopt ALL_EXPORT
 readonly SYSTYPE="$(uname)"
 
