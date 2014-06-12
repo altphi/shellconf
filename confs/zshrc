@@ -1,19 +1,18 @@
-#!/bin/zsh
+!/bin/zsh
 setopt ALL_EXPORT
-readonly SYSTYPE="`uname`"
-
+readonly SYSTYPE="$(uname)"
 
 #{{{ Darwin Only
 [[ "$SYSTYPE" == "Darwin" ]] && {
 readonly PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:/usr/local/share/npm/bin:/usr/local/sbin:/Applications/Racket/bin"
 readonly NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags:${NODE_PATH}"
 readonly ANSIBLE_TRANSPORT='ssh'
-. $HOME/.homebrew_github_api_token
+. "$HOME/.homebrew_github_api_token"
 
 start() {
   echo "$@" > "$HOME"/.motd
   svc -tu /service/oneminute
-  svc -tu /service/checker
+  # svc -tu /service/checker
 }
 
 stop() {
@@ -66,7 +65,7 @@ setopt interactivecomments
 unset MANPATH
 unset PAGER
 autoload -U compinit && compinit
-GREP_OPTIONS='--binary-files=without-match --directories=skip'
+export GREP_OPTIONS='--binary-files=without-match --directories=skip'
 
 taillog () {
 tail -f "/var/log/$1/current"
@@ -159,6 +158,10 @@ alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
 alias ta=' tmux attach'
+
+c () {
+  cd "$1" && ls
+}
 
 #}}}
 
@@ -274,11 +277,8 @@ if [[ "$TERM" == "dumb" ]] ; then
   PS1=$(print '\n%n@%m:%/ %%')
 else
   PS1=$(print '\n\e[0;34m%}%n@%m:%{\e[0;32m%}%/ %{\e[0;0m%} ${vcs_info_msg_0_}\n%! : %? %% %{\e[0;0m%}')
-  HOSTNAME=`hostname -s`
-  function precmd {
-      vcs_info
-      printf "\e]1;${HOSTNAME}\a";
-  }
+  HOSTNAME=$(hostname -s)
+
   # {{{ Git Info in prompt
   autoload -Uz vcs_info
   zstyle ':vcs_info:*' actionformats '%F{5}(%f%s%F{5})%F{3}-%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
@@ -287,12 +287,18 @@ else
   zstyle ':vcs_info:*' enable git
   setopt PROMPT_SUBST
   # }}}
+
+  function precmd {
+      vcs_info
+      #printf "\e]1;%s\a", "${HOSTNAME}123";
+  }
+
 fi
 # }}}
 
 #{{{ persistent ssh socket location
 SOCK="/tmp/ssh-agent-$USER-tmux"
-if test $SSH_AUTH_SOCK && [ $SSH_AUTH_SOCK != $SOCK ]
+if test "$SSH_AUTH_SOCK" && [ "$SSH_AUTH_SOCK" != "$SOCK" ]
 then
     rm -f "$SOCK"
     ln -sf "$SSH_AUTH_SOCK" "$SOCK"
@@ -302,10 +308,6 @@ fi
 #}}}
 shuffle() {
     awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8-
-}
-
-zman() {
-    PAGER="less -g -s '+/^       "$1"'" man zshall
 }
 
 fname() {

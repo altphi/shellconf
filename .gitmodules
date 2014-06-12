@@ -49,12 +49,6 @@
 [submodule "vim/bundle/vim-speeddating"]
 	path = vim/bundle/vim-speeddating
 	url = git@github.com:tpope/vim-speeddating.git
-[submodule "vim/bundle/project-tar-gz"]
-	path = vim/bundle/project-tar-gz
-	url = git@github.com:vim-scripts/project.tar.gz.git
-[submodule "vim/bundle/rainbow_parentheses"]
-	path = vim/bundle/rainbow_parentheses
-	url = git@github.com:kien/rainbow_parentheses.vim.git
 [submodule "vim/bundle/vim-clojure-highlight"]
 	path = vim/bundle/vim-clojure-highlight
 	url = git@github.com:guns/vim-clojure-highlight.git
@@ -67,9 +61,6 @@
 [submodule "vim/bundle/vim-misc"]
 	path = vim/bundle/vim-misc
 	url = git@github.com:xolox/vim-misc.git
-[submodule "vim/bundle/vim-autoclose"]
-	path = vim/bundle/vim-autoclose
-	url = git@github.com:Townk/vim-autoclose.git
 [submodule "vim/bundle/vim-buffergator"]
 	path = vim/bundle/vim-buffergator
 	url = git@github.com:jeetsukumaran/vim-buffergator.git
@@ -82,9 +73,12 @@
 [submodule "vim/dict/node-dict"]
 	path = vim/dict/node-dict
 	url = git@github.com:guileen/vim-node-dict.git
-[submodule "vim/bundle/dustjs"]
-	path = vim/bundle/dustjs
-	url = git@github.com:jimmyhchan/dustjs.vim.git
 [submodule "vim/bundle/vim-javascript"]
 	path = vim/bundle/vim-javascript
 	url = git@github.com:pangloss/vim-javascript.git
+[submodule "vim/bundle/syntastic"]
+	path = vim/bundle/syntastic
+	url = git@github.com:scrooloose/syntastic.git
+[submodule "vim/bundle/python-mode"]
+	path = vim/bundle/python-mode
+	url = git@github.com:klen/python-mode.git
