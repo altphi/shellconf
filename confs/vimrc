@@ -83,6 +83,8 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
     noremap <D-8> :tabn 8<CR>
     noremap <D-9> :tabn 9<CR>
     noremap <D-0> :tablast<CR>
+  else
+    colorscheme molokai
   endif
   set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
   "  if &listchars ==# 'eol:$'
@@ -137,11 +139,11 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   "nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
   nmap ybb viWx:let @a=system('sed "s/&/\%26/g"', @")<CR>:let @b=system('~/bin/bitly', @a)<CR>"bp
   vmap tmb y:echo system('tumblr pipe --host=altphi.tumblr.com', @")<CR>:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bpkJ<CR>`<v`>
-  map fbp y:let @a=system('sed 1d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "\!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>`<v`>
-  map fbs y:let @b=system('markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd status " . shellescape(@b)<CR>`<v`>
-  map pall fbptmb<ESC>`<yy:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
-  map pol y:let @a=system('head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @b=system('sed 1,2d \| head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @c=@b . " " . @a<CR>:echo system ('ttytter -script', @c)<CR>`<v`>pol-Tfbstmb
-  map pol-T y:let @a=system('head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @b=system('sed 1,4d \| head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @c=@b . " " . @a<CR>:echo system ('ttytter -script', @c)<CR>
+  "map fbp y:let @a=system('sed 1d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "\!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>`<v`>
+  "map fbs y:let @b=system('markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd status " . shellescape(@b)<CR>`<v`>
+  "map pall fbptmb<ESC>`<yy:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
+  "map pol y:let @a=system('head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @b=system('sed 1,2d \| head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @c=@b . " " . @a<CR>:echo system ('ttytter -script', @c)<CR>`<v`>pol-Tfbstmb
+  "map pol-T y:let @a=system('head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @b=system('sed 1,4d \| head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @c=@b . " " . @a<CR>:echo system ('ttytter -script', @c)<CR>
   map fff ?{{<CR>i{<ESC>
   " yank current file's directory
   map yfd :let @a = expand("%:p:h")<CR>:echo system('pbcopy', @a)<CR>
@@ -452,3 +454,5 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   let g:indent_guides_guide_size=1
   let g:indent_guides_enable_on_vim_startup=1
 
+" pymode
+let g:pymode_lint = 1
