@@ -4,31 +4,34 @@ then
 	echo "usage: $0 domain.tld"; exit 1;
 else
 
-	dnsmx $1
-	dnsmx $1 | cut -d' ' -f2 | xargs dnsip
-	echo 
-	
-	/bin/echo -n "$1 "
-	dnsip $1
+	dnsmx "$1"
+	dnsmx "$1" | cut -d' ' -f2 | xargs dnsip
+	echo
+
+	/bin/echo "$1 "
+	dnsip "$1"
 
 	for word in www ftp pop mail smtp webmail admin data imap list lists shop random1 randomasdfje32; do
-		/bin/echo -n "$word.$1 ";
-		dnsip $word.$1
+		/bin/echo "$word.$1 ";
+		dnsip "$word.$1"
 	done
 
 	echo
         for word in a mx ns; do
-		dnsqr $word $1
+		dnsqr "$word" "$1"
 		echo
 	done
 
-        echo  '\n\n'
+  echo
+  echo
 	echo "dnsqr txt $1 (note funky \\\072 encoding in other templates)"
-	dnsqr txt $1
-        echo  '\n\n'
+	dnsqr txt "$1"
+  echo
+  echo
 	echo "and dnstxt $1"
-	dnstxt $1
-        echo  '\n\n'
+	dnstxt "$1"
+  echo
+  echo
 
-	~/bin/dnsguess $1
+	~/bin/dnsguess "$1"
 fi
