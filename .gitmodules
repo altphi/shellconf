@@ -82,3 +82,12 @@
 [submodule "vim/bundle/python-mode"]
 	path = vim/bundle/python-mode
 	url = git@github.com:klen/python-mode.git
+[submodule "vim/bundle/paredit"]
+	path = vim/bundle/paredit
+	url = git@github.com:vim-scripts/paredit.vim.git
+[submodule "vim/bundle/slamhound"]
+	path = vim/bundle/slamhound
+	url = git@github.com:guns/vim-slamhound.git
+[submodule "vim/bundle/vim-niji"]
+	path = vim/bundle/vim-niji
+	url = git@github.com:amdt/vim-niji.git

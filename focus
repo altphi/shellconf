@@ -1,0 +1,33 @@
+#!/bin/sh
+
+
+switcheroo () {
+  sudo mv "$1" "${1}tmp"
+  sudo mv "${1}tmp" "$1"
+}
+
+focus_on () {
+  sudo killall Tweetbot Reeder
+  sudo chmod -x /Applications/Tweetbot.app
+  sudo chmod -x /Applications/Reeder.app
+}
+
+
+focus_off () {
+  sudo chmod +x /Applications/Tweetbot.app
+  sudo chmod +x /Applications/Reeder.app
+
+  switcheroo "/Applications/Tweetbot.app"
+  switcheroo "/Applications/Reeder.app"
+}
+
+
+if [ $# -lt 1 ] ; then
+  echo "usage: $0 on|off"; exit 1;
+else
+  if [[ "$1" == "on" ]]; then
+    focus_on
+  elif [[ "$1" == "off" ]]; then
+    focus_off
+  fi
+fi
