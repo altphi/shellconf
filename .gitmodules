@@ -27,7 +27,7 @@
 	url = https://github.com/majutsushi/tagbar.git
 [submodule "vim/bundle/vim-fireplace"]
 	path = vim/bundle/vim-fireplace
-	url = git://github.com/tpope/vim-fireplace.git
+	url = https://github.com/tpope/vim-fireplace.git
 [submodule "vim/bundle/tlib_vim"]
 	path = vim/bundle/tlib_vim
 	url = https://github.com/tomtom/tlib_vim.git
@@ -45,49 +45,46 @@
 	url = https://github.com/tpope/vim-markdown.git
 [submodule "vim/bundle/vim-easymotion"]
 	path = vim/bundle/vim-easymotion
-	url = git@github.com:Lokaltog/vim-easymotion.git
+	url = https://github.com/Lokaltog/vim-easymotion.git
 [submodule "vim/bundle/vim-speeddating"]
 	path = vim/bundle/vim-speeddating
-	url = git@github.com:tpope/vim-speeddating.git
+	url = https://github.com/tpope/vim-speeddating.git
 [submodule "vim/bundle/vim-clojure-highlight"]
 	path = vim/bundle/vim-clojure-highlight
-	url = git@github.com:guns/vim-clojure-highlight.git
+	url = https://github.com/guns/vim-clojure-highlight.git
 [submodule "vim/bundle/vim-jdaddy"]
 	path = vim/bundle/vim-jdaddy
-	url = git@github.com:tpope/vim-jdaddy.git
+	url = https://github.com/tpope/vim-jdaddy.git
 [submodule "vim/bundle/vim-easytags"]
 	path = vim/bundle/vim-easytags
-	url = git@github.com:xolox/vim-easytags.git
+	url = https://github.com/xolox/vim-easytags.git
 [submodule "vim/bundle/vim-misc"]
 	path = vim/bundle/vim-misc
-	url = git@github.com:xolox/vim-misc.git
+	url = https://github.com/xolox/vim-misc.git
 [submodule "vim/bundle/vim-buffergator"]
 	path = vim/bundle/vim-buffergator
-	url = git@github.com:jeetsukumaran/vim-buffergator.git
+	url = https://github.com/jeetsukumaran/vim-buffergator.git
 [submodule "vim/bundle/vim-gitgutter"]
 	path = vim/bundle/vim-gitgutter
-	url = git://github.com/airblade/vim-gitgutter.git
+	url = https://github.com/airblade/vim-gitgutter.git
 [submodule "vim/bundle/vim-eunuch"]
 	path = vim/bundle/vim-eunuch
-	url = git@github.com:tpope/vim-eunuch.git
+	url = https://github.com/tpope/vim-eunuch.git
 [submodule "vim/dict/node-dict"]
 	path = vim/dict/node-dict
-	url = git@github.com:guileen/vim-node-dict.git
+	url = https://github.com/guileen/vim-node-dict.git
 [submodule "vim/bundle/vim-javascript"]
 	path = vim/bundle/vim-javascript
-	url = git@github.com:pangloss/vim-javascript.git
+	url = https://github.com/pangloss/vim-javascript.git
 [submodule "vim/bundle/syntastic"]
 	path = vim/bundle/syntastic
-	url = git@github.com:scrooloose/syntastic.git
+	url = https://github.com/scrooloose/syntastic.git
 [submodule "vim/bundle/python-mode"]
 	path = vim/bundle/python-mode
-	url = git@github.com:klen/python-mode.git
+	url = https://github.com/klen/python-mode.git
 [submodule "vim/bundle/paredit"]
 	path = vim/bundle/paredit
-	url = git@github.com:vim-scripts/paredit.vim.git
+	url = https://github.com/vim-scripts/paredit.vim.git
 [submodule "vim/bundle/slamhound"]
 	path = vim/bundle/slamhound
-	url = git@github.com:guns/vim-slamhound.git
-[submodule "vim/bundle/vim-niji"]
-	path = vim/bundle/vim-niji
-	url = git@github.com:amdt/vim-niji.git
+	url = https://github.com/guns/vim-slamhound.git
