@@ -39,6 +39,15 @@ arinwhois() {
 
 
 SERVICE_ENV=`hostname -s`
+
+
+#nvm
+source ~/.nvm/nvm.sh
+nvm use 0.10.40
+
+. `brew --prefix`/etc/profile.d/z.sh
+# https://github.com/opentable/guestcenteruicomponents/wiki/Contributing,-Setup
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 }
 #}}}
 
@@ -359,14 +368,3 @@ t() {
   bash -c "sleep \"$1\" && gecho -e \"$2\" | terminal-notifier -title \"Timer\" -group \"sdb_timer\" -sound \"Purr\" 1>/dev/null 2>/dev/null" &
 }
 
-#nvm
-source ~/.nvm/nvm.sh
-nvm use 0.10.40
-
-# z
-. `brew --prefix`/etc/profile.d/z.sh
-
-# https://github.com/opentable/guestcenteruicomponents/wiki/Contributing,-Setup
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
-
-alias build='cd /content/opentable/gc-app && grunt comp-build && cd /Users/stephen/GCRM/client/sites/connect_desktop && gulp'
