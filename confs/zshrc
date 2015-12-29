@@ -4,8 +4,8 @@ readonly SYSTYPE="$(uname)"
 
 #{{{ Darwin Only
 [[ "$SYSTYPE" == "Darwin" ]] && {
-readonly PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:/usr/local/share/npm/bin:/usr/local/sbin:/Applications/Racket/bin"
-readonly NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags:${NODE_PATH}"
+PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:/usr/local/share/npm/bin:/usr/local/sbin:/content/opentable/otpl-deploy-scripts/bin"
+NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags:${NODE_PATH}"
 readonly ANSIBLE_TRANSPORT='ssh'
 . "$HOME/.homebrew_github_api_token"
 
@@ -38,6 +38,7 @@ arinwhois() {
 }
 
 
+SERVICE_ENV=`hostname -s`
 }
 #}}}
 
@@ -52,6 +53,7 @@ GIT_EDITOR=vim
 HISTSIZE=10000
 SAVEHIST=10000
 HISTFILE=~/.zhistory
+COFFEELINT_CONFIG=~/.coffeelint.json
 
 #{{{ misc
 setopt AUTO_CD
@@ -82,12 +84,18 @@ compdef 'compadd -P /service/ -- `/bin/ls /service/`' s
 #}}}
 
 #{{{ directory shortcuts
+
 p=/content/quickcue-bucket/platform/
 ps=/content/quickcue-bucket/platform/src/platform
 b=/content/quickcue-bucket
 d=/content/quickcue-bucket/deploy
 h=/content/quickcue-bucket/cfmgmt/ansible/hosts
-c=/content/quickcue-bucket/control-panel/src/control_panel
+ca=/content/opentable/connect-alerts
+cd=/content/opentable/GCRM/client/sites/connect_desktop
+cs=/content/opentable/GCRM/server
+gcrm=/content/opentable/GuestCenterReservationManager
+o=/content/opentable
+w=/Users/stephen/Dropbox/wiki
 
 [[ "$SYSTYPE" == "Darwin" ]] && {
 l="/Users/stephen/Documents/CUA-Teaching/LAT 505B Fall '13"
@@ -116,6 +124,7 @@ alias la=' ls -lahGF'
 alias clj='rlwrap clj'
 alias bing=' terminal-notifier -message "bing bing"'
 alias coreaudiokill='sudo pkill coreaudiod'
+alias docker_env='eval "$(docker-machine env default)" && echo "nameserver 10.0.0.103" | docker-machine ssh default "grep -q 10.0.0.103 /etc/resolv.conf || echo \"nameserver 10.0.0.103\" >> /etc/resolv.conf"'
 rgrep () {
   grep -i --color=auto -r "$1" .
   }
@@ -139,13 +148,14 @@ alias rgrep='rgrep --color=auto'
 }
 
 alias g=' ls -a | xargs grep --color=auto ';
+alias ga='git add'
 alias gc='git checkout'
 alias gp='git pull'
 alias gb=' git branch -avv'
 alias gd='git diff'
 alias gdf='git diff --name-only'
 alias gs='git status --ignore-submodules'
-alias gl='git log --name-status --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"'
+alias gl='git log --graph --name-status --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"'
 alias grep='grep --color=auto'
 alias info='info --vi-keys'
 alias l='ll'
@@ -158,6 +168,10 @@ alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
 alias ta=' tmux attach'
+alias lr=' rm -rf ./target/ && lein repl'
+alias lrs=' lein ring server-headless'
+alias lc=' lein cloverage'
+alias gulpcoffee='gulp --require coffee-script/register'
 
 c () {
   cd "$1" && ls
@@ -273,10 +287,30 @@ LOGCHECK=0
 
 # {{{ prompt/tab-title
 
+#{{{ timer
+# HT: http://stackoverflow.com/a/1862762
+timer=0
+function timer_start {
+  timer=${timer:-$SECONDS}
+}
+
+function timer_stop {
+  elapsed_time=$(($SECONDS - $timer))
+  if [[ "$elapsed_time" -eq "0" ]]; then
+    elapsed_time=""
+  else
+    elapsed_time="${elapsed_time}s"
+  fi
+  unset timer
+}
+
+#}}}
+
 if [[ "$TERM" == "dumb" ]] ; then
   PS1=$(print '\n%n@%m:%/ %%')
 else
   PS1=$(print '\n\e[0;34m%}%n@%m:%{\e[0;32m%}%/ %{\e[0;0m%} ${vcs_info_msg_0_}\n%! : %? %% %{\e[0;0m%}')
+  RPROMPT=$(print '${elapsed_time}')
   HOSTNAME=$(hostname -s)
 
   # {{{ Git Info in prompt
@@ -289,11 +323,16 @@ else
   # }}}
 
   function precmd {
+      timer_stop
       vcs_info
-      #printf "\e]1;%s\a", "${HOSTNAME}123";
+      printf "\e]1;%s\a", "${HOSTNAME} $SECONDS";
+  }
+  function preexec {
+    timer_start
   }
 
 fi
+
 # }}}
 
 #{{{ persistent ssh socket location
@@ -306,6 +345,7 @@ then
 fi
 
 #}}}
+
 shuffle() {
     awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8-
 }
@@ -314,3 +354,19 @@ fname() {
   echo "searching for *${1}*"
   find . -iname "*${1}*"
 }
+
+t() {
+  bash -c "sleep \"$1\" && gecho -e \"$2\" | terminal-notifier -title \"Timer\" -group \"sdb_timer\" -sound \"Purr\" 1>/dev/null 2>/dev/null" &
+}
+
+#nvm
+source ~/.nvm/nvm.sh
+nvm use 0.10.40
+
+# z
+. `brew --prefix`/etc/profile.d/z.sh
+
+# https://github.com/opentable/guestcenteruicomponents/wiki/Contributing,-Setup
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
+
+alias build='cd /content/opentable/gc-app && grunt comp-build && cd /Users/stephen/GCRM/client/sites/connect_desktop && gulp'
