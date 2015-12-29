@@ -7,18 +7,21 @@ switcheroo () {
 }
 
 focus_on () {
-  sudo killall Tweetbot Reeder
+  sudo killall Tweetbot Reeder Pocket
   sudo chmod -x /Applications/Tweetbot.app
   sudo chmod -x /Applications/Reeder.app
+  sudo chmod -x /Applications/Pocket.app
 }
 
 
 focus_off () {
   sudo chmod +x /Applications/Tweetbot.app
   sudo chmod +x /Applications/Reeder.app
+  sudo chmod +x /Applications/Pocket.app
 
   switcheroo "/Applications/Tweetbot.app"
   switcheroo "/Applications/Reeder.app"
+  switcheroo "/Applications/Pocket.app"
 }
 
 

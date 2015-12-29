@@ -1,0 +1,14 @@
+#!/bin/sh
+mkdir -p /var/run/sshd
+exec 2>&1
+
+ipt () {
+  iptables "$1" INPUT -p tcp --dport 22 -i eth0 -m state --state NEW -m recent --update --name
+  toomuchSSH --seconds 60 --hitcount 10 -j DROP
+  iptables "$1" INPUT -p tcp --dport 22 -i eth0 -m state --state NEW -m recent --name toomuchSSH
+  --set
+}
+
+ipt -D
+ipt -I
+exec /usr/sbin/sshd -D -e
