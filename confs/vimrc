@@ -1,6 +1,5 @@
 " vim:tabstop=2:shiftwidth=2:expandtab:foldenable:textwidth=79:foldmethod=indent:foldtext=
 
-execute pathogen#infect()
 let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
 
 " vim variables
