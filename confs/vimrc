@@ -1,6 +1,31 @@
 " vim:tabstop=2:shiftwidth=2:expandtab:foldenable:textwidth=79:foldmethod=indent:foldtext=
-
+set nocompatible              " be iMproved, required
+filetype off                  " required
+" set the runtime path to include Vundle and initialize
 let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+" alternatively, pass a path where Vundle should install plugins
+"call vundle#begin('~/some/path/here')
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+
+" The following are examples of different formats supported.
+" Keep Plugin commands between vundle#begin/end.
+" plugin on GitHub repo
+Plugin 'tpope/vim-fugitive'
+Plugin 'vimwiki/vimwiki'
+
+Plugin 'MarcWeber/vim-addon-mw-utils'
+Plugin 'tomtom/tlib_vim'
+Plugin 'garbas/vim-snipmate'
+
+  " Optional:
+Plugin 'honza/vim-snippets'
+
+call vundle#end()            " required
+filetype plugin indent on    " required
+
 
 " vim variables
   set nolist
@@ -45,7 +70,6 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   let g:ctrlp_tabpage_position = 'ac'
   let g:ctrlp_max_height = 40
   nnoremap ,t  :CtrlPTag <CR>
-  filetype plugin indent on
   let g:clojure_align_multiline_strings = 1
   let g:clojure_align_subforms = 1
   " set term=xterm-256color
@@ -318,7 +342,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   " open tagbar for certain filetypes
   autocmd BufNew *.clj,*.scm,*.c TagbarOpen
   " remove trailing spaces always before save
-  au BufWritePre * Cleantail
+  " au BufWritePre * Cleantail
   " restore cursor position
   autocmd BufReadPost *
   \ if line("'\"") > 1 && line("'\"") <= line("$") |
@@ -434,7 +458,7 @@ let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
   let g:vimwiki_auto_checkbox = 1
   let g:vimwiki_use_mouse=1
   nmap <leader>tt <Plug>VimwikiToggleListItem
-  let g:vimwiki_list = [{'path': '~/Documents/vimwiki/', 'syntax': 'markdown', 'ext': '.mkd'}]
+  let g:vimwiki_list = [{'path': '~/vimwiki/', 'syntax': 'default' }]
   let g:markdown_folding='yes'
   autocmd BufNew *.mkd setlocal foldexpr=MarkdownFold()
   let g:vimwiki_folding='expr'

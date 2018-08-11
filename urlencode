@@ -1,3 +1,4 @@
 #!/usr/bin/python
-import sys, urllib as ul; 
+print "Beware of encoding unwanted newlines!  use 'echo -n'\n\n"
+import sys, urllib as ul;
 print ul.quote_plus(sys.stdin.read())
