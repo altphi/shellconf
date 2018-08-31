@@ -121,6 +121,7 @@ p=~/code/pliny
 s=~/code/skuid-monorepo/skuid
 sc=~/code/skuid-monorepo/skuid-core/next
 pr=~/code/skuid-FOR-PR-REVIEWS
+hr=~/Library/Mobile\ Documents/3L68KQB4HG~com~readdle~CommonDocuments/Documents/current\ reading/tycs/0.\ haskell\ road/haskell_road_code
 icons=~/code/skuid-monorepo/skuid-core/assets/icons-svg/ink
 SKUID_ROOT=~s
 }
@@ -386,3 +387,6 @@ cl() {
 }
 
 source ~/.skuidrc
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
