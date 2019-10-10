@@ -2,87 +2,50 @@
 setopt ALL_EXPORT
 readonly SYSTYPE="$(uname)"
 
-#{{{ Darwin Only
+# Darwin Only
 [[ "$SYSTYPE" == "Darwin" ]] && {
-YARN_PATH="$(yarn global bin)"
-PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:${YARN_PATH}:/usr/local/share/npm/bin:/usr/local/sbin:$HOME/Library/Haskell/bin"
-NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags/:${NODE_PATH}"
-readonly ANSIBLE_TRANSPORT='ssh'
+  PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:${YARN_PATH}:/usr/local/share/npm/bin:/usr/local/sbin:$HOME/Library/Haskell/bin"
+  NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags/:${NODE_PATH}"
+  readonly ANSIBLE_TRANSPORT='ssh'
 
-start() {
-  echo "$@" > "$HOME"/.motd
-  svc -tu /service/oneminute
-  # svc -tu /service/checker
+  #nvm
+  NVM_DIR="$HOME/.nvm"
+
+  nvm() {
+    unset -f nvm node npm
+    . "/usr/local/opt/nvm/nvm.sh"
+    nvm use v8
+    nvm "$@"
+  }
+
+  node() {
+    unset -f nvm node npm
+    . "/usr/local/opt/nvm/nvm.sh"
+    nvm use v8
+    node "$@"
+  }
+
+  npm() {
+    unset -f nvm node npm
+    . "/usr/local/opt/nvm/nvm.sh"
+    nvm use v8
+    npm "$@"
+  }
+
+  PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 }
 
-stop() {
-  svc -d /service/oneminute
-  rm -f "$HOME"/.motd-paus
-  rm -f "$HOME"/.motd
-}
-
-pause() {
-  svc -a /service/oneminute
-}
-
-resume() {
-  svc -u /service/oneminute
-}
-
-test -s "$HOME"/.motd && cat "$HOME"/.motd
-
-arinwhois() {
-  ( cd /usr/local/arinr/bin
-  ./arininfo "$1"
-  )
-}
-
-
-SERVICE_ENV=`hostname -s`
-
-
-#nvm
-export NVM_DIR="$HOME/.nvm"
-
-nvm() {
-unset -f nvm node npm
-. "/usr/local/opt/nvm/nvm.sh"
-nvm use v8
-nvm "$@"
-}
-
-node() {
-unset -f nvm node npm
-. "/usr/local/opt/nvm/nvm.sh"
-nvm use v8
-node "$@"
-}
-
-npm() {
-unset -f nvm node npm
-. "/usr/local/opt/nvm/nvm.sh"
-nvm use v8
-npm "$@"
-}
-
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
-}
-#}}}
-
-#{{{ Linux Only
+# Linux Only   
 [[ "$SYSTYPE" == "Linux" ]] && {
-readonly PATH=$PATH:/usr/local/sbin:$HOME/bin
+  readonly PATH=$PATH:/usr/local/sbin:$HOME/bin
 }
-#}}}
 
 EDITOR=vim
 GIT_EDITOR=vim
 HISTSIZE=10000
 SAVEHIST=10000
 HISTFILE=~/.zhistory
-COFFEELINT_CONFIG=~/.coffeelint.json
 
-#{{{ misc
 setopt AUTO_CD
 setopt CDABLE_VARS
 setopt SHARE_HISTORY
@@ -94,66 +57,46 @@ setopt interactivecomments
 unset MANPATH
 unset PAGER
 autoload -U compinit && compinit
-export GREP_OPTIONS='--binary-files=without-match --directories=skip'
+GREP_OPTIONS='--binary-files=without-match --directories=skip'
 
 taillog () {
-tail -f "/var/log/$1/current"
+  tail -f "/var/log/$1/current"
 }
 taillog_sans_date () {
-tail -f "/var/log/$1/current" | perl -p -e 's/^.*?\ //g'
+  tail -f "/var/log/$1/current" | perl -p -e 's/^.*?\ //g'
 }
+
+# custom autocompletion
 compdef 'compadd -- `/bin/ls /service/`' taillog
 compdef 'compadd -- `/bin/ls /service/`' taillog_without_date
 compdef 'compadd -P /service/ -- `/bin/ls /service/`' svstat
 compdef 'compadd -P /service/ -- `/bin/ls /service/`' svc
 compdef 'compadd -P /service/ -- `/bin/ls /service/`' s
 
-#}}}
-
-#{{{ directory shortcuts
-
-pdf="/Users/stephen/Library/Mobile Documents/3L68KQB4HG~com~readdle~CommonDocuments/Documents"
-w=/Users/stephen/Dropbox/wiki
+# directory shortcuts and aliases
+pdf="/Users/stephen/Library/Mobile Documents/3L68KQB4HG~com~readdle~CommonDocuments/Documents/PDFs"
+w="/Users/stephen/Library/Mobile Documents/9CR7T2DMDG~com~ngocluu~onewriter/Documents/wiki/"
 
 [[ "$SYSTYPE" == "Darwin" ]] && {
-sm=~/code/skuid-monorepo
-p=~/code/pliny
-s=~/code/skuid-monorepo/skuid
-sc=~/code/skuid-monorepo/skuid-core/next
-pr=~/code/skuid-FOR-PR-REVIEWS
-hr=~/Library/Mobile\ Documents/3L68KQB4HG~com~readdle~CommonDocuments/Documents/current\ reading/tycs/0.\ haskell\ road/haskell_road_code
-icons=~/code/skuid-monorepo/skuid-core/assets/icons-svg/ink
-SKUID_ROOT=~s
-}
+  hr=~/Library/Mobile\ Documents/3L68KQB4HG~com~readdle~CommonDocuments/Documents/current\ reading/tycs/0.\ haskell\ road/haskell_road_code
+  alias vi='vim'
+  alias ls=' ls -GF'
+  alias ll=' ls -lhGF'
+  alias la=' ls -lahGF'
+  alias clj='rlwrap clj'
+  alias bing=' terminal-notifier -message "bing bing"'
+  alias coreaudiokill='sudo pkill coreaudiod'
+  alias docker_env='eval "$(docker-machine env default)" && echo "nameserver 10.0.0.103" | docker-machine ssh default "grep -q 10.0.0.103 /etc/resolv.conf || echo \"nameserver 10.0.0.103\" >> /etc/resolv.conf"'
+  alias docker_prune='docker system prune -a --volumes'
+  alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
+  alias ns='export API_VERSION=next ; nvm use && make start'
 
-#}}}
-
-#{{{ alii
-
-[[ "$SYSTYPE" == "Darwin" ]] && {
-
-if hash mvim 2>/dev/null
-then
-    alias mvim='mvim --remote-tab'
-fi
-
-alias vi='vim'
-alias ls=' ls -GF'
-alias ll=' ls -lhGF'
-alias la=' ls -lahGF'
-alias clj='rlwrap clj'
-alias bing=' terminal-notifier -message "bing bing"'
-alias coreaudiokill='sudo pkill coreaudiod'
-alias docker_env='eval "$(docker-machine env default)" && echo "nameserver 10.0.0.103" | docker-machine ssh default "grep -q 10.0.0.103 /etc/resolv.conf || echo \"nameserver 10.0.0.103\" >> /etc/resolv.conf"'
-alias yarnit='cd ~s/pliny && yarn install && cd ../skuid/ && yarn install && cd ../skuid-core && yarn install && cd ../pliny'
-alias npmit='cd ~s/pliny && npm install && cd ../skuid/ && npm install && cd ../skuid-core && npm install && cd ../pliny'
-alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
-alias ns='export API_VERSION=next ; nvm use && make start'
-alias b='cd ~sc && npm run build'
-rgrep () {
-  grep -i --color=auto -r "$1" .
+  rgrep () {
+    grep -i --color=auto -r "$1" .
+    }
   }
-}
+
+# for runit
 s () {
   if [[ "$#" -gt 0 ]]
   then
@@ -163,24 +106,22 @@ s () {
   fi
 }
 
-#alias s=' svstat /service/*'
-
 [[ "$SYSTYPE" == "Linux" ]] && {
-alias ls=' ls -F -b -T 0 --color=auto'
-alias ll=' ls -F -b -T 0 --color=auto -l'
-alias la=' ls -F -b -T 0 --color=auto -la'
-alias rgrep='rgrep --color=auto'
+  alias ls=' ls -F -b -T 0 --color=auto'
+  alias ll=' ls -F -b -T 0 --color=auto -l'
+  alias la=' ls -F -b -T 0 --color=auto -la'
+  alias rgrep='rgrep --color=auto'
 }
 
 alias g=' ls -a | xargs grep --color=auto ';
 alias ga=' git add'
-alias gc=' git checkout'
+alias gc='git checkout'
 alias gp=' git pull'
 alias gb=' git branch -vv'
 alias gd=' git diff'
 alias gbD=' git branch -D '
 alias gdf=' git diff --name-only'
-alias gs=' git status --ignore-submodules'
+alias gs=' git status'
 alias gl=' git log --graph --name-status --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"'
 alias git_cleanup_branches=" git fetch --prune && gb | grep ': gone' | tr -s ' ' | cut -d ' ' -f2 | xargs git branch -D"
 alias grep='grep --color=auto'
@@ -193,25 +134,23 @@ alias se='sudo -E'
 alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
-alias ta=' tmux attach'
-alias ptheme='grunt --gruntfile ~s/skuid-core/Gruntfile.js themeCompile --skip-screenshots'
+alias ta='tmux attach'
+alias dc='docker-compose'
+alias dcl='docker-compose logs -f $1'
 
 c () {
   cd "$1" && ls
 }
 
-#}}}
-
-#{{{ colors
+# colors
 [[ "$SYSTYPE" == "Linux" ]] && eval `dircolors`
 
 [[ "$SYSTYPE" == "Darwin" ]] && {
 LSCOLORS=exxxcxdxcxegedabagacad
 LS_COLORS='rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lz=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.rar=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.axa=00;36:*.oga=00;36:*.spx=00;36:*.xspf=00;36:'
 }
-#}}}
 
-#{{{ Dir Push/Pop
+# Dir Push/Pop
 DIRSTACKSIZE=30
 setopt AUTO_PUSHD
 setopt PUSHD_MINUS
@@ -229,15 +168,13 @@ fi
 chpwd() {
   print -l $PWD ${(u)dirstack} >$DIRSTACKFILE
 }
-#}}}
 
-#{{{ completion
+# completion
 zmodload -i zsh/complist
 zstyle ':completion:*' list-colors '$LSCOLORS'
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.zsh/cache
 zstyle ':completion:*' menu select=2
-
 
 #autoload -U incremental-complete-word
 #zle -N incremental-complete-word
@@ -259,9 +196,7 @@ then
   zstyle ':completion:*' hosts $_myhosts
 fi
 
-#}}}
-
-#{{{ key bindings
+# key bindings
 bindkey -v
 bindkey "^[_" insert-last-word
 bindkey "^[b" backward-word
@@ -301,35 +236,13 @@ bindkey "^P" up-line-or-history
 bindkey "^R" history-incremental-search-backward
 bindkey "^Y" yank
 bindkey "^[/" _history-complete-older
-#}}}
 
-#{{{ watch settings
+# watch logins/logouts to system
 watch=( all )
 WATCHFMT="%S%n@%m %a %l at %T on %W%s"
 LOGCHECK=0
-#}}}
 
-# {{{ prompt/tab-title
-
-#{{{ timer
-# HT: http://stackoverflow.com/a/1862762
-timer=0
-function timer_start {
-  timer=${timer:-$SECONDS}
-}
-
-function timer_stop {
-  elapsed_time=$(($SECONDS - $timer))
-  if [[ "$elapsed_time" -eq "0" ]]; then
-    elapsed_time=""
-  else
-    elapsed_time="... ${elapsed_time}s"
-  fi
-  unset timer
-}
-
-#}}}
-
+# prompt
 if [[ "$TERM" == "dumb" ]] ; then
   PS1=$(print '${elapsed_time}\n\n%n@%m:%/ %%')
 else
@@ -337,29 +250,22 @@ else
   #RPROMPT=$(print '${elapsed_time}')
   HOSTNAME=$(hostname -s)
 
-  # {{{ Git Info in prompt
+  # Current git info in prompt
   autoload -Uz vcs_info
   zstyle ':vcs_info:*' actionformats '%F{5}(%f%s%F{5})%F{3}-%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
   zstyle ':vcs_info:*' formats '%F{5}(%f%s%F{5})%F{3}-%F{5}[%F{2}%b%F{5}]%f '
   zstyle ':vcs_info:(sv[nk]|bzr):*' branchformat '%b%F{1}:%F{3}%r'
   zstyle ':vcs_info:*' enable git
   setopt PROMPT_SUBST
-  # }}}
 
   function precmd {
       #timer_stop
       vcs_info
-      printf "\e]1;%s\a", "${HOSTNAME}";
+      printf "\e]1;%s\a", "${PWD##*/}";
   }
-  #function preexec {
-  #  timer_start
-  #}
-
 fi
 
-# }}}
-
-#{{{ persistent ssh socket location
+# persistent ssh socket location
 #SOCK="/tmp/ssh-agent-$USER-tmux"
 #if test "$SSH_AUTH_SOCK" && [ "$SSH_AUTH_SOCK" != "$SOCK" ]
 #then
@@ -367,7 +273,6 @@ fi
 #    ln -sf "$SSH_AUTH_SOCK" "$SOCK"
 #    export SSH_AUTH_SOCK="$SOCK"
 #fi
-#}}}
 
 shuffle() {
     awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8-
@@ -382,11 +287,17 @@ t() {
   bash -c "sleep \"$1\" && gecho -e \"$2\" | terminal-notifier -title \"Timer\" -group \"sdb_timer\" -sound \"Purr\" 1>/dev/null 2>/dev/null" &
 }
 
-cl() {
-  (cd ~p && gc -- package-lock.json && cd ~sm && gc -- skuid/package-lock.json && gc -- skuid-core/next/package-lock.json)
-}
-
-source ~/.skuidrc
-
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
+ng_add_component() {
+  npx ng generate c "$1" -m app
+}
+
+JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+PATH="/usr/local/opt/swagger-codegen@2/bin:$PATH"
+ANDROID_HOME="/Users/stephen/Library/Android/sdk"
+
+SDKMAN_DIR="/Users/stephen/.sdkman"
+[[ -s "/Users/stephen/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/stephen/.sdkman/bin/sdkman-init.sh"
+
+HOMEBREW_GITHUB_API_TOKEN=`cat "${HOME}/.tokens/homebrew_github"`

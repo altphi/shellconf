@@ -26,69 +26,71 @@ Plugin 'honza/vim-snippets'
 call vundle#end()            " required
 filetype plugin indent on    " required
 
+" {{{ vim variables
+set nolist
+set nonumber
+set gcr=n:blinkon0
+set tabstop=2
+set shiftwidth=2
+set expandtab
+set nocompatible
+set cursorline
+set autoread
+set viminfo='1000,f1,<500
+set showmatch
+set matchtime=2
+set ignorecase smartcase
+set autoindent
+set smartindent
+set shiftround
+set lisp
+set vb t_vb=
+set ruler
+set incsearch
+set virtualedit=onemore
+set background=dark
+set complete=.,w,b,u,i,]
+set showcmd
+set backspace=indent,eol,start
+set autochdir
+set hidden
+set hlsearch
+set linespace=2
+set wildmenu
+set wildmode=list:full
+set wildcharm=<C-Z>
+set switchbuf+=useopen,usetab,split
+set wildignore+=*.swp,*.zip
+let g:ctrlp_working_path_mode = 'ra'
+let g:ctrlp_by_filename = 1
+let g:ctrlp_cmd = 'CtrlPBuffer'
+let g:ctrlp_match_window = 'top,order:ttb,min:5,max:20,results:20'
+let g:ctrlp_open_new_file = 't'
+let g:ctrlp_tabpage_position = 'ac'
+let g:ctrlp_max_height = 40
+nnoremap ,t  :CtrlPTag <CR>
+let g:clojure_align_multiline_strings = 1
+let g:clojure_align_subforms = 1
+" set term=xterm-256color
+"  let g:clojure_fold = 1
+"  let g:AutoPairsShortcutFastWrap = '<C-e>'
+set sessionoptions=buffers,curdir,tabpages
+" }}}
 
-" vim variables
-  set nolist
-  set nonumber
-  set gcr=n:blinkon0
-  set tabstop=2
-  set shiftwidth=2
-  set expandtab
-  set nocompatible
-  set cursorline
-  set autoread
-  set viminfo='1000,f1,<500
-  set showmatch
-  set matchtime=2
-  set ignorecase smartcase
-  set autoindent
-  set smartindent
-  set shiftround
-  set lisp
-  set vb t_vb=
-  set ruler
-  set incsearch
-  set virtualedit=onemore
-  set background=dark
-  set complete=.,w,b,u,i,]
-  set showcmd
-  set backspace=indent,eol,start
-  set autochdir
-  set hidden
-  set hlsearch
-  set linespace=2
-  set wildmenu
-  set wildmode=list:full
-  set wildcharm=<C-Z>
-  set switchbuf+=useopen,usetab,split
-  set wildignore+=*.swp,*.zip
-  let g:ctrlp_working_path_mode = 'ra'
-  let g:ctrlp_by_filename = 1
-  let g:ctrlp_cmd = 'CtrlPBuffer'
-  let g:ctrlp_match_window = 'top,order:ttb,min:5,max:20,results:20'
-  let g:ctrlp_open_new_file = 't'
-  let g:ctrlp_tabpage_position = 'ac'
-  let g:ctrlp_max_height = 40
-  nnoremap ,t  :CtrlPTag <CR>
-  let g:clojure_align_multiline_strings = 1
-  let g:clojure_align_subforms = 1
-  " set term=xterm-256color
-  "  let g:clojure_fold = 1
-  "  let g:AutoPairsShortcutFastWrap = '<C-e>'
-  set sessionoptions=buffers,curdir,tabpages
 
-" Appearance
-  " colorscheme molokai
-  colorscheme jellybeans
-  syntax on
-  if &t_Co == 8 && $TERM !~# '^linux'
+" {{{  Appearance
+syntax on
+
+if &t_Co == 8 && $TERM !~# '^linux'
     set t_Co=16
-  endif
-  if &encoding ==# 'latin1' && has('gui_running')
-    set encoding=utf-8
-    set macmeta
-    let $GVIM="yes"
-  endif
+endif
+  
+if &encoding ==# 'latin1' && has('gui_running')
+  set encoding=utf-8
+  set macmeta
+  let $GVIM="yes"
+endif
+
   if has("gui_running")
     set guioptions=egmtA
     "set guifont=Source\ Code\ Pro:h14
@@ -106,20 +108,18 @@ filetype plugin indent on    " required
     noremap <D-8> :tabn 8<CR>
     noremap <D-9> :tabn 9<CR>
     noremap <D-0> :tablast<CR>
+    
+    " THEMES
+    " light themes
+    " colorscheme morning
+    " dark themes
+    " colorscheme molokai
+    colorscheme jellybeans
   else
     colorscheme molokai
   endif
+
   set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-  "  if &listchars ==# 'eol:$'
-  "    set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-  "    if &termencoding ==# 'utf-8' || &encoding ==# 'utf-8'
-  "      let &listchars = "tab:\u21e5 ,trail:\u2423,extends:\u21c9,precedes:\u21c7,nbsp:\u00b7"
-  "    endif
-  "  endif
-  hi link EasyMotionTarget ErrorMsg
-  hi link EasyMotionShade Comment
-  hi link EasyMotionTarget2First MatchParen
-  hi link EasyMotionTarget2Second MatchParen
 
   " status line
   function! ThisSession()
@@ -142,8 +142,9 @@ filetype plugin indent on    " required
     au InsertEnter * hi StatusLine ctermbg=Black ctermfg=White guibg=LightBlue guifg=Black gui=none
     au InsertLeave * hi StatusLine ctermbg=Brown ctermfg=Black guibg=#c2bfa5 guifg=black gui=none
   endif
+" }}}
 
-" Key Bindings & Mappings
+" {{{ Key Bindings & Mappings
   nnoremap <silent> <F7> :NERDTreeToggle<CR>
   nnoremap <silent> <F8> :TagbarToggle<CR>
   nnoremap <F9> :b <C-Z>
@@ -231,6 +232,7 @@ filetype plugin indent on    " required
   nmap δ d
   nmap Ξ J
   nmap ς w
+" }}}
 
 " Custom commands
   command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
@@ -350,59 +352,13 @@ filetype plugin indent on    " required
   \ endif
   au GUIEnter * :execute Guitablabel()
   au BufReadPost * highlight clear SignColumn
-  hi CursorLine term=underline ctermbg=234 guibg=#384049 guisp=#1c1c1c
+  
+  " highlight cursor line
+  " hi CursorLine term=underline ctermbg=234 guibg=#384049 guisp=#1c1c1c
 
   " vim-javascript-syntax
   au Syntax javascript set noexpandtab
   au Syntax javascript set nolist
-
-" Custom fold display functions
-  " function! CustomFoldText()
-  " slightly altered function via
-  " http://www.gregsexton.org/2011/03/improving-the-text-displayed-in-a-fold/
-  "    "get first non-blank line
-  "    let fs = v:foldstart
-  "    while getline(fs) =~ '^\s*$' | let fs = nextnonblank(fs + 1)
-  "    endwhile
-  "    "if fs > v:foldend
-  "    "    let line = getline(v:foldstart)
-  "    "else
-  "    "    let line = substitute(getline(fs), '\t', repeat(' ', &tabstop), 'g')
-  "    "endif
-  "    let line = substitute(line, "{{", '', 'g')
-  "    let w = winwidth(0) - &foldcolumn - (&number ? 8 : 0)
-  "    let foldSize = 1 + v:foldend - v:foldstart
-  "    let foldSizeStr = " " . foldSize . " lines "
-  "    let foldLevelStr = repeat("+--", v:foldlevel)
-  "    let lineCount = line("$")
-  "    let foldPercentage = printf("[%.1f", (foldSize*1.0)/lineCount*100) . "%] "
-  "    let expansionString = repeat(".", w - strwidth(foldSizeStr.line.foldLevelStr.foldPercentage))
-  "    return line . expansionString . foldSizeStr . foldPercentage . foldLevelStr
-  "endf
-  "set foldtext=CustomFoldText()
-  "   function! MyFoldText()
-  "       let loopy = 0
-  "       let foldstart = v:foldstart
-  "       let linenumb = v:foldstart
-  "       while loopy == 0 && linenumb <= v:foldend
-  "           let line = getline(linenumb)
-  "           let matchtest = matchstr(line,"tags: ")
-  "           if matchtest == "tags: "
-  "               let loopy = 1
-  "           else
-  "               let linenumb = linenumb + 1
-  "           endif
-  "       endwhile
-  "       if loopy == 0
-  "           let line = getline(foldstart)
-  "           let line = substitute(line, "{{{ ", "", "")
-  "       else
-  "           let line = substitute(line, "tags: ", "", "")
-  "       endif
-  "       let linecount = v:foldend - v:foldstart
-  "       return v:folddashes . " " . linecount . " lines: " . line
-  "   endfunction
-  "   set foldtext=MyFoldText()
 
 " Plugins
   " paredit on by default

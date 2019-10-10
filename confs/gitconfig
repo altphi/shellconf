@@ -1,5 +1,5 @@
 [user]
-	email = beck@j38.net
+	email = stephen.beck@carbonfive.com
 	name = Stephen Beck
 [push]
 	default = current
@@ -7,7 +7,7 @@
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 [core]
 	editor = /usr/bin/vi
-	excludesfile = /Users/stephen/.gitignore_global
+	excludesfile = /Users/stephen/bin/confs/gitignore
 [filter "media"]
 	clean = git-media-clean %f
 	smudge = git-media-smudge %f
@@ -15,10 +15,16 @@
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
 	path = 
 [mergetool "sourcetree"]
-	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
 	trustExitCode = true
 [filter "lfs"]
 	process = git-lfs filter-process
 	required = true
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
+[credential]
+	helper = cache
+[credential "https://www.fnbrepo.com"]
+  username = "stephen.beck"
+[http]
+	sslVerify = true
