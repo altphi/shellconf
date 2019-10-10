@@ -2,4 +2,6 @@ vim/filetype.vim
 .DS_Store
 *.swp
 vim/.netrwhist
+vim/bundle
 service/nginx
+fnb-login.sh
