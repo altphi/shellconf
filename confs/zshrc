@@ -9,28 +9,46 @@ readonly SYSTYPE="$(uname)"
   readonly ANSIBLE_TRANSPORT='ssh'
 
   #nvm
+  NVM_SYMLINK_CURRENT=true
   NVM_DIR="$HOME/.nvm"
+  USE_NODE_VER="v12.18.4"
 
   nvm() {
-    unset -f nvm node npm
+    unset -f nvm node npm npx
     . "/usr/local/opt/nvm/nvm.sh"
-    nvm use v8
+    nvm use "$USE_NODE_VER"
     nvm "$@"
   }
 
   node() {
-    unset -f nvm node npm
+    unset -f nvm node npm npx
     . "/usr/local/opt/nvm/nvm.sh"
-    nvm use v8
+    nvm use "$USE_NODE_VER"
     node "$@"
   }
 
   npm() {
-    unset -f nvm node npm
+    unset -f nvm node npm npx
     . "/usr/local/opt/nvm/nvm.sh"
-    nvm use v8
+    nvm use "$USE_NODE_VER"
     npm "$@"
   }
+
+  npx() {
+    unset -f nvm node npm npx
+    . "/usr/local/opt/nvm/nvm.sh"
+    nvm use "$USE_NODE_VER"
+    npx "$@"
+  }
+
+ npm() {
+    unset -f nvm node npm npx
+    . "/usr/local/opt/nvm/nvm.sh"
+    nvm use "$USE_NODE_VER"
+    npm "$@"
+  }
+
+
 
   PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 }
@@ -90,6 +108,12 @@ w="/Users/stephen/Library/Mobile Documents/9CR7T2DMDG~com~ngocluu~onewriter/Docu
   alias docker_prune='docker system prune -a --volumes'
   alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
   alias ns='export API_VERSION=next ; nvm use && make start'
+  zlib_rename () {
+   rename -s \ \(z-lib\.org\) '' [A-K]*.pdf
+   rename -s \ \(z-lib\.org\) '' [L-Z]*.pdf
+   rename -s \ \(z-lib\.org\) '' [a-z]*.pdf
+   rename -s \ \(z-lib\.org\) '' *.epub
+ }
 
   rgrep () {
     grep -i --color=auto -r "$1" .
@@ -137,6 +161,7 @@ alias h=' history 0'
 alias ta='tmux attach'
 alias dc='docker-compose'
 alias dcl='docker-compose logs -f $1'
+alias m='~/code/med-poc'
 
 c () {
   cd "$1" && ls
@@ -293,11 +318,15 @@ ng_add_component() {
   npx ng generate c "$1" -m app
 }
 
-JAVA_HOME=`/usr/libexec/java_home -v 1.8`
-PATH="/usr/local/opt/swagger-codegen@2/bin:$PATH"
-ANDROID_HOME="/Users/stephen/Library/Android/sdk"
+#JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+#PATH="/usr/local/opt/swagger-codegen@2/bin:$PATH"
+#ANDROID_HOME="/Users/stephen/Library/Android/sdk"
 
 SDKMAN_DIR="/Users/stephen/.sdkman"
 [[ -s "/Users/stephen/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/stephen/.sdkman/bin/sdkman-init.sh"
 
-HOMEBREW_GITHUB_API_TOKEN=`cat "${HOME}/.tokens/homebrew_github"`
+#HOMEBREW_GITHUB_API_TOKEN=`cat "${HOME}/.tokens/homebrew_github"`
+#
+
+eval "$(direnv hook zsh)"
+eval "$(rbenv init -)"
