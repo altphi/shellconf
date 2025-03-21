@@ -1,0 +1,26 @@
+#!/bin/bash
+
+newPost() {
+    if [ -z "$1" ]; then
+        echo "Error: Missing post subject"
+        echo "Usage: newPost \"post subject\""
+        return 1
+    fi
+
+    cd ~/code/altphi.github.io
+    BASE_NAME="$1"
+    BASE_NAME=$(echo "$BASE_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g')
+    NEW_FILE="blog/$BASE_NAME.md"
+
+    # Check if file already exists
+    if [ -f "./content/$NEW_FILE" ]; then
+        # Try with timestamp suffix
+        NEW_FILE="blog/$BASE_NAME"_$(date +'%H%M%S').md
+    fi
+
+    hugo new "$NEW_FILE"
+    sleep .5
+    code "./content/$NEW_FILE"
+}
+
+newPost "$@"

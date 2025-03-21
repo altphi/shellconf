@@ -1,3 +1,0 @@
-(require xrepl)
-(require readline)
-(current-directory "/content/quickcue-bucket/cli")

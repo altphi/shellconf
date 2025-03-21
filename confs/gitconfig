@@ -1,5 +1,5 @@
 [user]
-	email = stephen.beck@carbonfive.com
+	email = 2529298+altphi@users.noreply.github.com
 	name = Stephen Beck
 [push]
 	default = current
@@ -28,3 +28,9 @@
 
 [http]
 	sslVerify = true
+[pull]
+	rebase = false
+[commit]
+	template = /Users/stephen/.stCommitMsg
+[merge]
+	suppressDriveby = false

@@ -18,7 +18,6 @@ Plugin 'vimwiki/vimwiki'
 
 Plugin 'MarcWeber/vim-addon-mw-utils'
 Plugin 'tomtom/tlib_vim'
-Plugin 'garbas/vim-snipmate'
 
   " Optional:
 Plugin 'honza/vim-snippets'
@@ -79,7 +78,7 @@ set sessionoptions=buffers,curdir,tabpages
 
 
 " {{{  Appearance
-syntax on
+syntax off
 
 if &t_Co == 8 && $TERM !~# '^linux'
     set t_Co=16
@@ -114,9 +113,10 @@ endif
     " colorscheme morning
     " dark themes
     " colorscheme molokai
-    colorscheme jellybeans
+    "colorscheme jellybeans
   else
-    colorscheme molokai
+    "colorscheme morning
+    "colorscheme molokai
   endif
 
   set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+

@@ -1,72 +1,28 @@
-#!/bin/zsh
+#!/usr/bin/env zsh
 setopt ALL_EXPORT
 readonly SYSTYPE="$(uname)"
+PATH="/opt/homebrew/bin:/opt/homebrew/opt/mysql@8.0/bin:/opt/homebrew/opt/mysql-client@8.0/bin:/usr/local/opt/php@7.4/bin:/usr/local/opt/php@7.4/sbin:/opt/homebrew/opt/ruby/bin:$HOME/bin:$PATH"
+NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags/:${NODE_PATH}"
+LDFLAGS="-L/usr/local/opt/php@7.4/lib -L/opt/homebrew/opt/mysql-client@8.0/lib"
+CPPFLAGS="-I/usr/local/opt/php@7.4/include -I/opt/homebrew/opt/mysql-client@8.0/include"
 
-# Darwin Only
-[[ "$SYSTYPE" == "Darwin" ]] && {
-  PATH="$PATH:$HOME/bin:$HOME/bin/osx-bin:/usr/local/opt/ruby/bin:${YARN_PATH}:/usr/local/share/npm/bin:/usr/local/sbin:$HOME/Library/Haskell/bin"
-  NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags/:${NODE_PATH}"
-  readonly ANSIBLE_TRANSPORT='ssh'
+NVM_SYMLINK_CURRENT=true
+NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
 
-  #nvm
-  NVM_SYMLINK_CURRENT=true
-  NVM_DIR="$HOME/.nvm"
-  USE_NODE_VER="v12.18.4"
-
-  nvm() {
-    unset -f nvm node npm npx
-    . "/usr/local/opt/nvm/nvm.sh"
-    nvm use "$USE_NODE_VER"
-    nvm "$@"
-  }
-
-  node() {
-    unset -f nvm node npm npx
-    . "/usr/local/opt/nvm/nvm.sh"
-    nvm use "$USE_NODE_VER"
-    node "$@"
-  }
-
-  npm() {
-    unset -f nvm node npm npx
-    . "/usr/local/opt/nvm/nvm.sh"
-    nvm use "$USE_NODE_VER"
-    npm "$@"
-  }
-
-  npx() {
-    unset -f nvm node npm npx
-    . "/usr/local/opt/nvm/nvm.sh"
-    nvm use "$USE_NODE_VER"
-    npx "$@"
-  }
-
- npm() {
-    unset -f nvm node npm npx
-    . "/usr/local/opt/nvm/nvm.sh"
-    nvm use "$USE_NODE_VER"
-    npm "$@"
-  }
-
-
-
-  PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
-}
-
-# Linux Only   
-[[ "$SYSTYPE" == "Linux" ]] && {
-  readonly PATH=$PATH:/usr/local/sbin:$HOME/bin
-}
+PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 
 EDITOR=vim
 GIT_EDITOR=vim
 HISTSIZE=10000
 SAVEHIST=10000
-HISTFILE=~/.zhistory
+HISTFILE=~/.zsh_history
 
 setopt AUTO_CD
 setopt CDABLE_VARS
 setopt SHARE_HISTORY
+setopt INC_APPEND_HISTORY
 setopt HIST_NO_STORE
 setopt nohup
 setopt EXTENDED_GLOB
@@ -74,15 +30,8 @@ setopt HIST_IGNORE_SPACE
 setopt interactivecomments
 unset MANPATH
 unset PAGER
-autoload -U compinit && compinit
+autoload -Uz compinit && compinit
 GREP_OPTIONS='--binary-files=without-match --directories=skip'
-
-taillog () {
-  tail -f "/var/log/$1/current"
-}
-taillog_sans_date () {
-  tail -f "/var/log/$1/current" | perl -p -e 's/^.*?\ //g'
-}
 
 # custom autocompletion
 compdef 'compadd -- `/bin/ls /service/`' taillog
@@ -91,55 +40,45 @@ compdef 'compadd -P /service/ -- `/bin/ls /service/`' svstat
 compdef 'compadd -P /service/ -- `/bin/ls /service/`' svc
 compdef 'compadd -P /service/ -- `/bin/ls /service/`' s
 
+# completion
+zmodload -i zsh/complist
+zstyle ':completion:*' list-colors '$LSCOLORS'
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path ~/.zsh/cache
+zstyle ':completion:*' menu select=2
+
+# complete SSH hosts
+if test -s "$HOME/.ssh/known_hosts"
+then
+  local _myhosts
+  _myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
+  zstyle ':completion:*' hosts $_myhosts
+fi
+
 # directory shortcuts and aliases
 pdf="/Users/stephen/Library/Mobile Documents/3L68KQB4HG~com~readdle~CommonDocuments/Documents/PDFs"
 w="/Users/stephen/Library/Mobile Documents/9CR7T2DMDG~com~ngocluu~onewriter/Documents/wiki/"
 
-[[ "$SYSTYPE" == "Darwin" ]] && {
-  hr=~/Library/Mobile\ Documents/3L68KQB4HG~com~readdle~CommonDocuments/Documents/current\ reading/tycs/0.\ haskell\ road/haskell_road_code
-  alias vi='vim'
-  alias ls=' ls -GF'
-  alias ll=' ls -lhGF'
-  alias la=' ls -lahGF'
-  alias clj='rlwrap clj'
-  alias bing=' terminal-notifier -message "bing bing"'
-  alias coreaudiokill='sudo pkill coreaudiod'
-  alias docker_env='eval "$(docker-machine env default)" && echo "nameserver 10.0.0.103" | docker-machine ssh default "grep -q 10.0.0.103 /etc/resolv.conf || echo \"nameserver 10.0.0.103\" >> /etc/resolv.conf"'
-  alias docker_prune='docker system prune -a --volumes'
-  alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
-  alias ns='export API_VERSION=next ; nvm use && make start'
-  zlib_rename () {
-   rename -s \ \(z-lib\.org\) '' [A-K]*.pdf
-   rename -s \ \(z-lib\.org\) '' [L-Z]*.pdf
-   rename -s \ \(z-lib\.org\) '' [a-z]*.pdf
-   rename -s \ \(z-lib\.org\) '' *.epub
- }
-
-  rgrep () {
-    grep -i --color=auto -r "$1" .
-    }
-  }
-
-# for runit
-s () {
-  if [[ "$#" -gt 0 ]]
-  then
-    svstat "$1"
-  else
-    svstat /service/*
-  fi
-}
-
-[[ "$SYSTYPE" == "Linux" ]] && {
-  alias ls=' ls -F -b -T 0 --color=auto'
-  alias ll=' ls -F -b -T 0 --color=auto -l'
-  alias la=' ls -F -b -T 0 --color=auto -la'
-  alias rgrep='rgrep --color=auto'
-}
-
+alias vi='vim'
+alias ls=' ls -GF'
+alias ll=' ls -lhGF'
+alias la=' ls -lahGF'
+alias clj='rlwrap clj'
+alias bing=' terminal-notifier -message "bing bing"'
+alias coreaudiokill='sudo pkill coreaudiod'
+alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
+alias clt="~/code/cli-clt"
+alias clt2="~/code/clt2"
+alias iac="~/code/iac"
+alias app2="~/code/app2"
+alias abhe="~/code/abhe"
+alias backroom="~/code/backroom"
+alias kitchensink="~/code/kitchensink"
+alias vpn="~/code/clt-vpn-scripts"
+alias oldphp="~/code/oldphp"
 alias g=' ls -a | xargs grep --color=auto ';
 alias ga=' git add'
-alias gc='git checkout'
+alias gc=' git checkout'
 alias gp=' git pull'
 alias gb=' git branch -vv'
 alias gd=' git diff'
@@ -158,24 +97,20 @@ alias se='sudo -E'
 alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
-alias ta='tmux attach'
-alias dc='docker-compose'
-alias dcl='docker-compose logs -f $1'
-alias m='~/code/med-poc'
+alias w='subl ~/icloud/wiki/'
+alias oldbrew='/user/local/bin/brew'
+
+rgrep () {
+  grep -i --color=auto -r "$1" .
+}
 
 c () {
   cd "$1" && ls
 }
 
-# colors
-[[ "$SYSTYPE" == "Linux" ]] && eval `dircolors`
-
-[[ "$SYSTYPE" == "Darwin" ]] && {
 LSCOLORS=exxxcxdxcxegedabagacad
 LS_COLORS='rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lz=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.rar=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.axa=00;36:*.oga=00;36:*.spx=00;36:*.xspf=00;36:'
-}
 
-# Dir Push/Pop
 DIRSTACKSIZE=30
 setopt AUTO_PUSHD
 setopt PUSHD_MINUS
@@ -185,41 +120,6 @@ setopt PUSHD_IGNOREDUPS
 #alias -- +='pushd +0'
 #alias -- -='pushd -1'
 DIRSTACKFILE=~/.zdirs
-# this bit + chpwd() is for directory stack persistent across multiple shells
-if [[ -f $DIRSTACKFILE ]] && [[ $#dirstack -eq 0 ]]; then
-  dirstack=( ${(f)"$(< $DIRSTACKFILE)"} )
-  [[ -d $dirstack[1] ]] && cd $dirstack[1] && cd $OLDPWD
-fi
-chpwd() {
-  print -l $PWD ${(u)dirstack} >$DIRSTACKFILE
-}
-
-# completion
-zmodload -i zsh/complist
-zstyle ':completion:*' list-colors '$LSCOLORS'
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path ~/.zsh/cache
-zstyle ':completion:*' menu select=2
-
-#autoload -U incremental-complete-word
-#zle -N incremental-complete-word
-
-#function beginning-incremental-search {
-#    if [[ $LASTWIDGET == $WIDGET ]]
-#    then zle .$WIDGET
-#    else zle .$WIDGET $LBUFFER
-#    fi
-#}
-#zle -N history-incremental-search-backward beginning-incremental-search
-#zle -N history-incremental-search-forward beginning-incremental-search
-
-# complete SSH hosts
-if test -s "$HOME/.ssh/known_hosts"
-then
-  local _myhosts
-  _myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
-  zstyle ':completion:*' hosts $_myhosts
-fi
 
 # key bindings
 bindkey -v
@@ -290,17 +190,20 @@ else
   }
 fi
 
-# persistent ssh socket location
-#SOCK="/tmp/ssh-agent-$USER-tmux"
-#if test "$SSH_AUTH_SOCK" && [ "$SSH_AUTH_SOCK" != "$SOCK" ]
-#then
-#    rm -f "$SOCK"
-#    ln -sf "$SSH_AUTH_SOCK" "$SOCK"
-#    export SSH_AUTH_SOCK="$SOCK"
-#fi
+# prevent dangerous commands from entering history
+zshaddhistory() {
+  local line=${1%%$'\n'}
+  if [[ $line =~ "NODE_ENV=production" ]]; then
+    return 1
+  fi
+  if [[ $line =~ "kubectl apply -f .*\bproduction\b.*" ]]; then
+    return 1
+  fi
+  return 0
+}
 
 shuffle() {
-    awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8-
+  awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8-
 }
 
 fname() {
@@ -312,21 +215,10 @@ t() {
   bash -c "sleep \"$1\" && gecho -e \"$2\" | terminal-notifier -title \"Timer\" -group \"sdb_timer\" -sound \"Purr\" 1>/dev/null 2>/dev/null" &
 }
 
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
-ng_add_component() {
-  npx ng generate c "$1" -m app
-}
-
-#JAVA_HOME=`/usr/libexec/java_home -v 1.8`
-#PATH="/usr/local/opt/swagger-codegen@2/bin:$PATH"
-#ANDROID_HOME="/Users/stephen/Library/Android/sdk"
-
-SDKMAN_DIR="/Users/stephen/.sdkman"
-[[ -s "/Users/stephen/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/stephen/.sdkman/bin/sdkman-init.sh"
-
-#HOMEBREW_GITHUB_API_TOKEN=`cat "${HOME}/.tokens/homebrew_github"`
-#
-
 eval "$(direnv hook zsh)"
-eval "$(rbenv init -)"
+[[ /opt/homebrew/bin/kubectl ]] && source <(kubectl completion zsh)
+
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+export PATH="/opt/homebrew/opt/redis@6.2/bin:$PATH"
+
+shuf -n 1 ~/.perlis_epigrams
