@@ -1,8 +1,0 @@
-#!/bin/sh
-PATH="${PATH}:/usr/local/bin"
-target="${HOME}/Documents/vimwiki/inbox.mkd"
-text=`pbpaste` ;
-
-gecho -e "---\n\n" >> "$target"
-gecho -e "$text" >> "$target"
-gecho -e "\n" >> "$target"

@@ -1,10 +1,11 @@
 #!/usr/bin/env zsh
 setopt ALL_EXPORT
 readonly SYSTYPE="$(uname)"
-PATH="/opt/homebrew/bin:/opt/homebrew/opt/mysql@8.0/bin:/opt/homebrew/opt/mysql-client@8.0/bin:/usr/local/opt/php@7.4/bin:/usr/local/opt/php@7.4/sbin:/opt/homebrew/opt/ruby/bin:$HOME/bin:$PATH"
+PATH="/opt/homebrew/bin:/opt/homebrew/opt/mysql@8.0/bin:/opt/homebrew/opt/mysql-client@8.0/bin:/usr/local/opt/php@7.4/bin:/usr/local/opt/php@7.4/sbin:/opt/homebrew/opt/ruby/bin:$HOME/bin:/opt/homebrew/opt/openjdk@21/bin:$PATH"
 NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags/:${NODE_PATH}"
 LDFLAGS="-L/usr/local/opt/php@7.4/lib -L/opt/homebrew/opt/mysql-client@8.0/lib"
 CPPFLAGS="-I/usr/local/opt/php@7.4/include -I/opt/homebrew/opt/mysql-client@8.0/include"
+CLASSPATH="${HOME}/bin/jars/algs4.jar:."
 
 NVM_SYMLINK_CURRENT=true
 NVM_DIR="$HOME/.nvm"
@@ -33,13 +34,6 @@ unset PAGER
 autoload -Uz compinit && compinit
 GREP_OPTIONS='--binary-files=without-match --directories=skip'
 
-# custom autocompletion
-compdef 'compadd -- `/bin/ls /service/`' taillog
-compdef 'compadd -- `/bin/ls /service/`' taillog_without_date
-compdef 'compadd -P /service/ -- `/bin/ls /service/`' svstat
-compdef 'compadd -P /service/ -- `/bin/ls /service/`' svc
-compdef 'compadd -P /service/ -- `/bin/ls /service/`' s
-
 # completion
 zmodload -i zsh/complist
 zstyle ':completion:*' list-colors '$LSCOLORS'
@@ -55,20 +49,13 @@ then
   zstyle ':completion:*' hosts $_myhosts
 fi
 
-# directory shortcuts and aliases
-pdf="/Users/stephen/Library/Mobile Documents/3L68KQB4HG~com~readdle~CommonDocuments/Documents/PDFs"
-w="/Users/stephen/Library/Mobile Documents/9CR7T2DMDG~com~ngocluu~onewriter/Documents/wiki/"
-
 alias vi='vim'
 alias ls=' ls -GF'
 alias ll=' ls -lhGF'
 alias la=' ls -lahGF'
-alias clj='rlwrap clj'
-alias bing=' terminal-notifier -message "bing bing"'
-alias coreaudiokill='sudo pkill coreaudiod'
-alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
-alias clt="~/code/cli-clt"
 alias clt2="~/code/clt2"
+alias barrage="~/code/barrage"
+alias e2e="~/code/e2e"
 alias iac="~/code/iac"
 alias app2="~/code/app2"
 alias abhe="~/code/abhe"
@@ -81,6 +68,7 @@ alias ga=' git add'
 alias gc=' git checkout'
 alias gp=' git pull'
 alias gb=' git branch -vv'
+alias gba=' git branch -vv --all'
 alias gd=' git diff'
 alias gbD=' git branch -D '
 alias gdf=' git diff --name-only'
@@ -93,12 +81,17 @@ alias l='ll'
 alias lg='ls -lah | grep -i'
 alias pg='ps aux | grep -i'
 alias rm=' rm -i'
-alias se='sudo -E'
 alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
-alias w='subl ~/icloud/wiki/'
-alias oldbrew='/user/local/bin/brew'
+alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --load '
+s () {
+  rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --quiet --load ~/.scheme.init $@ --eval '(exit)'
+}
+
+jr () {
+  javac *.java && java $@
+}
 
 rgrep () {
   grep -i --color=auto -r "$1" .
@@ -211,8 +204,20 @@ fname() {
   find . -iname "*${1}*"
 }
 
+ffind() {
+  open $(fd . | fzf)
+}
+
 t() {
   bash -c "sleep \"$1\" && gecho -e \"$2\" | terminal-notifier -title \"Timer\" -group \"sdb_timer\" -sound \"Purr\" 1>/dev/null 2>/dev/null" &
+}
+
+pass_insert() {
+    pass insert "$@" && cd ~/.password-store && git push origin main
+}
+
+gpg_backup_keys() {
+    tar --exclude='S.*' --no-xattrs -czf gnupg-backup.tar.gz -C ~ .gnupg
 }
 
 eval "$(direnv hook zsh)"
@@ -221,4 +226,4 @@ eval "$(direnv hook zsh)"
 export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 export PATH="/opt/homebrew/opt/redis@6.2/bin:$PATH"
 
-shuf -n 1 ~/.perlis_epigrams
+shuf -n 1 ~/bin/misc/perlis_epigrams

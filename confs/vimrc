@@ -1,437 +1,48 @@
-" vim:tabstop=2:shiftwidth=2:expandtab:foldenable:textwidth=79:foldmethod=indent:foldtext=
-set nocompatible              " be iMproved, required
-filetype off                  " required
-" set the runtime path to include Vundle and initialize
-let &runtimepath.=$VIMRUNTIME . "," . $HOME . "/.vim/vim-snippets"
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-" alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
-" let Vundle manage Vundle, required
-Plugin 'VundleVim/Vundle.vim'
 
-" The following are examples of different formats supported.
-" Keep Plugin commands between vundle#begin/end.
-" plugin on GitHub repo
-Plugin 'tpope/vim-fugitive'
-Plugin 'vimwiki/vimwiki'
+au InsertEnter * set cul
+au InsertLeave * set nocul
 
-Plugin 'MarcWeber/vim-addon-mw-utils'
-Plugin 'tomtom/tlib_vim'
+call plug#begin('~/.vim/plugged')
+Plug 'puremourning/vimspector'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'preservim/nerdtree'
+Plug 'itchyny/lightline.vim'
+Plug 'mxw/vim-jsx'
+Plug 'pangloss/vim-javascript'
+Plug 'leafgarland/typescript-vim'
+Plug 'peitalin/vim-jsx-typescript'
+Plug 'turbio/bracey.vim', {'do': 'npm install --prefix server'}
+Plug 'tpope/vim-fugitive'
+Plug 'mattn/emmet-vim'
+Plug 'vim-test/vim-test'
+call plug#end()
 
-  " Optional:
-Plugin 'honza/vim-snippets'
+set termguicolors
+" colorscheme catppuccin_mocha
 
-call vundle#end()            " required
-filetype plugin indent on    " required
+" Key mappings
+nnoremap <C-p> :Files<CR>
+nnoremap <C-n> :NERDTreeToggle<CR>
+nnoremap <Leader>rg :Rg<CR>
+nnoremap <Leader>dd :Vimspector#Launch<CR>
+nnoremap <Leader>ds :Vimspector#Reset<CR>
+nnoremap <Leader>db :Vimspector#ToggleBreakpoint<CR>
+nnoremap <Leader>dc :Vimspector#Continue<CR>
+nnoremap <Leader>dn :Vimspector#StepOver<CR>
+nnoremap <Leader>di :Vimspector#StepInto<CR>
+nnoremap <Leader>do :Vimspector#StepOut<CR>
+nnoremap <Leader>bs :!browser-sync start --server --files "src/**/*" --port 3000<CR>
+nnoremap <Leader>bc :!open -a "Google Chrome" http://localhost:3000<CR>
+nnoremap <Leader>t :TestFile<CR>
+nnoremap <Leader>s :TestSuite<CR>
+let g:user_emmet_leader_key='<C-e>'
 
-" {{{ vim variables
-set nolist
-set nonumber
-set gcr=n:blinkon0
-set tabstop=2
-set shiftwidth=2
-set expandtab
-set nocompatible
-set cursorline
-set autoread
-set viminfo='1000,f1,<500
-set showmatch
-set matchtime=2
-set ignorecase smartcase
-set autoindent
-set smartindent
-set shiftround
-set lisp
-set vb t_vb=
-set ruler
-set incsearch
-set virtualedit=onemore
-set background=dark
-set complete=.,w,b,u,i,]
-set showcmd
-set backspace=indent,eol,start
-set autochdir
-set hidden
-set hlsearch
-set linespace=2
-set wildmenu
-set wildmode=list:full
-set wildcharm=<C-Z>
-set switchbuf+=useopen,usetab,split
-set wildignore+=*.swp,*.zip
-let g:ctrlp_working_path_mode = 'ra'
-let g:ctrlp_by_filename = 1
-let g:ctrlp_cmd = 'CtrlPBuffer'
-let g:ctrlp_match_window = 'top,order:ttb,min:5,max:20,results:20'
-let g:ctrlp_open_new_file = 't'
-let g:ctrlp_tabpage_position = 'ac'
-let g:ctrlp_max_height = 40
-nnoremap ,t  :CtrlPTag <CR>
-let g:clojure_align_multiline_strings = 1
-let g:clojure_align_subforms = 1
-" set term=xterm-256color
-"  let g:clojure_fold = 1
-"  let g:AutoPairsShortcutFastWrap = '<C-e>'
-set sessionoptions=buffers,curdir,tabpages
-" }}}
+" CoC and Prettier
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+nmap <silent> gd <Plug>(coc-definition)
+autocmd BufWritePre *.js,*.jsx,*.ts,*.tsx,*.html,*.css :CocCommand prettier.formatFile
 
-
-" {{{  Appearance
-syntax off
-
-if &t_Co == 8 && $TERM !~# '^linux'
-    set t_Co=16
-endif
-  
-if &encoding ==# 'latin1' && has('gui_running')
-  set encoding=utf-8
-  set macmeta
-  let $GVIM="yes"
-endif
-
-  if has("gui_running")
-    set guioptions=egmtA
-    "set guifont=Source\ Code\ Pro:h14
-    "set guifont=Inconsolata:h14
-    set guifont=Droid\ Sans\ Mono:h13
-    set fuoptions=maxvert,maxhorz
-    " au GUIEnter * set fullscreen
-    noremap <D-1> :tabn 1<CR>
-    noremap <D-2> :tabn 2<CR>
-    noremap <D-3> :tabn 3<CR>
-    noremap <D-4> :tabn 4<CR>
-    noremap <D-5> :tabn 5<CR>
-    noremap <D-6> :tabn 6<CR>
-    noremap <D-7> :tabn 7<CR>
-    noremap <D-8> :tabn 8<CR>
-    noremap <D-9> :tabn 9<CR>
-    noremap <D-0> :tablast<CR>
-    
-    " THEMES
-    " light themes
-    " colorscheme morning
-    " dark themes
-    " colorscheme molokai
-    "colorscheme jellybeans
-  else
-    "colorscheme morning
-    "colorscheme molokai
-  endif
-
-  set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-
-  " status line
-  function! ThisSession()
-    if exists(v:this_session) | echo v:this_session | else | return '' | endif
-  endfunction
-  set statusline=%F         "tail of the filename
-  set statusline+=\ \ \ \ %{fugitive#statusline()}
-  set statusline+=%=        "left/right separator
-  set statusline+=[%{strlen(&fenc)?&fenc:'none'}, "file encoding
-  set statusline+=%{&ff}]\  "file format
-  set statusline+=%h\       "help file flag
-  set statusline+=%m\       "modified flag
-  set statusline+=%r\       "read only flag
-  set statusline+=%y\       "filetype
-  set statusline+=%c,\      "cursor column
-  set statusline+=%l/%L     "cursor line/total lines
-  set statusline+=\ %P      "percent through file
-  set laststatus=2
-  if version >= 700
-    au InsertEnter * hi StatusLine ctermbg=Black ctermfg=White guibg=LightBlue guifg=Black gui=none
-    au InsertLeave * hi StatusLine ctermbg=Brown ctermfg=Black guibg=#c2bfa5 guifg=black gui=none
-  endif
-" }}}
-
-" {{{ Key Bindings & Mappings
-  nnoremap <silent> <F7> :NERDTreeToggle<CR>
-  nnoremap <silent> <F8> :TagbarToggle<CR>
-  nnoremap <F9> :b <C-Z>
-  nmap <F1> :browse so ~/sessions<CR>
-  nmap <F2> :wa<Bar>exe "mksession! " . v:this_session<CR>
-  map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
-  map <D-[> <C-W>h
-  map <D-]> <C-W>l
-  vmap YY y:echo system('pbcopy', @")<CR>
-  nmap yc "*yy
-  nmap yr yab :echo system('socat - TCP:localhost:37146', @")<CR>
-  nmap yv yw :echo system('socat - TCP:localhost:37146', @")<CR>
-  nmap pr :echo system('socat - TCP:localhost:37146', @")<CR>
-  " vmap ttt y'>i <ESC>`<v`>ly :let @a=system('tr -d \\r\\n \| markdown \| ~/bin/strip-html-tags', @")<CR>zo'>0x`<:echo system('ttytter -script', @a)<CR>
-  vmap ttt y:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
-  "nmap ybb lBmUyEo<ESC>0P:.!~/bin/bitly<CR>yE`UviWpjdd`U
-  nmap ybb viWx:let @a=system('sed "s/&/\%26/g"', @")<CR>:let @b=system('~/bin/bitly', @a)<CR>"bp
-  vmap tmb y:echo system('tumblr pipe --host=altphi.tumblr.com', @")<CR>:let @a=system('~/bin/tumblr-latest-url')<CR>:let @b=system('~/bin/bitly', @a)<CR>`<"bpkJ<CR>`<v`>
-  "map fbp y:let @a=system('sed 1d \| markdown', @")<CR>:let @b=system('head -n 1 \| markdown \| ~/bin/strip-html-tags', @")<CR>:execute "\!fbcmd feednote " . shellescape(@b) . " " . shellescape(@a)<CR>`<v`>
-  "map fbs y:let @b=system('markdown \| ~/bin/strip-html-tags', @")<CR>:execute "!fbcmd status " . shellescape(@b)<CR>`<v`>
-  "map pall fbptmb<ESC>`<yy:let @a=system('markdown \| ~/bin/strip-html-tags', @")<CR>:echo system('ttytter -script', @a)<CR>
-  "map pol y:let @a=system('head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @b=system('sed 1,2d \| head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @c=@b . " " . @a<CR>:echo system ('ttytter -script', @c)<CR>`<v`>pol-Tfbstmb
-  "map pol-T y:let @a=system('head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @b=system('sed 1,4d \| head -n 1 \| markdown \| ~/bin/strip-html-tags \| tr -d "\r\n"', @")<CR>:let @c=@b . " " . @a<CR>:echo system ('ttytter -script', @c)<CR>
-  map fff ?{{<CR>i{<ESC>
-  " yank current file's directory
-  map yfd :let @a = expand("%:p:h")<CR>:echo system('pbcopy', @a)<CR>
-  " nmap <F10> /^(<CR>
-  " nmap <S-F10> ?^(<CR>
-  nmap <F11> /(<CR>
-  nmap <S-F11> ?(<CR>
-  imap <C-J> <Plug>snipMateNextOrTrigger
-  smap <C-J> <Plug>snipMateNextOrTrigger
-  nmap H :h <C-R>=expand("<cword>")<CR><CR>
-  "nmap ' <Plug>(easymotion-bd-f)(
-  " nmap <Space> <Plug>(easymotion-bd-jk)
-  " nmap <Space> <Plug>(easymotion-bd-f)
-  " nmap <C-Space> <Plug>(easymotion-bd-f)
-  map <C-E> :w<CR>:shell<CR>
-  " fugitive
-  " nmap gp :Git pull<CR>
-  " nmap gs :Gstatus<CR>
-  " nmap gx :Gw<CR>:Gcommit<CR>
-  " nmap gd :Gdiff<CR>
-  " nmap gb :Git branch -avv<CR>
-  " nmap gl :Git log<CR>
-  " nmap gdf :Git diff --name-only<CR>
-  " nmap <leader>) f(%a)<ESC><CR>
-  nmap <leader>cd cd %:h<CR>
-  " Use <C-L> to clear the highlighting of :set hlsearch.
-  if maparg('<C-L>', 'n') ==# ''
-    nnoremap <silent> <C-L> :nohlsearch<CR><C-L>
-  endif
-
-" surrounds
-  vmap si y`<i_<ESC>`>la_<ESC>
-  vmap sp y`<i(<ESC>`>la)<ESC>
-  vmap sq y`<i"<ESC>`>la"<ESC>
-  vmap st y`<i` <ESC>`>la `<ESC>
-  vmap s[ y`<i[[<ESC>`>lla]]<ESC>
-  vmap s{ y`<i{<ESC>`>la}<ESC>
-  vmap sf y`<i{{{ <ESC>`>o}}}<ESC>
-  nmap ,) f(%a)<ESC>
-  nmap dq mzF"xf"x`z
-  nmap dp mzF(xf)x`z
-
-" Command mode in Greek
-  nmap χ x
-  nmap ι i
-  nmap δς dw
-  nmap ξ j
-  nmap κ k
-  nmap η h
-  nmap λ l
-  nmap δδ dd
-  nmap ο o
-  nmap Π P
-  nmap π p
-  nmap β b
-  nmap Β B
-  nmap ¨ :
-  nmap α a
-  nmap ε e
-  nmap υς yw
-  nmap ρ r
-  nmap δ d
-  nmap Ξ J
-  nmap ς w
-" }}}
-
-" Custom commands
-  command! -nargs=1 Grep vimgrep /<args>/j ** <Bar> cw
-  command! GREP :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
-  command! Sh read !cat ~/n/bash_args /!
-  command! WC :w !wc
-  command! RC :e ~/.vimrc
-  command! RCload :so ~/.vimrc
-  command! CDcurrent :cd %:p:h
-  command! TabToSpace :%s/\t/\ \ /g
-
-" Autocompletion
-  filetype plugin on
-  filetype on
-  set completeopt=longest,menuone
-  autocmd FileType php set omnifunc=phpcomplete#CompletePHP
-  autocmd FileType python set omnifunc=pythoncomplete#Complete
-  autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
-  autocmd FileType html set omnifunc=htmlcomplete#CompleteTags
-  autocmd FileType css set omnifunc=csscomplete#CompleteCSS
-  autocmd FileType xml set omnifunc=xmlcomplete#CompleteTags
-  autocmd FileType php set omnifunc=phpcomplete#CompletePHP
-  autocmd FileType c set omnifunc=ccomplete#Complete
-  autocmd FileType * if exists("+omnifunc") && &omnifunc == "" | setlocal omnifunc=syntaxcomplete#Complete | endif
-  autocmd FileType * if exists("+completefunc") && &completefunc == "" | setlocal completefunc=syntaxcomplete#Complete | endif
-
-" functions
-  command! Cleantail :execute Cleantail() | :normal `kzz
-  function! Cleantail()
-    if !&binary && &filetype != 'diff'
-      :normal mk
-      %s/\s\+$//e
-    endif
-  endfunction
-  function! Guitablabel()
-    set guitablabel=\[%N\]\ %{expand(\"%:p:h:t\")}\/%t\ %M
-  endfunction
-
-  function! InsertTabWrapper(direction)
-    let col = col('.') - 1
-      if !col || getline('.')[col - 1] !~ '\k'
-          return "\<tab>"
-      elseif "backward" == a:direction
-          return "\<c-p>"
-      else
-          return "\<c-n>"
-      endif
-  endfunction
-  "inoremap <tab> <c-r>=InsertTabWrapper ("forward")<cr>
-  "inoremap <s-tab> <c-r>=InsertTabWrapper ("backward")<cr>
-
-  function! Smart_TabComplete()
-    let line = getline('.')                         " current line
-    let substr = strpart(line, -1, col('.')+1)      " from the start of the current line to one character right of the cursor
-    let substr = matchstr(substr, "[^ \t]*$")       " word till cursor
-    if (strlen(substr)==0)                          " nothing to match on empty string
-      return "\<tab>"
-    endif
-    let has_period = match(substr, '\.') != -1      " position of period, if any
-    let has_slash = match(substr, '\/') != -1       " position of slash, if any
-    if (!has_period && !has_slash)
-      return "\<C-X>\<C-P>"                         " existing text matching
-    elseif ( has_slash )
-      return "\<C-X>\<C-F>"                         " file matching
-    else
-      return "\<C-X>\<C-O>"                         " plugin matching
-    endif
-  endfunction
-  inoremap <tab> <c-r>=Smart_TabComplete()<cr>
-
-  let g:stop_autocomplete=0
-
-  function! CleverTab(type)
-      if a:type=='omni'
-          if strpart( getline('.'), 0, col('.')-1 ) =~ '^\s*$'
-              let g:stop_autocomplete=1
-              return "\<TAB>"
-          elseif !pumvisible() && !&omnifunc
-              return "\<C-X>\<C-O>\<C-P>"
-          endif
-      elseif a:type=='keyword' && !pumvisible() && !g:stop_autocomplete
-          return "\<C-X>\<C-N>\<C-P>"
-      elseif a:type=='next'
-          if g:stop_autocomplete
-              let g:stop_autocomplete=0
-          else
-              return "\<C-N>"
-          endif
-      endif
-      return ''
-  endfunction
-  " inoremap <silent><TAB> <C-R>=CleverTab('omni')<CR><C-R>=CleverTab('keyword')<CR><C-R>=CleverTab('next')<CR>
-
-" Folding
-  set foldmethod=marker
-  nnoremap <silent> <Space> @=(foldlevel('.')?'za':"\<Space>")<CR>
-  vnoremap <Space> zf
-  function! FoldParagraphs()
-      :set fde=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1
-      :set fdm=expr
-  endfunction
-
-" Autocmds
-  " leave insert mode for new buffers
-  autocmd BufNewFile * stopinsert
-  " see http://vim.wikia.com/wiki/Keep_folds_closed_while_inserting_text
-  autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
-  autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
-  " open tagbar for certain filetypes
-  autocmd BufNew *.clj,*.scm,*.c TagbarOpen
-  " remove trailing spaces always before save
-  " au BufWritePre * Cleantail
-  " restore cursor position
-  autocmd BufReadPost *
-  \ if line("'\"") > 1 && line("'\"") <= line("$") |
-  \   exe "normal! g`\"" |
-  \ endif
-  au GUIEnter * :execute Guitablabel()
-  au BufReadPost * highlight clear SignColumn
-  
-  " highlight cursor line
-  " hi CursorLine term=underline ctermbg=234 guibg=#384049 guisp=#1c1c1c
-
-  " vim-javascript-syntax
-  au Syntax javascript set noexpandtab
-  au Syntax javascript set nolist
-
-" Plugins
-  " paredit on by default
-  " let g:paredit_mode = 1
-  " au BufNew,BufNewFile,BufReadPost * :execute PareditInitBuffer()
-  " :h restore-cursor
-
-" Tags / TagBar
-  let g:easytags_cmd = '/usr/local/bin/ctags'
-  let g:easytags_file = '~/.vimtags'
-  set tags=./.tags,tags;
-  let g:easytags_dynamic_files = 1
-  let g:easytags_always_enabled = 1
-  let g:easytags_updatetime_min = 20000
-  let g:easytags_updatetime_warn = 0
-  let g:tagbar_type_vimwiki = {
-      \ 'ctagstype' : 'vimwiki',
-      \ 'kinds' : [
-          \ 'h:Heading_L1',
-          \ 'i:Heading_L2',
-          \ 'k:Heading_L3',
-          \ 'l:Tag'
-      \ ]
-      \ }
-  let g:tagbar_type_javascript = {
-      \ 'ctagsbin' : '/usr/local/bin/jsctags'
-      \ }
-
-" NERDtree
-  let NERDTreeShowBookmarks=1
-  let NERDTreeShowFiles=1
-  let NERDTreeChDirMode=2
-  " let NERDTreeBookmarksFile=$HOME . "/.vim/NERDTreeBookmarks"
-  let NERDTreeMouseMode=3
-  let NERDTreeMinimalUI=1
-  let NERDTreeShowHidden=1
-  let NERDTreeIgnore=['\.vim$', '\~$', '\.swp$']
-  " au BufReadPost * NERDTreeToggle
-
-" buffergator
-  " let g:buffergator_display_regime = 'filepath'
-  let g:buffergator_sort_regime = 'filepath'
-  let g:buffergator_vsplit_size=80
-  "let g:buffergator_autodismiss_on_select=0
-  "let g:buffergator_autoexpand_on_split=0
-  "let g:buffergator_split_size=0
-
-" vimWiki
-  set nocompatible
-  let g:vimwiki_table_auto_fmt = 0
-  let g:vimwiki_table_mappings = 0
-  let g:vimwiki_camel_case = 1
-  let g:vimwiki_auto_checkbox = 1
-  let g:vimwiki_use_mouse=1
-  nmap <leader>tt <Plug>VimwikiToggleListItem
-  let g:vimwiki_list = [{'path': '~/vimwiki/', 'syntax': 'default' }]
-  let g:markdown_folding='yes'
-  autocmd BufNew *.mkd setlocal foldexpr=MarkdownFold()
-  let g:vimwiki_folding='expr'
-  " nnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
-  " vnoremap <Leader>[ lbi[[<Esc>ea]]<Esc>
-
-" rainbow parens
-  " au VimEnter * RainbowParenthesesToggle
-  " au Syntax * RainbowParenthesesLoadRound
-  " " au Syntax * RainbowParenthesesLoadSquare
-  " au Syntax * RainbowParenthesesLoadBraces
-  " au Syntax * RainbowParenthesesLoadChevrons
-
-" indent guides
-  let g:indent_guides_start_level=2
-  let g:indent_guides_guide_size=1
-  let g:indent_guides_enable_on_vim_startup=1
-
-" pymode
-let g:pymode_lint = 1
+" other
+set endofline
