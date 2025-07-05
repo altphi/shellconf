@@ -1,16 +1,21 @@
 #!/usr/bin/env zsh
 setopt ALL_EXPORT
 readonly SYSTYPE="$(uname)"
-PATH="/opt/homebrew/bin:/opt/homebrew/opt/mysql@8.0/bin:/opt/homebrew/opt/mysql-client@8.0/bin:/usr/local/opt/php@7.4/bin:/usr/local/opt/php@7.4/sbin:/opt/homebrew/opt/ruby/bin:$HOME/bin:/opt/homebrew/opt/openjdk@21/bin:$PATH"
+PATH="/opt/homebrew/bin:/opt/homebrew/opt/mysql@8.0/bin:/opt/homebrew/opt/mysql-client@8.0/bin:/usr/local/opt/php@7.4/bin:/usr/local/opt/php@7.4/sbin:/opt/homebrew/opt/ruby/bin:$HOME/bin:$HOME/.local/bin:/opt/homebrew/opt/openjdk@21/bin:$PATH"
 NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags/:${NODE_PATH}"
 LDFLAGS="-L/usr/local/opt/php@7.4/lib -L/opt/homebrew/opt/mysql-client@8.0/lib"
 CPPFLAGS="-I/usr/local/opt/php@7.4/include -I/opt/homebrew/opt/mysql-client@8.0/include"
 CLASSPATH="${HOME}/bin/jars/algs4.jar:."
 
 NVM_SYMLINK_CURRENT=true
+#NVM_DIR="$HOME/.nvm"
+#[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
+#[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+#
+# for linux
 NVM_DIR="$HOME/.nvm"
-[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
-[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 
@@ -85,6 +90,8 @@ alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
 alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --load '
+alias dnf_search='dnf search '
+alias dnf_install='sudo dnf install -y '
 s () {
   rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --quiet --load ~/.scheme.init $@ --eval '(exit)'
 }
@@ -227,3 +234,6 @@ export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 export PATH="/opt/homebrew/opt/redis@6.2/bin:$PATH"
 
 shuf -n 1 ~/bin/misc/perlis_epigrams
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+. ~/.cargo/env

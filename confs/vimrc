@@ -4,23 +4,32 @@ au InsertLeave * set nocul
 
 call plug#begin('~/.vim/plugged')
 Plug 'puremourning/vimspector'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'preservim/nerdtree'
 Plug 'itchyny/lightline.vim'
+Plug 'vimwiki/vimwiki'
 Plug 'mxw/vim-jsx'
 Plug 'pangloss/vim-javascript'
 Plug 'leafgarland/typescript-vim'
+Plug 'tpope/vim-fugitive'
 Plug 'peitalin/vim-jsx-typescript'
 Plug 'turbio/bracey.vim', {'do': 'npm install --prefix server'}
-Plug 'tpope/vim-fugitive'
 Plug 'mattn/emmet-vim'
 Plug 'vim-test/vim-test'
 call plug#end()
 
+" required for vimwiki
+set nocompatible
+filetype plugin on
+syntax on
+"
+
 set termguicolors
+hi clear CursorLine
 " colorscheme catppuccin_mocha
+colorscheme desert
 
 " Key mappings
 nnoremap <C-p> :Files<CR>
@@ -43,6 +52,11 @@ let g:user_emmet_leader_key='<C-e>'
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 nmap <silent> gd <Plug>(coc-definition)
 autocmd BufWritePre *.js,*.jsx,*.ts,*.tsx,*.html,*.css :CocCommand prettier.formatFile
+
+
+" vimwiki
+let g:vimwiki_list = [{'path': '~/vimwiki/', 'syntax': 'markdown', 'ext': 'md'}]
+
 
 " other
 set endofline
