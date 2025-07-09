@@ -1,0 +1,8 @@
+#!/bin/sh
+
+mypath=`pwd`
+myfile="/$1"
+myfull="${mypath}${myfile}";
+
+printf "%q" "${myfull}" | pbcopy
+printf "%q" "${myfull}"

@@ -46,6 +46,7 @@ nnoremap <Leader>bs :!browser-sync start --server --files "src/**/*" --port 3000
 nnoremap <Leader>bc :!open -a "Google Chrome" http://localhost:3000<CR>
 nnoremap <Leader>t :TestFile<CR>
 nnoremap <Leader>s :TestSuite<CR>
+nmap <C-t> <Plug>VimwikiToggleListItem
 let g:user_emmet_leader_key='<C-e>'
 
 " CoC and Prettier
