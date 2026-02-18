@@ -5,3 +5,6 @@ vim/.netrwhist
 vim/bundle
 service/nginx
 fnb-login.sh
+.aider*
+.claude/
+misc/backgrounds/

@@ -1,6 +1,5 @@
-[user]
-	email = 2529298+altphi@users.noreply.github.com
-	name = Stephen Beck
+[include]
+	path = ~/.gitconfig-user
 [push]
 	default = current
 [alias]
@@ -11,9 +10,6 @@
 [filter "media"]
 	clean = git-media-clean %f
 	smudge = git-media-smudge %f
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
 [filter "lfs"]
 	process = git-lfs filter-process
 	required = true
@@ -26,6 +22,10 @@
 [pull]
 	rebase = false
 [commit]
-	template = /home/stephen/.stCommitMsg
+	template = /home/stephen/.config/git/default-commit-msg
 [merge]
 	suppressDriveby = false
+[init]
+	defaultBranch = main
+[fetch]
+	prune = true

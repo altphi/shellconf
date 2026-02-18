@@ -1,21 +1,25 @@
 #!/usr/bin/env zsh
+
+# if [[ `darkman get` = "light" ]]; then
+#   # for some reason I have to call this twice for the history entry to be made
+#   theme.sh "$(theme.sh --light -l|tail -n2|head -n1)"
+#   theme.sh "$(theme.sh --light -l|tail -n2|head -n1)"
+# else
+#   theme.sh "$(theme.sh --dark -l|tail -n2|head -n1)"
+# 	theme.sh "$(theme.sh --dark -l|tail -n2|head -n1)"
+# fi
+
 setopt ALL_EXPORT
 readonly SYSTYPE="$(uname)"
-PATH="/opt/homebrew/bin:/opt/homebrew/opt/mysql@8.0/bin:/opt/homebrew/opt/mysql-client@8.0/bin:/usr/local/opt/php@7.4/bin:/usr/local/opt/php@7.4/sbin:/opt/homebrew/opt/ruby/bin:$HOME/bin:$HOME/.local/bin:/opt/homebrew/opt/openjdk@21/bin:$PATH"
-NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags/:${NODE_PATH}"
-LDFLAGS="-L/usr/local/opt/php@7.4/lib -L/opt/homebrew/opt/mysql-client@8.0/lib"
-CPPFLAGS="-I/usr/local/opt/php@7.4/include -I/opt/homebrew/opt/mysql-client@8.0/include"
-CLASSPATH="${HOME}/bin/jars/algs4.jar:."
+PATH="$HOME/bin:$HOME/.local/bin:$PATH"
+# NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags/:${NODE_PATH}"
+# LDFLAGS="-L/usr/local/opt/php@7.4/lib -L/opt/homebrew/opt/mysql-client@8.0/lib"
+# CPPFLAGS="-I/usr/local/opt/php@7.4/include -I/opt/homebrew/opt/mysql-client@8.0/include"
 
-NVM_SYMLINK_CURRENT=true
-#NVM_DIR="$HOME/.nvm"
-#[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
-#[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
-#
-# for linux
-NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+CLASSPATH="${HOME}/bin/jars/algs4.jar:."
+AWS_PROFILE="CLT-Main"
+OLLAMA_HOST="http://127.0.0.1:11434"
+OLLAMA_API_BASE="$OLLAMA_HOST"
 
 PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 
@@ -24,6 +28,8 @@ GIT_EDITOR=vim
 HISTSIZE=10000
 SAVEHIST=10000
 HISTFILE=~/.zsh_history
+R_PROFILE_USER="$HOME/.Rprofile"
+alias R='R --no-save'
 
 setopt AUTO_CD
 setopt CDABLE_VARS
@@ -54,7 +60,11 @@ then
   zstyle ':completion:*' hosts $_myhosts
 fi
 
-alias vi='vim'
+BLOG_DIR="$HOME/code/altphi.github.io"
+alias blog="$BLOG_DIR"
+alias vim='nvim'
+alias vi='nvim'
+alias vif='nvim `fzf --walker-skip=".git,node_modules,.direnv,renv"`'
 alias ls=' ls -GF'
 alias ll=' ls -lhGF'
 alias la=' ls -lahGF'
@@ -68,6 +78,8 @@ alias backroom="~/code/backroom"
 alias kitchensink="~/code/kitchensink"
 alias vpn="~/code/clt-vpn-scripts"
 alias oldphp="~/code/oldphp"
+alias tigger="~/code/tigger"
+alias algo="~/code/algo"
 alias g=' ls -a | xargs grep --color=auto ';
 alias ga=' git add'
 alias gc=' git checkout'
@@ -79,7 +91,6 @@ alias gbD=' git branch -D '
 alias gdf=' git diff --name-only'
 alias gs=' git status'
 alias gl=' git log --graph --name-status --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"'
-alias git_cleanup_branches=" git fetch --prune && gb | grep ': gone' | tr -s ' ' | cut -d ' ' -f2 | xargs git branch -D"
 alias grep='grep --color=auto'
 alias info='info --vi-keys'
 alias l='ll'
@@ -92,9 +103,53 @@ alias h=' history 0'
 alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --load '
 alias dnf_search='dnf search '
 alias dnf_install='sudo dnf install -y '
-s () {
-  rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --quiet --load ~/.scheme.init $@ --eval '(exit)'
+alias c-niri='vi ~/.config/niri/config.kdl'
+alias c-nvim='cd ~/.config/nvim && vi .'
+alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
+alias switch-sys='sudo nixos-rebuild switch --flake ~/nixos/sys\#euclid'
+alias switch-home='home-manager switch -b backup --flake ~/nixos/home'
+alias open="xdg-open"
+
+git_cleanup_branches() {
+  git fetch --prune --quiet
+
+  local gone_branches
+  gone_branches=$(git branch -vv | grep ': gone]' | awk '{print $1}')
+
+  if [[ -z "$gone_branches" ]]; then
+    echo "No local branches with a gone upstream."
+    return 0
+  fi
+
+  echo "$gone_branches" | xargs git branch -D
 }
+
+docker-stop-rm-all () {
+  docker rm -f $(docker ps -aq)
+  docker network prune -f
+  docker volume prune -f
+}
+
+docker-compose-rebuild-no-cache () {
+  docker compose down -v --rmi all
+  docker compose build --no-cache
+  docker compose up
+}
+
+vo () {
+  nvim $(fzf --query="$1")
+}
+
+hdmi-brightness () {
+  # arg 1 is a number between 1-100 for percent of full brightness
+  ddcutil setvcp 10 "$1"
+}
+
+brightness () {
+  hdmi-brightness "$1"
+  brightnessctl set "${1}%"
+}
+alias b=brightness
 
 jr () {
   javac *.java && java $@
@@ -108,8 +163,13 @@ c () {
   cd "$1" && ls
 }
 
-LSCOLORS=exxxcxdxcxegedabagacad
-LS_COLORS='rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lz=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.rar=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.axa=00;36:*.oga=00;36:*.spx=00;36:*.xspf=00;36:'
+t () {
+  timer "$1" && notify-send -u critical "$2"
+  # disown
+}
+
+#LSCOLORS=exxxcxdxcxegedabagacad
+#LS_COLORS='rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lz=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.rar=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.axa=00;36:*.oga=00;36:*.spx=00;36:*.xspf=00;36:'
 
 DIRSTACKSIZE=30
 setopt AUTO_PUSHD
@@ -163,31 +223,28 @@ bindkey "^Y" yank
 bindkey "^[/" _history-complete-older
 
 # watch logins/logouts to system
-watch=( all )
+watch=( notme )
 WATCHFMT="%S%n@%m %a %l at %T on %W%s"
 LOGCHECK=0
 
 # prompt
 if [[ "$TERM" == "dumb" ]] ; then
-  PS1=$(print '${elapsed_time}\n\n%n@%m:%/ %%')
+  PS1=$(print '\n\n%n@%m:%/ %%')
 else
-  PS1=$(print '${elapsed_time}\n\n\e[0;34m%}%n@%m:%{\e[0;32m%}%/ %{\e[0;0m%} ${vcs_info_msg_0_}\n%! : %? %% %{\e[0;0m%}')
-  #RPROMPT=$(print '${elapsed_time}')
-  HOSTNAME=$(hostname -s)
-
-  # Current git info in prompt
   autoload -Uz vcs_info
-  zstyle ':vcs_info:*' actionformats '%F{5}(%f%s%F{5})%F{3}-%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
-  zstyle ':vcs_info:*' formats '%F{5}(%f%s%F{5})%F{3}-%F{5}[%F{2}%b%F{5}]%f '
-  zstyle ':vcs_info:(sv[nk]|bzr):*' branchformat '%b%F{1}:%F{3}%r'
-  zstyle ':vcs_info:*' enable git
-  setopt PROMPT_SUBST
+  precmd_vcs_info() { vcs_info }
+  precmd_functions+=( precmd_vcs_info )
+  setopt prompt_subst
 
-  function precmd {
-      #timer_stop
-      vcs_info
-      printf "\e]1;%s\a", "${PWD##*/}";
-  }
+  zstyle ':vcs_info:*' enable git
+  zstyle ':vcs_info:git:*' check-for-changes true  # Enable dirty check
+  zstyle ':vcs_info:git:*' stagedstr '%F{green}+%f'    # Staged changes
+  zstyle ':vcs_info:git:*' unstagedstr '%F{red}!%f'    # Unstaged changes
+  zstyle ':vcs_info:git:*' formats '%F{cyan}(%b%u%c)%f'  # Clean: cyan branch; dirty: with !/+
+  zstyle ':vcs_info:git:*' actionformats '(%b|%a%u%c)'
+
+  PS1=$(print '\n\n%{\e[0;34m%}%n@%m:%{\e[0;32m%}%/ %{\e[0;0m%} ${vcs_info_msg_0_}\n%! : %? %% ')
+  HOSTNAME=$(hostname -s)
 fi
 
 # prevent dangerous commands from entering history
@@ -215,9 +272,10 @@ ffind() {
   open $(fd . | fzf)
 }
 
-t() {
-  bash -c "sleep \"$1\" && gecho -e \"$2\" | terminal-notifier -title \"Timer\" -group \"sdb_timer\" -sound \"Purr\" 1>/dev/null 2>/dev/null" &
-}
+# timer script, e.g. `t minutes title`
+#t() {
+#  bash -c "sleep \"$((60*$1))\" && echo -e \"$2\" | notify-send --app-name=timer-script 'Time is up!' \"$2\"" &
+#}
 
 pass_insert() {
     pass insert "$@" && cd ~/.password-store && git push origin main
@@ -227,13 +285,54 @@ gpg_backup_keys() {
     tar --exclude='S.*' --no-xattrs -czf gnupg-backup.tar.gz -C ~ .gnupg
 }
 
-eval "$(direnv hook zsh)"
-[[ /opt/homebrew/bin/kubectl ]] && source <(kubectl completion zsh)
+nix_eval() {
+  nix-shell -p jq --run "nix-instantiate --eval --json --strict | jq"
+}
 
-export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
-export PATH="/opt/homebrew/opt/redis@6.2/bin:$PATH"
+set_standard_perms() {
+  find . ! -type d -exec chmod 644 '{}' \;
+  find . -type d -exec chmod 755 '{}' \;
+}
+
+eval "$(direnv hook zsh)"
+[[ kubectl ]] && source <(kubectl completion zsh)
 
 shuf -n 1 ~/bin/misc/perlis_epigrams
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-. ~/.cargo/env
+#DIRSTACKSIZE=20
+#setopt AUTO_PUSHD PUSHD_SILENT PUSHD_TO_HOME
+#setopt PUSHD_IGNORE_DUPS
+#setopt PUSHD_MINUS
+#DIRSTACKFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs"
+#if [[ ! -d ${DIRSTACKFILE:h} ]]; then
+#    mkdir -p ${DIRSTACKFILE:h}
+#fi
+#if [[ -f $DIRSTACKFILE ]] && (( $#dirstack == 0 )); then
+#    dirstack=( ${(f)"$(< $DIRSTACKFILE)"} )
+#    [[ -d ${dirstack[1]} ]] && cd ${dirstack[1]}
+#fi
+#chpwd_dirstack() {
+#    print -l -- "$PWD" "${(u)dirstack[@]}" > "$DIRSTACKFILE"
+#}
+#chpwd_functions+=( chpwd_dirstack )
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "/usr/share/nvm/nvm.sh" ] && \. "/usr/share/nvm/nvm.sh"  # This loads nvm
+[ -s "/usr/share/nvm/bash_completion" ] && \. "/usr/share/nvm/bash_completion"
+# fix double paste issue in Wayland
+unset zle_bracketed_paste
+
+eval "$(zoxide init zsh)"
+source ~/.secret-env
+
+# cursor style
+function zle-keymap-select {
+    if [[ ${KEYMAP} == vicmd ]]; then
+        echo -ne '\e[2 q'
+    else
+        echo -ne '\e[1 q'
+    fi
+}
+zle -N zle-keymap-select
+
+

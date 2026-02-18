@@ -1,4 +1,3 @@
-
 au InsertEnter * set cul
 au InsertLeave * set nocul
 
@@ -18,18 +17,13 @@ Plug 'peitalin/vim-jsx-typescript'
 Plug 'turbio/bracey.vim', {'do': 'npm install --prefix server'}
 Plug 'mattn/emmet-vim'
 Plug 'vim-test/vim-test'
+Plug 'puremourning/vimspector'
 call plug#end()
 
 " required for vimwiki
 set nocompatible
 filetype plugin on
 syntax on
-"
-
-set termguicolors
-hi clear CursorLine
-" colorscheme catppuccin_mocha
-colorscheme desert
 
 " Key mappings
 nnoremap <C-p> :Files<CR>
@@ -46,7 +40,8 @@ nnoremap <Leader>bs :!browser-sync start --server --files "src/**/*" --port 3000
 nnoremap <Leader>bc :!open -a "Google Chrome" http://localhost:3000<CR>
 nnoremap <Leader>t :TestFile<CR>
 nnoremap <Leader>s :TestSuite<CR>
-nmap <C-t> <Plug>VimwikiToggleListItem
+
+nnoremap <C-t> :VimwikiChangeSymbolTo -<CR><Plug>VimwikiToggleListItem<CR>
 let g:user_emmet_leader_key='<C-e>'
 
 " CoC and Prettier
@@ -54,10 +49,14 @@ inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 nmap <silent> gd <Plug>(coc-definition)
 autocmd BufWritePre *.js,*.jsx,*.ts,*.tsx,*.html,*.css :CocCommand prettier.formatFile
 
-
 " vimwiki
 let g:vimwiki_list = [{'path': '~/vimwiki/', 'syntax': 'markdown', 'ext': 'md'}]
 
-
 " other
 set endofline
+set expandtab
+set shiftwidth=2 
+set tabstop=4     
+set softtabstop=4
+set smarttab  
+

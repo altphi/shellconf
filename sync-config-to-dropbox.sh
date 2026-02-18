@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -a
+
+SRC_CONFIG="${HOME}/.config/";
+SRC_NIX="${HOME}/nixos/";
+SRC_VAULTS="${HOME}/vaults/";
+
+TGT_DROPBOX="${HOME}/Dropbox/backups/"
+TGT_SYNCTHING="${HOME}/syncedthings/backups/"
+
+sync () {
+  rsync -aP --delete \
+    --exclude="Slack/" \
+    --exclude="HEY/" \
+    --exclude="Code - OSS/" \
+    --exclude="chromium/" \
+    --exclude="go/telemetry/" \
+    --exclude="chrom.*flags.conf" \
+    --exclude="electron.*flags.conf" \
+    --exclude="microsoft.*flags.conf" \
+    --exclude="youtube.*flags.conf" \
+    --exclude="spotify/" \
+    --exclude="discord/" \
+    --exclude="Signal/" \
+    --exclude="Todoist/" \
+    --exclude="zsh/.zcompdump*" \
+    "${SRC_CONFIG}" "${1}dotconfig/"
+
+  rsync -aP --delete "${SRC_NIX}" "${1}nixos/"
+  rsync -aP --delete "${SRC_VAULTS}" "${1}vaults/"
+}
+
+sync "${TGT_DROPBOX}"
+sync "${TGT_SYNCTHING}"
+
