@@ -60,26 +60,18 @@ then
   zstyle ':completion:*' hosts $_myhosts
 fi
 
-BLOG_DIR="$HOME/code/altphi.github.io"
-alias blog="$BLOG_DIR"
+# Auto-create ~ shortcuts for every immediate subdir in ~/code
+for d in ~/code/*(/); do
+    hash -d "${d:t}"="$d"
+done
+
+alias vif='nvim `fzf --walker-skip=".git,node_modules,.direnv,renv"`'
 alias vim='nvim'
 alias vi='nvim'
-alias vif='nvim `fzf --walker-skip=".git,node_modules,.direnv,renv"`'
 alias ls=' ls -GF'
 alias ll=' ls -lhGF'
 alias la=' ls -lahGF'
-alias clt2="~/code/clt2"
-alias barrage="~/code/barrage"
-alias e2e="~/code/e2e"
-alias iac="~/code/iac"
-alias app2="~/code/app2"
-alias abhe="~/code/abhe"
-alias backroom="~/code/backroom"
-alias kitchensink="~/code/kitchensink"
-alias vpn="~/code/clt-vpn-scripts"
-alias oldphp="~/code/oldphp"
-alias tigger="~/code/tigger"
-alias algo="~/code/algo"
+
 alias g=' ls -a | xargs grep --color=auto ';
 alias ga=' git add'
 alias gc=' git checkout'
@@ -101,10 +93,9 @@ alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
 alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --load '
-alias dnf_search='dnf search '
-alias dnf_install='sudo dnf install -y '
 alias c-niri='vi ~/.config/niri/config.kdl'
 alias c-nvim='cd ~/.config/nvim && vi .'
+alias c-ghostty='vi ~/.config/ghostty/config'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias switch-sys='sudo nixos-rebuild switch --flake ~/nixos/sys\#euclid'
 alias switch-home='home-manager switch -b backup --flake ~/nixos/home'
@@ -136,9 +127,6 @@ docker-compose-rebuild-no-cache () {
   docker compose up
 }
 
-vo () {
-  nvim $(fzf --query="$1")
-}
 
 hdmi-brightness () {
   # arg 1 is a number between 1-100 for percent of full brightness
@@ -278,11 +266,11 @@ ffind() {
 #}
 
 pass_insert() {
-    pass insert "$@" && cd ~/.password-store && git push origin main
+  pass insert "$@" && cd ~/.password-store && git push origin main
 }
 
 gpg_backup_keys() {
-    tar --exclude='S.*' --no-xattrs -czf gnupg-backup.tar.gz -C ~ .gnupg
+  tar --exclude='S.*' --no-xattrs -czf gnupg-backup.tar.gz -C ~ .gnupg
 }
 
 nix_eval() {
@@ -334,5 +322,4 @@ function zle-keymap-select {
     fi
 }
 zle -N zle-keymap-select
-
 
