@@ -65,7 +65,7 @@ for d in ~/code/*(/); do
     hash -d "${d:t}"="$d"
 done
 
-alias vif='nvim `fzf --walker-skip=".git,node_modules,.direnv,renv"`'
+alias vif='nvim `fzf --walker-skip=".git,node_modules,.direnv,renv,build"`'
 alias vim='nvim'
 alias vi='nvim'
 alias ls=' ls -GF'
@@ -96,6 +96,8 @@ alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --
 alias c-niri='vi ~/.config/niri/config.kdl'
 alias c-nvim='cd ~/.config/nvim && vi .'
 alias c-ghostty='vi ~/.config/ghostty/config'
+alias c-sys='vi ~/nixos/sys/configuration.nix'
+alias c-home='vi ~/nixos/home/home.nix'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias switch-sys='sudo nixos-rebuild switch --flake ~/nixos/sys\#euclid'
 alias switch-home='home-manager switch -b backup --flake ~/nixos/home'
@@ -122,9 +124,32 @@ docker-stop-rm-all () {
 }
 
 docker-compose-rebuild-no-cache () {
-  docker compose down -v --rmi all
-  docker compose build --no-cache
-  docker compose up
+  if [ -z "$1" ]; then
+    echo "Usage: docker-compose-rebuild-no-cache <all|service>"
+    return 1
+  fi
+
+  local target="$1"
+
+  if [ "$target" = "all" ]; then
+    echo "Rebuilding ALL services..."
+    docker compose down -v --rmi all
+    docker compose build --no-cache
+  else
+    if ! docker compose config --services | grep -qx "$target"; then
+      echo "Error: Service '$target' not found in docker-compose.yml"
+      return 1
+    fi
+
+    echo "Rebuilding service: $target"
+
+    docker compose rm -sfv "$target"
+    image_id=$(docker compose images -q "$target")
+    if [ -n "$image_id" ]; then
+      docker image rm "$image_id"
+    fi
+    docker compose build --no-cache "$target"
+  fi
 }
 
 
