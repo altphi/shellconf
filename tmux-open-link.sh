@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# scrape tmux pane history for URLs and send to fuzzel for type-head-find launching
+
 set -euo pipefail
 
 pane_width="$(tmux display-message -p '#{pane_width}')"

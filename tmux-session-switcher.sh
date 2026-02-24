@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## tmux list-sessions -F "#S" | sort | fuzzel --dmenu | xargs -r tmux switch -t
+# switch tmux panes by session name with fuzzel, create new if none found
 
 session=$(tmux list-sessions -F "#{session_last_attached} #S" | sort -rn | cut -d' ' -f2- | fuzzel --dmenu)
 
