@@ -11,6 +11,11 @@ local searches = {
     ["it"] = "https://github.com/classiclearning/tigger/issues/",
 }
 
+local snippets = {
+    { name = "today's date (YYYY-MM-DD)", cmd = "date +%Y-%m-%d" },
+    { name = "bash if-then (double brackets)", text = 'if [[ condition ]]; then\n    command\nfi' },
+}
+
 local function trim(s)
     return s:gsub("^%s+", ""):gsub("%s+$", "")
 end
@@ -41,7 +46,7 @@ local function truncate_path(full_path, home)
     return truncatedPath, full_path
 end
 
-local handle = io.popen('fuzzel -w '..width..' --dmenu --prompt="Search or command: "')
+local handle = io.popen('fuzzel -w '..width..' --dmenu --prompt="launch> "')
 
 if handle==nil then
   return 1;
@@ -62,6 +67,32 @@ if searches[shortcut] then
     os.execute('xdg-open "' .. searches[shortcut] .. encoded_query .. '" 2>/dev/null')
 elseif input:match("^http.*") then
     os.execute('xdg-open "' .. input .. '" 2>/dev/null')
+elseif shortcut == "snip" then
+    local names = {}
+    local snip_map = {}
+    for _, s in ipairs(snippets) do
+        table.insert(names, s.name)
+        snip_map[s.name] = s
+    end
+    local snip_input = table.concat(names, "\\n")
+    local handle_snip = io.popen('printf "' .. snip_input .. '\\n" | fuzzel -w ' .. width .. ' --dmenu --prompt="snippet> "')
+    if handle_snip == nil then os.exit(1) end
+    local selected = trim(handle_snip:read("*a"))
+    handle_snip:close()
+    if selected ~= "" and snip_map[selected] then
+        local entry = snip_map[selected]
+        local result
+        if entry.cmd then
+            local h = io.popen(entry.cmd)
+            result = trim(h:read("*a"))
+            h:close()
+        else
+            result = entry.text
+        end
+        local copy = io.popen("wl-copy -t text/plain", "w")
+        copy:write(result)
+        copy:close()
+    end
 elseif shortcut == "pdf" then
     local home = os.getenv("HOME")
     local db = home .. "/.locate.db"

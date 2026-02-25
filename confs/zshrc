@@ -65,6 +65,7 @@ for d in ~/code/*(/); do
     hash -d "${d:t}"="$d"
 done
 
+alias reaper-hidpi="GDK_SCALE=2 GDK_DPI_SCALE=1 reaper"
 alias vif='nvim `fzf --walker-skip=".git,node_modules,.direnv,renv,build"`'
 alias vim='nvim'
 alias vi='nvim'
@@ -102,6 +103,7 @@ alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias switch-sys='sudo nixos-rebuild switch --flake ~/nixos/sys\#euclid'
 alias switch-home='home-manager switch -b backup --flake ~/nixos/home'
 alias open="xdg-open"
+alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
 
 git_cleanup_branches() {
   git fetch --prune --quiet
@@ -281,9 +283,6 @@ fname() {
   find . -iname "*${1}*"
 }
 
-ffind() {
-  open $(fd . | fzf)
-}
 
 # timer script, e.g. `t minutes title`
 #t() {
