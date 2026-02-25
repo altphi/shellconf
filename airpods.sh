@@ -61,11 +61,14 @@ wait_for_profile_load() {
   local dev_id="$1" pattern="$2"
   local attempts=0
   while [[ $attempts -lt 15 ]]; do
-    local idx
-    idx=$(find_profile_index "$dev_id" "$pattern")
-    if [[ -n "$idx" ]]; then
-      echo "$idx"
-      return
+    dev_id=$(get_wireplumber_device_id)
+    if [[ -n "$dev_id" ]]; then
+      local idx
+      idx=$(find_profile_index "$dev_id" "$pattern")
+      if [[ -n "$idx" ]]; then
+        echo "$idx"
+        return
+      fi
     fi
     sleep 1
     ((attempts++))
