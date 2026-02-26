@@ -11,7 +11,7 @@
 
 setopt ALL_EXPORT
 readonly SYSTYPE="$(uname)"
-PATH="$HOME/bin:$HOME/.local/bin:$PATH"
+PATH="$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 # NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags/:${NODE_PATH}"
 # LDFLAGS="-L/usr/local/opt/php@7.4/lib -L/opt/homebrew/opt/mysql-client@8.0/lib"
 # CPPFLAGS="-I/usr/local/opt/php@7.4/include -I/opt/homebrew/opt/mysql-client@8.0/include"
