@@ -41,6 +41,7 @@ current_profile_name() {
 connect_and_wait_for_device_load() {
   bluetoothctl disconnect "$AIRPODS_MACADDR" &>/dev/null
   sleep 2
+  bluetoothctl trust "$AIRPODS_MACADDR" &>/dev/null
   bluetoothctl connect "$AIRPODS_MACADDR" &>/dev/null
   local attempts=0
   while [[ -z "$(get_wireplumber_device_id)" && $attempts -lt 10 ]]; do
@@ -117,6 +118,7 @@ set_profile() {
 
 case "${1:-on}" in
   on)
+    bluetoothctl trust "$AIRPODS_MACADDR" &>/dev/null
     bluetoothctl connect "$AIRPODS_MACADDR"
     ;;
   off)
