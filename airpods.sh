@@ -116,6 +116,36 @@ set_profile() {
   echo "$switch_msg"
 }
 
+show_status() {
+  local connected dev_id profile volume
+  connected=$(bluetoothctl info "$AIRPODS_MACADDR" 2>/dev/null | grep -m1 "Connected:" | awk '{print $2}')
+  if [[ "$connected" != "yes" ]]; then
+    echo "AirPods: disconnected"
+    return
+  fi
+  echo "AirPods: connected"
+  dev_id=$(get_wireplumber_device_id)
+  if [[ -z "$dev_id" ]]; then
+    echo "Profile: (device not yet available in PipeWire)"
+    return
+  fi
+  profile=$(current_profile_name "$dev_id")
+  local codec mode
+  case "$profile" in
+    headset-head-unit-*)  mode="headset (mic enabled, lower quality)"; codec="${profile#headset-head-unit-}" ;;
+    headset-head-unit)    mode="headset (mic enabled, lower quality)"; codec="mSBC" ;;
+    a2dp-sink-*)          mode="A2DP hi-fi (no mic)"; codec="${profile#a2dp-sink-}" ;;
+    a2dp-sink)            mode="A2DP hi-fi (no mic)"; codec="AAC" ;;
+    *)                    mode="$profile"; codec="unknown" ;;
+  esac
+  echo "Mode: $mode"
+  echo "Codec: ${codec^^}"
+  volume=$(wpctl get-volume "$(wpctl status | grep -A50 'Sinks:' | grep -m1 'AirPods' | grep -o '[0-9]\+\.' | tr -d '.')" 2>/dev/null)
+  if [[ -n "$volume" ]]; then
+    echo "Volume: ${volume#Volume: }"
+  fi
+}
+
 case "${1:-on}" in
   on)
     bluetoothctl trust "$AIRPODS_MACADDR" &>/dev/null
@@ -134,11 +164,15 @@ case "${1:-on}" in
       "Already in A2DP mode (no mic, high quality)" \
       "Switched to A2DP mode (no mic, high quality)"
     ;;
+  status|info)
+    show_status
+    ;;
   *)
-    echo "Usage: airpods.sh [on|off|mic|nomic]"
-    echo "  on    - connect (default)"
-    echo "  off   - disconnect"
-    echo "  mic   - enable microphone (lower audio quality)"
-    echo "  nomic - disable mic (best audio quality)"
+    echo "Usage: airpods.sh [on|off|mic|nomic|status]"
+    echo "  on     - connect (default)"
+    echo "  off    - disconnect"
+    echo "  mic    - enable microphone (lower audio quality)"
+    echo "  nomic  - disable mic (best audio quality)"
+    echo "  status - show current connection and profile info"
     ;;
 esac
