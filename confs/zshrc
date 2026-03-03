@@ -65,6 +65,7 @@ for d in ~/code/*(/); do
     hash -d "${d:t}"="$d"
 done
 
+alias ta='tmux attach'
 alias reaper-hidpi="GDK_SCALE=2 GDK_DPI_SCALE=1 reaper"
 alias vif='nvim `fzf --walker-skip=".git,node_modules,.direnv,renv,build"`'
 alias vim='nvim'
@@ -99,6 +100,7 @@ alias c-nvim='cd ~/.config/nvim && vi .'
 alias c-ghostty='vi ~/.config/ghostty/config'
 alias c-sys='vi ~/nixos/sys/configuration.nix'
 alias c-home='vi ~/nixos/home/home.nix'
+alias c-tmux='vi ~/.tmux.conf'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias switch-sys='sudo nixos-rebuild switch --flake ~/nixos/sys\#euclid'
 alias switch-home='home-manager switch -b backup --flake ~/nixos/home'
@@ -154,7 +156,6 @@ docker-compose-rebuild-no-cache () {
   fi
 }
 
-
 hdmi-brightness () {
   # arg 1 is a number between 1-100 for percent of full brightness
   ddcutil setvcp 10 "$1"
@@ -180,7 +181,6 @@ c () {
 
 t () {
   timer "$1" && notify-send -u critical "$2"
-  # disown
 }
 
 #LSCOLORS=exxxcxdxcxegedabagacad
@@ -283,7 +283,6 @@ fname() {
   find . -iname "*${1}*"
 }
 
-
 # timer script, e.g. `t minutes title`
 #t() {
 #  bash -c "sleep \"$((60*$1))\" && echo -e \"$2\" | notify-send --app-name=timer-script 'Time is up!' \"$2\"" &
@@ -309,24 +308,14 @@ set_standard_perms() {
 eval "$(direnv hook zsh)"
 [[ kubectl ]] && source <(kubectl completion zsh)
 
-shuf -n 1 ~/bin/misc/perlis_epigrams
-
-#DIRSTACKSIZE=20
-#setopt AUTO_PUSHD PUSHD_SILENT PUSHD_TO_HOME
-#setopt PUSHD_IGNORE_DUPS
-#setopt PUSHD_MINUS
-#DIRSTACKFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs"
-#if [[ ! -d ${DIRSTACKFILE:h} ]]; then
-#    mkdir -p ${DIRSTACKFILE:h}
-#fi
-#if [[ -f $DIRSTACKFILE ]] && (( $#dirstack == 0 )); then
-#    dirstack=( ${(f)"$(< $DIRSTACKFILE)"} )
-#    [[ -d ${dirstack[1]} ]] && cd ${dirstack[1]}
-#fi
-#chpwd_dirstack() {
-#    print -l -- "$PWD" "${(u)dirstack[@]}" > "$DIRSTACKFILE"
-#}
-#chpwd_functions+=( chpwd_dirstack )
+kubectl_pod_sh () {
+	num=1
+	string=$1
+	shift
+	name=$(kubectl get po | grep ${string} | awk '{print $1}' | awk "NR==${num}{ print };";)
+	echo $name
+	kubectl exec -it $name -- $@
+}
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "/usr/share/nvm/nvm.sh" ] && \. "/usr/share/nvm/nvm.sh"  # This loads nvm
@@ -347,3 +336,4 @@ function zle-keymap-select {
 }
 zle -N zle-keymap-select
 
+shuf -n 1 ~/bin/misc/perlis_epigrams
