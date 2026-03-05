@@ -17,13 +17,25 @@ INSTANCE="${2:-main}"
 APP_ID="com.tmux.${INSTANCE}"
 
 # Focus the ghostty tmux window via niri
-WINDOW_ID=$(niri msg -j windows | jq -r '.[] | select(.app_id == "'"${APP_ID}"'") | .id' | head -n 1)
+WINDOW_JSON=$(niri msg -j windows | jq -r '.[] | select(.app_id == "'"${APP_ID}"'")')
+WINDOW_ID=$(echo "$WINDOW_JSON" | jq -r '.id' | head -n 1)
 
 if [[ -z "$WINDOW_ID" ]]; then
   exec "$(dirname "$0")/niri-focus-or-open-tmux.sh" "$INSTANCE"
 fi
 
 niri msg action focus-window --id "$WINDOW_ID"
+
+# Find the tmux client inside this ghostty by tracing PIDs
+WINDOW_PID=$(echo "$WINDOW_JSON" | jq -r '.pid' | head -n 1)
+CLIENT_TTY=""
+while IFS=' ' read -r cpid ctty; do
+  pid=$cpid
+  while [[ $pid -gt 1 ]]; do
+    [[ $pid -eq $WINDOW_PID ]] && CLIENT_TTY=$ctty && break 2
+    pid=$(awk '/^PPid:/{print $2}' /proc/$pid/status 2>/dev/null) || break
+  done
+done < <(tmux list-clients -F '#{client_pid} #{client_tty}')
 
 # Find the first tmux pane matching the pattern and switch to it
 TARGET=$(tmux list-panes -a -F '#S:#I.#P #{pane_current_command}' | grep -i "$PATTERN" | head -n 1 | awk '{print $1}' || true)
@@ -32,4 +44,8 @@ if [[ -z "$TARGET" ]]; then
   exec "$(dirname "$0")/tmux-session-switcher.sh"
 fi
 
-tmux switch-client -t "$TARGET"
+if [[ -n "$CLIENT_TTY" ]]; then
+  tmux switch-client -c "$CLIENT_TTY" -t "$TARGET"
+else
+  tmux switch-client -t "$TARGET"
+fi
