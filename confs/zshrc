@@ -28,6 +28,7 @@ GIT_EDITOR=vim
 HISTSIZE=10000
 SAVEHIST=10000
 HISTFILE=~/.zsh_history
+GDK_BACKEND=wayland
 R_PROFILE_USER="$HOME/.Rprofile"
 alias R='R --no-save'
 
@@ -67,7 +68,8 @@ done
 
 alias ta='tmux attach'
 alias reaper-hidpi="GDK_SCALE=2 GDK_DPI_SCALE=1 reaper"
-alias vif='nvim `fzf --walker-skip=".git,node_modules,.direnv,renv,build"`'
+vif() { nvim "$(fzf --walker-skip='.git,node_modules,.direnv,renv,build' --query="${1:-}")" }
+vig() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}" }
 alias vim='nvim'
 alias vi='nvim'
 alias ls=' ls -GF'

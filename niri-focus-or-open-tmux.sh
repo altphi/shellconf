@@ -13,5 +13,9 @@ if [[ ! -z "$WINDOW_ENTRY" ]]; then
   echo "$WINDOW_ENTRY" | head -n 1 | cut -d, -f2 | xargs niri msg action focus-window --id
 else
   # exec footclient --app-id ${NAME} zsh
-  exec ghostty --class=${NAME} -e zsh
+  if tmux has-session 2>/dev/null; then
+    exec ghostty --class=${NAME} -e tmux attach
+  else
+    exec ghostty --class=${NAME} -e zsh
+  fi
 fi

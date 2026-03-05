@@ -8,6 +8,8 @@ session=$(tmux list-sessions -F "#{session_last_attached} #S" | sort -rn | cut -
 if tmux has-session -t "=$session" 2>/dev/null; then
     tmux switch-client -t "=$session"
 else
-    tmux new-session -d -s "$session" && tmux switch-client -t "=$session"
+    start_dir="$HOME"
+    [ -d "$HOME/code/$session" ] && start_dir="$HOME/code/$session"
+    tmux new-session -d -s "$session" -c "$start_dir" && tmux switch-client -t "=$session"
 fi
 
