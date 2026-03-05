@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# This script makes the webcam go blinky to remind user to close the shutter.
+# Run it under a scheduler (e.g. cron) at iteration time of choice.
 
 probe() {
   ffprobe /dev/video0 > /dev/null 2>&1

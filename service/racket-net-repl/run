@@ -1,2 +1,0 @@
-#!/bin/sh
-exec chpst -u stephen socat EXEC:racket TCP-LISTEN:37146,reuseaddr,fork

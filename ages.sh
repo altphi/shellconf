@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
+# A script for people who can't remember their kids ages.
 
+# Setup: Enter `single_name YYYY-MM-DD`, one per line, in $file below.
 file="$HOME/.bdays"
 
 [[ ! -f "$file" ]] && { echo "Error: $file not found"; exit 1; }
