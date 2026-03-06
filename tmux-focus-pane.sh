@@ -41,7 +41,9 @@ done < <(tmux list-clients -F '#{client_pid} #{client_tty}')
 TARGET=$(tmux list-panes -a -F '#S:#I.#P #{pane_current_command}' | grep -i "$PATTERN" | head -n 1 | awk '{print $1}' || true)
 
 if [[ -z "$TARGET" ]]; then
-  exec "$(dirname "$0")/tmux-session-switcher.sh"
+  # No pane or session matched; create a new session with that name
+  tmux new-session -d -s "$PATTERN"
+  TARGET="$PATTERN"
 fi
 
 if [[ -n "$CLIENT_TTY" ]]; then
