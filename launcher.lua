@@ -131,6 +131,20 @@ elseif shortcut == "pdf" then
         local full_path = path_map[selected] or selected
         os.execute('xdg-open "' .. full_path .. '" 2>/dev/null')
     end
+elseif shortcut == "sp" then
+    os.execute('playerctl -a play-pause')
+elseif shortcut == "sn" then
+    os.execute('playerctl -a next')
+elseif shortcut == "sprev" then
+    os.execute('playerctl -a previous')
+elseif shortcut == "sf" then
+    os.execute('playerctl -a position +10')
+elseif shortcut == "sff" then
+    os.execute('playerctl -a position +30')
+elseif shortcut == "sb" then
+    os.execute('playerctl -a position -10')
+elseif shortcut == "sbb" then
+    os.execute('playerctl -a position -30')
 else
     os.execute('fuzzel --no-run-if-empty "' .. input .. '"')
 end
