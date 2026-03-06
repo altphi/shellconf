@@ -302,6 +302,27 @@ nix_eval() {
   nix-shell -p jq --run "nix-instantiate --eval --json --strict | jq"
 }
 
+ksh() {
+  local debug=0 image="nicolaka/netshoot"
+  while [[ "$1" == -* ]]; do
+    case "$1" in
+      -d) debug=1; shift ;;
+      -i) shift; image="$1"; shift ;;
+      *) echo "Usage: ksh [-d] [-i image] [query] [cmd]"; return 1 ;;
+    esac
+  done
+  local pod ns cmd
+  pod=$(kubectl get pods --all-namespaces --no-headers | fzf --query="${1:-}" | awk '{print $2, $1}')
+  [[ -z "$pod" ]] && return 0
+  ns=${pod#* }
+  pod=${pod%% *}
+  if (( debug )); then
+    kubectl debug -it -n "$ns" "$pod" --profile=general --image="$image" -- "${2:-sh}"
+  else
+    kubectl exec -it -n "$ns" "$pod" -- "${2:-/bin/sh}"
+  fi
+}
+
 set_standard_perms() {
   find . ! -type d -exec chmod 644 '{}' \;
   find . -type d -exec chmod 755 '{}' \;
@@ -309,15 +330,6 @@ set_standard_perms() {
 
 eval "$(direnv hook zsh)"
 [[ kubectl ]] && source <(kubectl completion zsh)
-
-kubectl_pod_sh () {
-	num=1
-	string=$1
-	shift
-	name=$(kubectl get po | grep ${string} | awk '{print $1}' | awk "NR==${num}{ print };";)
-	echo $name
-	kubectl exec -it $name -- $@
-}
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "/usr/share/nvm/nvm.sh" ] && \. "/usr/share/nvm/nvm.sh"  # This loads nvm
