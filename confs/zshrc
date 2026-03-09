@@ -142,7 +142,7 @@ docker-compose-rebuild-no-cache () {
     docker compose down -v --rmi all
     docker compose build --no-cache
   else
-    if ! docker compose config --services | grep -qx "$target"; then
+    if ! docker compose --profile '*' config --services | grep -qx "$target"; then
       echo "Error: Service '$target' not found in docker-compose.yml"
       return 1
     fi
