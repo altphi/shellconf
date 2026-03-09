@@ -37,11 +37,17 @@ while IFS=' ' read -r cpid ctty; do
   done
 done < <(tmux list-clients -F '#{client_pid} #{client_tty}')
 
-# Find the first tmux pane matching the pattern and switch to it
-TARGET=$(tmux list-panes -a -F '#S:#I.#P #{pane_current_command}' | grep -i "$PATTERN" | head -n 1 | awk '{print $1}' || true)
+# Priority 1: Find a pane whose running process matches the pattern
+TARGET=$(tmux list-panes -a -F '#S:#I.#P #{pane_current_command}' |
+  awk -v pat="$PATTERN" 'tolower($2) ~ tolower(pat) {print $1; exit}' || true)
 
+# Priority 2: Fall back to matching a session name
 if [[ -z "$TARGET" ]]; then
-  # No pane or session matched; create a new session with that name
+  TARGET=$(tmux list-sessions -F '#S' | grep -i "$PATTERN" | head -n 1 || true)
+fi
+
+# Priority 3: No match; create a new session with that name
+if [[ -z "$TARGET" ]]; then
   tmux new-session -d -s "$PATTERN"
   TARGET="$PATTERN"
 fi
