@@ -18,8 +18,9 @@ PATH="$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 
 CLASSPATH="${HOME}/bin/jars/algs4.jar:."
 AWS_PROFILE="CLT-Main"
-OLLAMA_HOST="http://127.0.0.1:11434"
-OLLAMA_API_BASE="$OLLAMA_HOST"
+#OLLAMA_HOST="http://127.0.0.1:11434"
+#OLLAMA_API_BASE="$OLLAMA_HOST"
+GITHUB_DEFAULT_ORG="classiclearning"
 
 PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 
@@ -321,6 +322,14 @@ ksh() {
   else
     kubectl exec -it -n "$ns" "$pod" -- "${2:-/bin/sh}"
   fi
+}
+
+rec() {
+  local dir=~/Pictures/Screenshots
+  mkdir -p "$dir"
+  local f="$dir/rec-$(date +%Y%m%d-%H%M%S).mp4"
+  echo "Recording to $f (Ctrl+C to stop)"
+  wf-recorder -g "$(slurp)" -f "$f" && echo "Saved: $f"
 }
 
 set_standard_perms() {

@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# List open PRs across a GitHub org, fuzzy search with fzf, open selected in browser
+# Set default org with GITHUB_DEFAULT_ORG
+# Requires: gh, fzf, open
+
+org="${1:-$GITHUB_DEFAULT_ORG}"
+if [[ -z "$org" ]]; then
+    echo "Usage: pr_find [org]"
+    echo "Or set GITHUB_DEFAULT_ORG."
+    exit 1
+fi
+limit="${2:-100}"
+
+result=$(gh api graphql -f query="$(cat <<GRAPHQL
+query {
+  search(query: "org:$org type:pr state:open", type: ISSUE, first: $limit) {
+    nodes {
+      ... on PullRequest {
+        number
+        title
+        author { login }
+        headRefName
+        repository { nameWithOwner }
+        url
+        updatedAt
+        isDraft
+        reviewDecision
+      }
+    }
+  }
+}
+GRAPHQL
+)" --jq '.data.search.nodes[] | [
+  (.updatedAt | split("T")[0]),
+  (.repository.nameWithOwner | split("/")[1]),
+  "#\(.number)",
+  .author.login,
+  (if .isDraft then "draft" elif .reviewDecision == "APPROVED" then "approved" elif .reviewDecision == "CHANGES_REQUESTED" then "changes" else "needs_review" end),
+  .headRefName,
+  .title,
+  .url
+] | @tsv' 2>&1)
+
+if [[ -z "$result" ]]; then
+    echo "No open PRs found for $org"
+    exit 1
+fi
+
+trunc() { local s="$1" n="$2"; [[ ${#s} -gt $n ]] && s="${s:0:$((n-1))}…"; printf '%s' "$s"; }
+
+header=$(printf '%-10s  %-14s  %-5s  %-14s  %-12s  %-30s  %s' \
+    "updated" "repo" "pr" "author" "review" "branch" "title")
+
+selected=$(echo "$result" | sort -rk1 | while IFS=$'\t' read -r date repo pr author review branch title url; do
+    printf '%-10s  %-14s  %-5s  %-14s  %-12s  %-30s  %s\t%s\n' \
+        "$date" "$(trunc "$repo" 14)" "$pr" "$(trunc "$author" 14)" \
+        "$review" "$(trunc "$branch" 30)" "$(trunc "$title" 60)" "$url"
+done | \
+    fzf --delimiter=$'\t' \
+        --with-nth=1 \
+        --exact \
+        --header="$header" \
+        --reverse \
+        --multi \
+        --bind 'ctrl-a:select-all' \
+        --prompt="PRs> ")
+
+[[ -z "$selected" ]] && exit 0
+
+while IFS= read -r line; do
+    url="${line##*$'\t'}"
+    url="${url// /}"
+    echo "$url"
+    if command -v xdg-open &>/dev/null; then
+        xdg-open "$url" 2>/dev/null &
+    else
+        open "$url" 2>/dev/null &
+    fi
+done <<< "$selected"
