@@ -105,6 +105,100 @@ local function handle_pdf(query)
     end
 end
 
+local function handle_pr(query)
+    local org = os.getenv("GITHUB_DEFAULT_ORG") or ""
+    if org == "" then
+        os.execute('notify-send "pr_find" "Set GITHUB_DEFAULT_ORG"')
+        os.exit(1)
+    end
+    local graphql = string.format([[
+query {
+  search(query: "org:%s type:pr state:open", type: ISSUE, first: 100) {
+    nodes {
+      ... on PullRequest {
+        number
+        title
+        author { login }
+        headRefName
+        repository { nameWithOwner }
+        url
+        updatedAt
+        isDraft
+        reviewDecision
+      }
+    }
+  }
+}]], org)
+    local jq_filter = [[.data.search.nodes[] | [
+      (.updatedAt | split("T")[0]),
+      (.repository.nameWithOwner | split("/")[1]),
+      "#\(.number)",
+      .author.login,
+      (if .isDraft then "draft" elif .reviewDecision == "APPROVED" then "approved" elif .reviewDecision == "CHANGES_REQUESTED" then "changes" else "needs_review" end),
+      .headRefName,
+      .title,
+      .url
+    ] | @tsv]]
+    -- Write query to temp file to avoid shell escaping issues
+    local tmpfile = os.tmpname()
+    local f = io.open(tmpfile, "w")
+    f:write(graphql)
+    f:close()
+    local cmd = "gh api graphql -f query=\"$(cat " .. tmpfile .. ")\" --jq '" .. jq_filter .. "'"
+    local h = io.popen(cmd)
+    if h == nil then
+        os.remove(tmpfile)
+        os.execute('notify-send "pr_find" "Failed to fetch PRs"')
+        os.exit(1)
+    end
+    local raw = h:read("*a")
+    h:close()
+    os.remove(tmpfile)
+    if raw == nil or trim(raw) == "" then
+        os.execute('notify-send "pr_find" "No open PRs found for ' .. org .. '"')
+        os.exit(1)
+    end
+    -- Build display lines and url map
+    local display_lines = {}
+    local url_map = {}
+    for line in raw:gmatch("[^\n]+") do
+        local fields = {}
+        for field in line:gmatch("[^\t]+") do
+            table.insert(fields, field)
+        end
+        if #fields >= 8 then
+            local display = string.format("%-10s  %-14s  %-5s  %-14s  %-12s  %-30s  %s",
+                fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7])
+            table.insert(display_lines, display)
+            url_map[display] = fields[8]
+        end
+    end
+    -- Pre-filter by initial query
+    if query ~= "" then
+        local filtered = {}
+        local q = query:lower()
+        for _, d in ipairs(display_lines) do
+            if d:lower():find(q, 1, true) then
+                table.insert(filtered, d)
+            end
+        end
+        display_lines = filtered
+    end
+    if #display_lines == 0 then
+        os.execute('notify-send "pr_find" "No PRs matching: ' .. query .. '"')
+        os.exit(1)
+    end
+    -- Pipe to fuzzel
+    local input_str = table.concat(display_lines, "\n")
+    local fh = io.popen('printf "%s" "' .. input_str:gsub('"', '\\"') .. '" | fuzzel -w ' .. width .. ' --dmenu --prompt="PR> "')
+    if fh == nil then os.exit(1) end
+    local selected = trim(fh:read("*a"))
+    fh:close()
+    if selected ~= "" and url_map[selected] then
+        os.execute('xdg-open "' .. url_map[selected] .. '" 2>/dev/null')
+    end
+end
+
 local commands = {
     { key = "a",     desc = "Amazon search",     url = "https://www.amazon.com/s?k=" },
     { key = "g",     desc = "Google search",      url = "https://www.google.com/search?q=" },
@@ -121,6 +215,7 @@ local commands = {
     { key = "sbb",   desc = "Seek -30s",          exec = "playerctl -a position -30" },
     { key = "snip",  desc = "Snippets",           handler = handle_snip },
     { key = "p",     desc = "Open PDF",           handler = handle_pdf },
+    { key = "pr",    desc = "Find PR",            handler = handle_pr },
 }
 
 -- Build lookup map and fuzzel completion lines

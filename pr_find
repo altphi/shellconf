@@ -54,7 +54,7 @@ header=$(printf '%-10s  %-14s  %-5s  %-14s  %-12s  %-30s  %s' \
 selected=$(echo "$result" | sort -rk1 | while IFS=$'\t' read -r date repo pr author review branch title url; do
     printf '%-10s  %-14s  %-5s  %-14s  %-12s  %-30s  %s\t%s\n' \
         "$date" "$(trunc "$repo" 14)" "$pr" "$(trunc "$author" 14)" \
-        "$review" "$(trunc "$branch" 30)" "$(trunc "$title" 60)" "$url"
+        "$review" "$(trunc "$branch" 30)" "$(trunc "$title" 60)" "$branch"$'\t'"$url"
 done | \
     fzf --delimiter=$'\t' \
         --with-nth=1 \
@@ -69,8 +69,21 @@ done | \
 
 while IFS= read -r line; do
     url="${line##*$'\t'}"
+    rest="${line%$'\t'*}"
+    branch="${rest##*$'\t'}"
     url="${url// /}"
     echo "$url"
+    if command -v wl-copy &>/dev/null; then
+        printf '%s' "$branch" | wl-copy
+        printf '%s' "$branch" | wl-copy -p
+    elif command -v pbcopy &>/dev/null; then
+        printf '%s' "$branch" | pbcopy
+    elif command -v xclip &>/dev/null; then
+        printf '%s' "$branch" | xclip -selection clipboard
+    fi
+    if command -v notify-send &>/dev/null; then
+        notify-send "PR branch copied" "$branch"
+    fi
     if command -v xdg-open &>/dev/null; then
         xdg-open "$url" 2>/dev/null &
     else
