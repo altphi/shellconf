@@ -218,12 +218,17 @@ local commands = {
     { key = "pr",    desc = "Find PR",            handler = handle_pr },
 }
 
--- Build lookup map and fuzzel completion lines
+-- Build lookup map and fuzzel completion lines, sorted by key length
+-- so shorter keys rank first when fuzzy match quality is tied
 local cmd_map = {}
-local lines = {}
+local sorted_commands = {}
 for _, entry in ipairs(commands) do
     cmd_map[entry.key] = entry
-    -- Pad key to 8 chars for aligned display
+    table.insert(sorted_commands, entry)
+end
+table.sort(sorted_commands, function(a, b) return #a.key < #b.key end)
+local lines = {}
+for _, entry in ipairs(sorted_commands) do
     local padded = entry.key .. string.rep(" ", 8 - #entry.key)
     table.insert(lines, padded .. entry.desc)
 end
