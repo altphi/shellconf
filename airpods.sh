@@ -3,6 +3,11 @@
 # Requires: bluetoothctl (bluez), wpctl (wireplumber), pw-cli (pipewire)
 # Environment: AIRPODS_MACADDR must be set to the device MAC address
 
+if [[ "$1" == "--completions" ]]; then
+  echo "on off mic nomic status"
+  exit 0
+fi
+
 get_wireplumber_device_id() {
   wpctl status | grep -m1 'AirPods.*\[bluez5\]' | grep -o '[0-9]\+\.' | tr -d '.'
 }

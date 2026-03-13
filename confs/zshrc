@@ -360,3 +360,13 @@ function zle-keymap-select {
 zle -N zle-keymap-select
 
 shuf -n 1 ~/bin/misc/perlis_epigrams
+
+_self_completing() {
+  local script="${words[1]}"
+  [[ -f "$script" ]] || script="$(command -v "$script" 2>/dev/null)"
+  [[ -f "$script" ]] || return
+  local -a cmds=( ${(z)$("$script" --completions 2>/dev/null)} )
+  compadd -a cmds
+}
+
+compdef _self_completing airpods.sh
