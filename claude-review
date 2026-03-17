@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+# Review a git branch inside an isolated container using Claude Code.
+#
+# Usage: claude-review [-k] <branch> [base-branch]
+#   -k  Keep the worktree after review (for tinkering with the code)
+#
+# Requires: docker (or podman), git, claude CLI (authenticated via 'claude login')
+
+set -euo pipefail
+
+KEEP_WORKTREE=false
+while getopts "k" opt; do
+    case "$opt" in
+        k) KEEP_WORKTREE=true ;;
+        *) echo "Usage: claude-review [-k] <branch> [base-branch]"; exit 1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+BRANCH="${1:-}"
+BASE="${2:-}"
+CONTAINER_IMAGE="${CLAUDE_REVIEW_IMAGE:-node:22}"
+
+if [[ -z "$BRANCH" ]]; then
+    echo "Usage: claude-review [-k] <branch> [base-branch]"
+    echo ""
+    echo "Reviews a branch's changes inside an isolated container."
+    echo "  -k  Keep the worktree after review"
+    echo "Auth: uses your existing 'claude login' session (~/.claude)"
+    echo "Set CLAUDE_REVIEW_IMAGE to override the container image."
+    exit 1
+fi
+
+CLAUDE_CONFIG_SRC="$HOME/.claude"
+if [[ ! -f "$CLAUDE_CONFIG_SRC/.credentials.json" ]]; then
+    echo "Error: no claude credentials found at $CLAUDE_CONFIG_SRC/.credentials.json"
+    echo "Run 'claude login' first."
+    exit 1
+fi
+
+CLAUDE_CONFIG="$(mktemp -d)"
+cp "$CLAUDE_CONFIG_SRC/.credentials.json" "$CLAUDE_CONFIG/"
+cp "$CLAUDE_CONFIG_SRC/settings.json" "$CLAUDE_CONFIG/" 2>/dev/null || true
+
+if [[ ! -f "$CLAUDE_CONFIG_SRC/.claude.json" ]]; then
+    BACKUP="$(ls -t "$CLAUDE_CONFIG_SRC/backups/.claude.json.backup."* 2>/dev/null | head -1)"
+    if [[ -n "$BACKUP" ]]; then
+        cp "$BACKUP" "$CLAUDE_CONFIG/.claude.json"
+    fi
+else
+    cp "$CLAUDE_CONFIG_SRC/.claude.json" "$CLAUDE_CONFIG/"
+fi
+
+if command -v docker &>/dev/null; then
+    RUNTIME=docker
+elif command -v podman &>/dev/null; then
+    RUNTIME=podman
+else
+    echo "Error: docker or podman required"
+    exit 1
+fi
+
+GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+    echo "Error: not inside a git repository"
+    exit 1
+}
+
+if [[ -z "$BASE" ]]; then
+    for candidate in main master; do
+        if git rev-parse --verify "$candidate" &>/dev/null; then
+            BASE="$candidate"
+            break
+        fi
+    done
+    if [[ -z "$BASE" ]]; then
+        echo "Error: could not detect base branch. Pass it as the second argument."
+        exit 1
+    fi
+fi
+
+git rev-parse --verify "$BRANCH" &>/dev/null || {
+    echo "Error: branch '$BRANCH' does not exist"
+    exit 1
+}
+
+EXISTING_WORKTREE="$(git worktree list --porcelain | awk -v branch="refs/heads/$BRANCH" '
+    /^worktree /{ wt=$2 }
+    /^branch /{ if ($2 == branch) print wt }
+')"
+
+if [[ -n "$EXISTING_WORKTREE" ]]; then
+    WORKTREE="$EXISTING_WORKTREE"
+    REUSED_WORKTREE=true
+    echo "Reusing existing worktree for '$BRANCH' at $WORKTREE"
+else
+    WORKTREE="$(mktemp -d)"
+    REUSED_WORKTREE=false
+    echo "Creating worktree for '$BRANCH' at $WORKTREE..."
+    git worktree add "$WORKTREE" "$BRANCH" --quiet
+fi
+
+cleanup() {
+    rm -rf "$CLAUDE_CONFIG"
+    if [[ "$KEEP_WORKTREE" == true || "$REUSED_WORKTREE" == true ]]; then
+        echo "Worktree kept at: $WORKTREE"
+    else
+        echo "Cleaning up worktree..."
+        git worktree remove --force "$WORKTREE" 2>/dev/null || rm -rf "$WORKTREE"
+    fi
+}
+trap cleanup EXIT
+
+DIFF="$(git diff "$BASE...$BRANCH")"
+if [[ -z "$DIFF" ]]; then
+    echo "No changes between '$BASE' and '$BRANCH'"
+    exit 0
+fi
+
+echo "Starting container review of '$BRANCH' vs '$BASE'..."
+echo "Image: $CONTAINER_IMAGE"
+echo "---"
+
+PROMPT="You are reviewing a pull request. The branch is '$BRANCH' based on '$BASE'.
+
+Here is the diff:
+
+$DIFF
+
+Please review this code thoroughly. Focus on:
+- Bugs, logic errors, and edge cases
+- Security issues
+- Performance concerns
+- Code clarity and maintainability
+
+Provide a structured review with specific file:line references."
+
+REVIEW_OUTPUT_FILE="$(mktemp)"
+$RUNTIME run --rm -t \
+    -v "$WORKTREE:/workspace" \
+    -w /workspace \
+    --network=host \
+    --user "$(id -u):$(id -g)" \
+    -e HOME=/tmp/home \
+    -e CLAUDE_CONFIG_DIR=/claude-config \
+    -v "$CLAUDE_CONFIG:/claude-config" \
+    -e PROMPT="$PROMPT" \
+    "$CONTAINER_IMAGE" \
+    sh -c 'mkdir -p "$HOME" && npx -y @anthropic-ai/claude-code --dangerously-skip-permissions -p "$PROMPT"' \
+    | tee "$REVIEW_OUTPUT_FILE"
+
+if [[ "$KEEP_WORKTREE" == true ]]; then
+    # Strip TTY carriage returns from saved output
+    sed 's/\r$//' "$REVIEW_OUTPUT_FILE" > "$WORKTREE/CODE_REVIEW.md"
+    echo "---"
+    echo "Review saved to: $WORKTREE/CODE_REVIEW.md"
+fi
+rm -f "$REVIEW_OUTPUT_FILE"
