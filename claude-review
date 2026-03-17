@@ -1,34 +1,42 @@
 #!/usr/bin/env bash
 # Review a git branch inside an isolated container using Claude Code.
 #
-# Usage: claude-review [-k] <branch> [base-branch]
-#   -k  Keep the worktree after review (for tinkering with the code)
+# Usage: claude-review [-s] [branch] [base-branch]
+#   -s  Use the /code-review:code-review skill instead of inline diff prompt
+#
+# With no branch argument, reviews the current working directory (including
+# uncommitted changes) against the base branch. With a branch argument,
+# creates a worktree and reviews committed changes.
+#
+# Review output is saved to pr-reviews/<branch>.md in the current directory.
 #
 # Requires: docker (or podman), git, claude CLI (authenticated via 'claude login')
+#           gh CLI (authenticated via 'gh auth login') when using -s
 
 set -euo pipefail
 
-KEEP_WORKTREE=false
-while getopts "k" opt; do
+USE_SKILL=false
+while getopts "s" opt; do
     case "$opt" in
-        k) KEEP_WORKTREE=true ;;
-        *) echo "Usage: claude-review [-k] <branch> [base-branch]"; exit 1 ;;
+        s) USE_SKILL=true ;;
+        *) echo "Usage: claude-review [-s] [branch] [base-branch]"; exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 
 BRANCH="${1:-}"
 BASE="${2:-}"
-CONTAINER_IMAGE="${CLAUDE_REVIEW_IMAGE:-node:22}"
+CONTAINER_IMAGE="${CLAUDE_REVIEW_IMAGE:-claude-review:latest}"
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
+WORKDIR_MODE=false
 if [[ -z "$BRANCH" ]]; then
-    echo "Usage: claude-review [-k] <branch> [base-branch]"
-    echo ""
-    echo "Reviews a branch's changes inside an isolated container."
-    echo "  -k  Keep the worktree after review"
-    echo "Auth: uses your existing 'claude login' session (~/.claude)"
-    echo "Set CLAUDE_REVIEW_IMAGE to override the container image."
-    exit 1
+    BRANCH="$(git branch --show-current 2>/dev/null)" || true
+    if [[ -z "$BRANCH" ]]; then
+        echo "Error: not on a branch (detached HEAD?) and no branch argument given."
+        exit 1
+    fi
+    WORKDIR_MODE=true
 fi
 
 CLAUDE_CONFIG_SRC="$HOME/.claude"
@@ -60,67 +68,135 @@ else
     exit 1
 fi
 
+if ! $RUNTIME image inspect "$CONTAINER_IMAGE" &>/dev/null; then
+    echo "Building $CONTAINER_IMAGE..."
+    $RUNTIME build -t "$CONTAINER_IMAGE" -f "$SCRIPT_DIR/confs/claude-review.Dockerfile" "$SCRIPT_DIR/confs"
+fi
+
 GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
     echo "Error: not inside a git repository"
     exit 1
 }
 
 if [[ -z "$BASE" ]]; then
-    for candidate in main master; do
-        if git rev-parse --verify "$candidate" &>/dev/null; then
-            BASE="$candidate"
-            break
-        fi
-    done
+    # 1. Try the upstream tracking branch (strip remote prefix)
+    UPSTREAM="$(git rev-parse --abbrev-ref "$BRANCH@{upstream}" 2>/dev/null)" || true
+    if [[ -n "$UPSTREAM" ]]; then
+        # e.g. origin/staging -> staging
+        BASE="${UPSTREAM#*/}"
+    fi
+    # 2. Try the remote default branch
     if [[ -z "$BASE" ]]; then
-        echo "Error: could not detect base branch. Pass it as the second argument."
+        REMOTE_HEAD="$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null)" || true
+        if [[ -n "$REMOTE_HEAD" ]]; then
+            BASE="${REMOTE_HEAD#refs/remotes/origin/}"
+        fi
+    fi
+    # 3. Fall back to well-known names
+    if [[ -z "$BASE" ]]; then
+        for candidate in staging master; do
+            if git rev-parse --verify "$candidate" &>/dev/null; then
+                BASE="$candidate"
+                break
+            fi
+        done
+    fi
+    # 4. Prompt the user to pick from local branches
+    if [[ -z "$BASE" ]]; then
+        echo "Could not detect base branch."
+        echo "Pick a base branch to diff against:"
+        select BASE in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
+            [[ -n "$BASE" ]] && break
+        done
+        if [[ -z "$BASE" ]]; then
+            echo "No branch selected."
+            exit 1
+        fi
+    fi
+    # Don't diff a branch against itself
+    if [[ "$BASE" == "$BRANCH" ]]; then
+        echo "Error: base branch '$BASE' is the same as the review branch."
+        echo "Pass a different base branch as the second argument."
         exit 1
     fi
 fi
 
-git rev-parse --verify "$BRANCH" &>/dev/null || {
-    echo "Error: branch '$BRANCH' does not exist"
-    exit 1
-}
-
-EXISTING_WORKTREE="$(git worktree list --porcelain | awk -v branch="refs/heads/$BRANCH" '
-    /^worktree /{ wt=$2 }
-    /^branch /{ if ($2 == branch) print wt }
-')"
-
-if [[ -n "$EXISTING_WORKTREE" ]]; then
-    WORKTREE="$EXISTING_WORKTREE"
-    REUSED_WORKTREE=true
-    echo "Reusing existing worktree for '$BRANCH' at $WORKTREE"
+if [[ "$WORKDIR_MODE" == true ]]; then
+    WORKTREE="$GIT_ROOT"
+    WORKTREE_MOUNT_FLAG=":ro"
+    CREATED_WORKTREE=false
+    echo "Reviewing working directory (branch '$BRANCH') vs '$BASE'..."
 else
-    WORKTREE="$(mktemp -d)"
-    REUSED_WORKTREE=false
-    echo "Creating worktree for '$BRANCH' at $WORKTREE..."
-    git worktree add "$WORKTREE" "$BRANCH" --quiet
+    git rev-parse --verify "$BRANCH" &>/dev/null || {
+        echo "Error: branch '$BRANCH' does not exist"
+        exit 1
+    }
+
+    EXISTING_WORKTREE="$(git worktree list --porcelain | awk -v branch="refs/heads/$BRANCH" '
+        /^worktree /{ wt=$2 }
+        /^branch /{ if ($2 == branch) print wt }
+    ')"
+
+    if [[ -n "$EXISTING_WORKTREE" ]]; then
+        WORKTREE="$EXISTING_WORKTREE"
+        CREATED_WORKTREE=false
+        echo "Reusing existing worktree for '$BRANCH' at $WORKTREE"
+    else
+        WORKTREE="$(mktemp -d)"
+        CREATED_WORKTREE=true
+        echo "Creating worktree for '$BRANCH' at $WORKTREE..."
+        git worktree add "$WORKTREE" "$BRANCH" --quiet
+    fi
+    WORKTREE_MOUNT_FLAG=":ro"
 fi
 
 cleanup() {
     rm -rf "$CLAUDE_CONFIG"
-    if [[ "$KEEP_WORKTREE" == true || "$REUSED_WORKTREE" == true ]]; then
-        echo "Worktree kept at: $WORKTREE"
-    else
+    if [[ "$CREATED_WORKTREE" == true ]]; then
         echo "Cleaning up worktree..."
         git worktree remove --force "$WORKTREE" 2>/dev/null || rm -rf "$WORKTREE"
     fi
 }
 trap cleanup EXIT
 
-DIFF="$(git diff "$BASE...$BRANCH")"
-if [[ -z "$DIFF" ]]; then
-    echo "No changes between '$BASE' and '$BRANCH'"
-    exit 0
-fi
+if [[ "$USE_SKILL" == true ]]; then
+    PLUGIN_DIR="$CLAUDE_CONFIG_SRC/plugins/cache/claude-plugins-official/code-review"
+    PLUGIN_VERSION="$(ls "$PLUGIN_DIR" 2>/dev/null | head -1)"
+    if [[ -z "$PLUGIN_VERSION" ]]; then
+        echo "Error: code-review plugin not found. Install it with: claude plugins install code-review"
+        exit 1
+    fi
+    if [[ "$WORKDIR_MODE" == true ]]; then
+        DIFF_CMD="git diff $BASE"
+    else
+        DIFF_CMD="git diff $BASE...$BRANCH"
+    fi
+    PROMPT="/code-review:code-review -- Review branch '$BRANCH' against '$BASE'. Run: $DIFF_CMD
+IMPORTANT: Always perform the full review regardless of PR status (draft, closed, etc).
+IMPORTANT: Do NOT post the review as a GitHub PR comment. Instead, output the full review to stdout as your final message. For every finding, reference the specific file path and line number in the format file_path:line_number."
+    GH_TOKEN="$(gh auth token 2>/dev/null)" || {
+        echo "Error: could not get gh token. Run 'gh auth login' first."
+        exit 1
+    }
+    EXTRA_MOUNTS=(
+        -v "$PLUGIN_DIR/$PLUGIN_VERSION:/plugin/code-review:ro"
+    )
+    EXTRA_ENV=(
+        -e GH_TOKEN="$GH_TOKEN"
+    )
+    CLAUDE_EXTRA_ARGS="--plugin-dir /plugin/code-review"
+else
+    if [[ "$WORKDIR_MODE" == true ]]; then
+        DIFF="$(git diff "$BASE")"
+    else
+        DIFF="$(git diff "$BASE...$BRANCH")"
+    fi
+    if [[ -z "$DIFF" ]]; then
+        echo "No changes between '$BASE' and '$BRANCH'"
+        exit 0
+    fi
 
-echo "Starting container review of '$BRANCH' vs '$BASE'..."
-echo "Image: $CONTAINER_IMAGE"
-echo "---"
-
-PROMPT="You are reviewing a pull request. The branch is '$BRANCH' based on '$BASE'.
+    PROMPT="You are reviewing a pull request. The branch is '$BRANCH' based on '$BASE'.
 
 Here is the diff:
 
@@ -133,25 +209,92 @@ Please review this code thoroughly. Focus on:
 - Code clarity and maintainability
 
 Provide a structured review with specific file:line references."
+    EXTRA_MOUNTS=()
+    EXTRA_ENV=()
+    CLAUDE_EXTRA_ARGS=""
+fi
+
+# Get the remote URL for use inside the container (worktree .git links break in Docker)
+REMOTE_URL="$(git remote get-url origin 2>/dev/null || true)"
+# Convert SSH URLs to HTTPS so the container can use GH_TOKEN for auth
+if [[ "$REMOTE_URL" == git@github.com:* ]]; then
+    REMOTE_URL="https://github.com/${REMOTE_URL#git@github.com:}"
+    REMOTE_URL="${REMOTE_URL%.git}.git"
+fi
+
+echo "Starting container review of '$BRANCH' vs '$BASE'..."
+echo "Image: $CONTAINER_IMAGE"
+echo "---"
 
 REVIEW_OUTPUT_FILE="$(mktemp)"
-$RUNTIME run --rm -t \
-    -v "$WORKTREE:/workspace" \
+
+# For non-skill mode, mount the prompt as a file to avoid env var size limits
+PROMPT_FILE=""
+PROMPT_MOUNTS=()
+PROMPT_ENV=()
+if [[ "$USE_SKILL" == true ]]; then
+    PROMPT_ENV=(-e PROMPT="$PROMPT")
+else
+    PROMPT_FILE="$(mktemp)"
+    printf '%s' "$PROMPT" > "$PROMPT_FILE"
+    PROMPT_MOUNTS=(-v "$PROMPT_FILE:/tmp/prompt.txt:ro")
+fi
+
+GIT_DIR="$(git rev-parse --git-dir)"
+GIT_COMMON_DIR="$(git rev-parse --git-common-dir)"
+GIT_DIR="$(cd "$GIT_DIR" && pwd)"
+GIT_COMMON_DIR="$(cd "$GIT_COMMON_DIR" && pwd)"
+
+RAW_OUTPUT=$($RUNTIME run --rm \
+    -v "$WORKTREE:/workspace$WORKTREE_MOUNT_FLAG" \
+    -v "$GIT_COMMON_DIR:$GIT_COMMON_DIR:ro" \
     -w /workspace \
     --network=host \
     --user "$(id -u):$(id -g)" \
     -e HOME=/tmp/home \
     -e CLAUDE_CONFIG_DIR=/claude-config \
     -v "$CLAUDE_CONFIG:/claude-config" \
-    -e PROMPT="$PROMPT" \
+    ${EXTRA_MOUNTS[@]+"${EXTRA_MOUNTS[@]}"} \
+    ${EXTRA_ENV[@]+"${EXTRA_ENV[@]}"} \
+    ${PROMPT_MOUNTS[@]+"${PROMPT_MOUNTS[@]}"} \
+    ${PROMPT_ENV[@]+"${PROMPT_ENV[@]}"} \
+    -e CLAUDE_EXTRA_ARGS="$CLAUDE_EXTRA_ARGS" \
+    -e REMOTE_URL="$REMOTE_URL" \
     "$CONTAINER_IMAGE" \
-    sh -c 'mkdir -p "$HOME" && npx -y @anthropic-ai/claude-code --dangerously-skip-permissions -p "$PROMPT"' \
-    | tee "$REVIEW_OUTPUT_FILE"
+    sh -c 'mkdir -p "$HOME" && git config --global safe.directory "*" && if [ -n "$REMOTE_URL" ] && ! git remote get-url origin >/dev/null 2>&1; then git remote add origin "$REMOTE_URL"; fi && if [ -f /tmp/prompt.txt ]; then PROMPT="$(cat /tmp/prompt.txt)"; fi && claude --dangerously-skip-permissions --output-format json $CLAUDE_EXTRA_ARGS -p "$PROMPT"') && CONTAINER_EXIT=0 || CONTAINER_EXIT=$?
 
-if [[ "$KEEP_WORKTREE" == true ]]; then
-    # Strip TTY carriage returns from saved output
-    sed 's/\r$//' "$REVIEW_OUTPUT_FILE" > "$WORKTREE/CODE_REVIEW.md"
+[[ -n "$PROMPT_FILE" ]] && rm -f "$PROMPT_FILE"
+
+if [[ $CONTAINER_EXIT -ne 0 ]]; then
+    echo "Error: container exited with status $CONTAINER_EXIT"
+    [[ -n "$RAW_OUTPUT" ]] && echo "$RAW_OUTPUT"
+    rm -f "$REVIEW_OUTPUT_FILE"
+    exit $CONTAINER_EXIT
+fi
+
+if command -v jq &>/dev/null; then
+    echo "$RAW_OUTPUT" | jq -r '.result // .' > "$REVIEW_OUTPUT_FILE" 2>/dev/null
+elif command -v python3 &>/dev/null; then
+    echo "$RAW_OUTPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('result') or json.dumps(d,indent=2))" > "$REVIEW_OUTPUT_FILE" 2>/dev/null
+else
+    echo "$RAW_OUTPUT" > "$REVIEW_OUTPUT_FILE"
+fi
+# Fallback if extraction failed
+if [[ ! -s "$REVIEW_OUTPUT_FILE" ]]; then
+    echo "$RAW_OUTPUT" > "$REVIEW_OUTPUT_FILE"
+fi
+
+cat "$REVIEW_OUTPUT_FILE"
+
+if [[ -s "$REVIEW_OUTPUT_FILE" ]]; then
+    mkdir -p pr-reviews
+    REVIEW_FILE="pr-reviews/${BRANCH//\//-}.md"
+    cp "$REVIEW_OUTPUT_FILE" "$REVIEW_FILE"
     echo "---"
-    echo "Review saved to: $WORKTREE/CODE_REVIEW.md"
+    echo "Review saved to: $REVIEW_FILE"
+else
+    echo "Error: no review output captured"
+    rm -f "$REVIEW_OUTPUT_FILE"
+    exit 1
 fi
 rm -f "$REVIEW_OUTPUT_FILE"
