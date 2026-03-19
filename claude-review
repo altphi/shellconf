@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Review a git branch inside an isolated container using Claude Code.
 #
-# Usage: claude-review [-s] [branch] [base-branch]
+# Usage: claude-review [-s] [-w] [-h] <branch> [base-branch]
+#        claude-review -w [base-branch]
 #   -s  Use the /code-review:code-review skill instead of inline diff prompt
+#   -w  Review the working tree (uncommitted changes) instead of a branch
 #
-# With no branch argument, reviews the current working directory (including
-# uncommitted changes) against the base branch. With a branch argument,
-# creates a worktree and reviews committed changes.
+# In branch mode (default), creates a worktree and reviews committed changes.
+# With -w, reviews the current working directory (including uncommitted
+# changes) against the base branch.
 #
 # Review output is saved to pr-reviews/<branch>.md in the current directory.
 #
@@ -15,29 +17,77 @@
 
 set -euo pipefail
 
+usage() {
+    cat <<'EOF'
+Usage: claude-review [-s] [-w] [-h] <branch> [base-branch]
+       claude-review -w [-s] [base-branch]
+
+Review a git branch inside an isolated Docker container using Claude Code.
+
+Options:
+  -s    Use the /code-review:code-review skill instead of inline diff prompt
+  -w    Review working tree (uncommitted changes) instead of a branch
+  -h    Show this help message
+
+Arguments:
+  branch       Branch to review (required unless -w is used)
+  base-branch  Branch to diff against (default: auto-detected)
+
+In branch mode (default), creates a worktree and reviews committed changes.
+With -w, reviews the current working directory (including uncommitted
+changes) against the base branch.
+
+Review output is saved to pr-reviews/<branch>.md in the current directory.
+
+Requires: docker (or podman), git, claude CLI (authenticated via 'claude login')
+          gh CLI (authenticated via 'gh auth login') when using -s
+EOF
+}
+
 USE_SKILL=false
-while getopts "s" opt; do
+WORKDIR_MODE=false
+while getopts "swh" opt; do
     case "$opt" in
         s) USE_SKILL=true ;;
-        *) echo "Usage: claude-review [-s] [branch] [base-branch]"; exit 1 ;;
+        w) WORKDIR_MODE=true ;;
+        h) usage; exit 0 ;;
+        *) usage >&2; exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 
-BRANCH="${1:-}"
-BASE="${2:-}"
-CONTAINER_IMAGE="${CLAUDE_REVIEW_IMAGE:-claude-review:latest}"
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-
-WORKDIR_MODE=false
-if [[ -z "$BRANCH" ]]; then
-    BRANCH="$(git branch --show-current 2>/dev/null)" || true
-    if [[ -z "$BRANCH" ]]; then
-        echo "Error: not on a branch (detached HEAD?) and no branch argument given."
+if [[ "$WORKDIR_MODE" == true ]]; then
+    if [[ $# -gt 1 ]]; then
+        echo "Error: too many arguments for -w mode (expected at most 1, got $#)" >&2
+        echo >&2
+        usage >&2
         exit 1
     fi
-    WORKDIR_MODE=true
+    BASE="${1:-}"
+    BRANCH="$(git branch --show-current 2>/dev/null)" || true
+    if [[ -z "$BRANCH" ]]; then
+        echo "Error: not on a branch (detached HEAD?). Cannot use -w mode." >&2
+        exit 1
+    fi
+else
+    if [[ $# -lt 1 ]]; then
+        echo "Error: branch argument required (or use -w for working tree mode)" >&2
+        echo >&2
+        usage >&2
+        exit 1
+    fi
+    if [[ $# -gt 2 ]]; then
+        echo "Error: too many arguments (expected at most 2, got $#)" >&2
+        echo >&2
+        usage >&2
+        exit 1
+    fi
+    BRANCH="${1}"
+    BASE="${2:-}"
 fi
+
+CONTAINER_IMAGE="${CLAUDE_REVIEW_IMAGE:-claude-review:latest}"
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 CLAUDE_CONFIG_SRC="$HOME/.claude"
 if [[ ! -f "$CLAUDE_CONFIG_SRC/.credentials.json" ]]; then
@@ -115,8 +165,9 @@ if [[ -z "$BASE" ]]; then
     fi
     # Don't diff a branch against itself
     if [[ "$BASE" == "$BRANCH" ]]; then
-        echo "Error: base branch '$BASE' is the same as the review branch."
-        echo "Pass a different base branch as the second argument."
+        echo "Error: base branch '$BASE' is the same as the review branch." >&2
+        echo >&2
+        usage >&2
         exit 1
     fi
 fi
@@ -174,7 +225,8 @@ if [[ "$USE_SKILL" == true ]]; then
     fi
     PROMPT="/code-review:code-review -- Review branch '$BRANCH' against '$BASE'. Run: $DIFF_CMD
 IMPORTANT: Always perform the full review regardless of PR status (draft, closed, etc).
-IMPORTANT: Do NOT post the review as a GitHub PR comment. Instead, output the full review to stdout as your final message. For every finding, reference the specific file path and line number in the format file_path:line_number."
+IMPORTANT: Do NOT post the review as a GitHub PR comment. Instead, output the full review to stdout as your final message.
+IMPORTANT: Ignore the confidence threshold of 80. Report ALL issues regardless of confidence score. For every issue, include the confidence score, specific file path, and line number in the format file_path:line_number, along with a detailed explanation."
     GH_TOKEN="$(gh auth token 2>/dev/null)" || {
         echo "Error: could not get gh token. Run 'gh auth login' first."
         exit 1
