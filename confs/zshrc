@@ -66,6 +66,7 @@ fi
 for d in ~/code/*(/); do
     hash -d "${d:t}"="$d"
 done
+alias vpn="~/code/clt-vpn-scripts/"
 
 alias ta='tmux attach'
 alias reaper-hidpi="GDK_SCALE=2 GDK_DPI_SCALE=1 reaper"
