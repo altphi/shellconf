@@ -314,7 +314,7 @@ RAW_OUTPUT=$($RUNTIME run --rm \
     -e CLAUDE_EXTRA_ARGS="$CLAUDE_EXTRA_ARGS" \
     -e REMOTE_URL="$REMOTE_URL" \
     "$CONTAINER_IMAGE" \
-    sh -c 'mkdir -p "$HOME" && git config --global safe.directory "*" && if [ -n "$REMOTE_URL" ] && ! git remote get-url origin >/dev/null 2>&1; then git remote add origin "$REMOTE_URL" 2>/dev/null || true; fi && if [ -f /tmp/prompt.txt ]; then PROMPT="$(cat /tmp/prompt.txt)"; fi && claude --dangerously-skip-permissions --output-format json $CLAUDE_EXTRA_ARGS -p "$PROMPT"') && CONTAINER_EXIT=0 || CONTAINER_EXIT=$?
+    sh -c 'mkdir -p "$HOME" && git config --global safe.directory "*" && if [ -n "$REMOTE_URL" ] && ! git remote get-url origin >/dev/null 2>&1; then git remote add origin "$REMOTE_URL" 2>/dev/null || true; fi && if [ -f /tmp/prompt.txt ]; then PROMPT="$(cat /tmp/prompt.txt)"; fi && claude --dangerously-skip-permissions $CLAUDE_EXTRA_ARGS -p "$PROMPT"') && CONTAINER_EXIT=0 || CONTAINER_EXIT=$?
 
 [[ -n "$PROMPT_FILE" ]] && rm -f "$PROMPT_FILE"
 
@@ -325,17 +325,7 @@ if [[ $CONTAINER_EXIT -ne 0 ]]; then
     exit $CONTAINER_EXIT
 fi
 
-if command -v jq &>/dev/null; then
-    echo "$RAW_OUTPUT" | jq -r '.result | select(. != null and . != "")' > "$REVIEW_OUTPUT_FILE" 2>/dev/null
-elif command -v python3 &>/dev/null; then
-    echo "$RAW_OUTPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d.get('result'); print(r if r else json.dumps(d,indent=2))" > "$REVIEW_OUTPUT_FILE" 2>/dev/null
-else
-    echo "$RAW_OUTPUT" > "$REVIEW_OUTPUT_FILE"
-fi
-# Fallback if extraction failed or result was empty
-if [[ ! -s "$REVIEW_OUTPUT_FILE" ]] || ! grep -q '[^[:space:]]' "$REVIEW_OUTPUT_FILE"; then
-    echo "$RAW_OUTPUT" > "$REVIEW_OUTPUT_FILE"
-fi
+echo "$RAW_OUTPUT" > "$REVIEW_OUTPUT_FILE"
 
 cat "$REVIEW_OUTPUT_FILE"
 

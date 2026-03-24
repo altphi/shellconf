@@ -37,10 +37,36 @@ local function truncate_path(full_path, home)
     return truncatedPath, full_path
 end
 
+local function load_snippet_files()
+    local dir = os.getenv("HOME") .. "/bin/snippets"
+    local h = io.popen('ls -1 "' .. dir .. '" 2>/dev/null')
+    if h == nil then return {} end
+    local listing = h:read("*a")
+    h:close()
+    local file_snippets = {}
+    for filename in listing:gmatch("[^\n]+") do
+        local filepath = dir .. "/" .. filename
+        local f = io.open(filepath, "r")
+        if f then
+            local content = f:read("*a")
+            f:close()
+            -- Strip trailing newline
+            content = content:gsub("\n$", "")
+            local name = filename:gsub("%.[^.]+$", ""):gsub("[-_]", " ")
+            table.insert(file_snippets, { name = name, text = content })
+        end
+    end
+    return file_snippets
+end
+
 local function handle_snip(query)
     local names = {}
     local snip_map = {}
     for _, s in ipairs(snippets) do
+        table.insert(names, s.name)
+        snip_map[s.name] = s
+    end
+    for _, s in ipairs(load_snippet_files()) do
         table.insert(names, s.name)
         snip_map[s.name] = s
     end
