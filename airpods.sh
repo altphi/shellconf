@@ -112,8 +112,27 @@ set_profile() {
       echo "Failed to reconnect AirPods" >&2; exit 1
     fi
     profile_idx=$(wait_for_profile_load "$dev_id" "$pattern")
+  fi
+  if [[ -z "$profile_idx" ]]; then
+    echo "Profile still not available, full reset of bluetooth stack..."
+    bluetoothctl disconnect "$AIRPODS_MACADDR" &>/dev/null
+    # Untrust to prevent auto-reconnect during restart
+    bluetoothctl untrust "$AIRPODS_MACADDR" &>/dev/null
+    sleep 1
+    sudo systemctl restart bluetooth
+    sleep 2
+    systemctl --user restart pipewire wireplumber
+    # Wait for wireplumber to register A2DP endpoints with bluez
+    sleep 3
+    # Now trust and connect — A2DP endpoints are already registered
+    bluetoothctl trust "$AIRPODS_MACADDR" &>/dev/null
+    dev_id=$(connect_and_wait_for_device_load)
+    if [[ -z "$dev_id" ]]; then
+      echo "Failed to reconnect AirPods after full restart" >&2; exit 1
+    fi
+    profile_idx=$(wait_for_profile_load "$dev_id" "$pattern")
     if [[ -z "$profile_idx" ]]; then
-      echo "Profile still not available after reconnect" >&2; exit 1
+      echo "Profile still not available after full restart" >&2; exit 1
     fi
   fi
 
