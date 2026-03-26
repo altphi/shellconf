@@ -232,6 +232,7 @@ local commands = {
     { key = "bwb",   desc = "Better World Books", url = "https://www.betterworldbooks.com/search/results?q=" },
     { key = "i",     desc = "CL Issues",          url = "https://github.com/classiclearning/Issues/issues/" },
     { key = "it",    desc = "Tigger Issues",      url = "https://github.com/classiclearning/tigger/issues/" },
+    { key = "rust",  desc = "Rust api docs",      url = "https://doc.rust-lang.org/stable/std/index.html?search=" },
     { key = "sp",    desc = "Play/Pause",         exec = "playerctl -a play-pause" },
     { key = "sn",    desc = "Next track",         exec = "playerctl -a next" },
     { key = "sprev", desc = "Previous track",     exec = "playerctl -a previous" },
