@@ -15,15 +15,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # quickshell = {
-    #   url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
+    noctalia = {
+      url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
   };
 
-  outputs = { self, nixpkgs, home-manager, zen-browser, nixpkgs-stable, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, zen-browser, nixpkgs-stable, noctalia, ... }@inputs:
   let
     system = "x86_64-linux";
     secrets = if builtins.pathExists ./.secrets.nix
@@ -51,7 +51,6 @@
       overlays = [
         (final: prev: {
           zen = zen-browser.packages.${system}.default;
-          # quickshell = quickshell.packages.${system}.default;
         })
       ];
     };
@@ -66,6 +65,8 @@
     homeConfigurations."stephen" = home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       modules = [
+        noctalia.homeModules.default
+        ./noctalia.nix
         {
           home.username = "stephen";
           home.homeDirectory = "/home/stephen";
@@ -96,7 +97,7 @@
             emmylua-ls
             etlegacy
             etlegacy-assets
-            eww
+            #eww # replaced by noctalia-shell
             exercism
             exiftool
             evtest
@@ -128,7 +129,7 @@
             lsof
             lua
             lua-language-server
-            mako
+            #mako # replaced by noctalia-shell
             ncspot
             nixd
             nmap
