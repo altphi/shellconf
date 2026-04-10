@@ -348,9 +348,8 @@ set_standard_perms() {
   find . -type d -exec chmod 755 '{}' \;
 }
 
-# Filter out the noisy "direnv: export +FOO ~BAR..." line while keeping
-# "loading" / "using flake" messages. Parsed so the nix store path stays current.
-eval "$(direnv hook zsh | sed "s|export zsh)\"|export zsh 2> >(grep -v 'direnv: export ' >\&2))\"|")"
+eval "$(direnv hook zsh)"
+
 [[ kubectl ]] && source <(kubectl completion zsh)
 
 export NVM_DIR="$HOME/.nvm"
