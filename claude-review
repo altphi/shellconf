@@ -177,10 +177,22 @@ if [[ "$WORKDIR_MODE" == true ]]; then
     CREATED_WORKTREE=false
     echo "Reviewing working directory (branch '$BRANCH') vs '$BASE'..."
 else
-    git rev-parse --verify "$BRANCH" &>/dev/null || {
-        echo "Error: branch '$BRANCH' does not exist"
-        exit 1
-    }
+    BRANCH_EXISTS_LOCALLY=false
+    REMOTE_REF=""
+    if git rev-parse --verify "$BRANCH" &>/dev/null; then
+        BRANCH_EXISTS_LOCALLY=true
+    else
+        # Check for a remote tracking branch (try origin first, then any remote)
+        if git rev-parse --verify "origin/$BRANCH" &>/dev/null; then
+            REMOTE_REF="origin/$BRANCH"
+        else
+            REMOTE_REF="$(git for-each-ref --format='%(refname:short)' "refs/remotes/*/$BRANCH" | head -1)"
+        fi
+        if [[ -z "$REMOTE_REF" ]]; then
+            echo "Error: branch '$BRANCH' does not exist locally or on any remote"
+            exit 1
+        fi
+    fi
 
     EXISTING_WORKTREE="$(git worktree list --porcelain | awk -v branch="refs/heads/$BRANCH" '
         /^worktree /{ wt=$2 }
@@ -194,8 +206,15 @@ else
     else
         WORKTREE="$(mktemp -d)"
         CREATED_WORKTREE=true
-        echo "Creating worktree for '$BRANCH' at $WORKTREE..."
-        git worktree add "$WORKTREE" "$BRANCH" --quiet
+        if [[ "$BRANCH_EXISTS_LOCALLY" == true ]]; then
+            echo "Creating worktree for '$BRANCH' at $WORKTREE..."
+            git worktree add "$WORKTREE" "$BRANCH" --quiet
+        else
+            echo "Creating worktree for '$BRANCH' (from $REMOTE_REF) at $WORKTREE..."
+            git worktree add "$WORKTREE" "$BRANCH" --quiet 2>/dev/null \
+                || git worktree add -b "$BRANCH" "$WORKTREE" "$REMOTE_REF" --quiet \
+                || { echo "Error: failed to create worktree for '$BRANCH' from '$REMOTE_REF'"; exit 1; }
+        fi
     fi
 fi
 
@@ -281,17 +300,11 @@ echo "---"
 
 REVIEW_OUTPUT_FILE="$(mktemp)"
 
-# For non-skill mode, mount the prompt as a file to avoid env var size limits
-PROMPT_FILE=""
-PROMPT_MOUNTS=()
-PROMPT_ENV=()
-if [[ "$USE_SKILL" == true ]]; then
-    PROMPT_ENV=(-e PROMPT="$PROMPT")
-else
-    PROMPT_FILE="$(mktemp)"
-    printf '%s' "$PROMPT" > "$PROMPT_FILE"
-    PROMPT_MOUNTS=(-v "$PROMPT_FILE:/tmp/prompt.txt:ro")
-fi
+# Always mount the prompt as a file and pipe it to claude via stdin, to avoid
+# "Argument list too long" on large diffs and env var size limits.
+PROMPT_FILE="$(mktemp)"
+printf '%s' "$PROMPT" > "$PROMPT_FILE"
+PROMPT_MOUNTS=(-v "$PROMPT_FILE:/tmp/prompt.txt:ro")
 
 GIT_DIR="$(git rev-parse --git-dir)"
 GIT_COMMON_DIR="$(git rev-parse --git-common-dir)"
@@ -309,14 +322,13 @@ RAW_OUTPUT=$($RUNTIME run --rm \
     -v "$CLAUDE_CONFIG:/claude-config" \
     ${EXTRA_MOUNTS[@]+"${EXTRA_MOUNTS[@]}"} \
     ${EXTRA_ENV[@]+"${EXTRA_ENV[@]}"} \
-    ${PROMPT_MOUNTS[@]+"${PROMPT_MOUNTS[@]}"} \
-    ${PROMPT_ENV[@]+"${PROMPT_ENV[@]}"} \
+    "${PROMPT_MOUNTS[@]}" \
     -e CLAUDE_EXTRA_ARGS="$CLAUDE_EXTRA_ARGS" \
     -e REMOTE_URL="$REMOTE_URL" \
     "$CONTAINER_IMAGE" \
-    sh -c 'mkdir -p "$HOME" && git config --global safe.directory "*" && if [ -n "$REMOTE_URL" ] && ! git remote get-url origin >/dev/null 2>&1; then git remote add origin "$REMOTE_URL" 2>/dev/null || true; fi && if [ -f /tmp/prompt.txt ]; then PROMPT="$(cat /tmp/prompt.txt)"; fi && claude --dangerously-skip-permissions $CLAUDE_EXTRA_ARGS -p "$PROMPT"') && CONTAINER_EXIT=0 || CONTAINER_EXIT=$?
+    sh -c 'mkdir -p "$HOME" && git config --global safe.directory "*" && if [ -n "$REMOTE_URL" ] && ! git remote get-url origin >/dev/null 2>&1; then git remote add origin "$REMOTE_URL" 2>/dev/null || true; fi && claude --dangerously-skip-permissions $CLAUDE_EXTRA_ARGS -p < /tmp/prompt.txt') && CONTAINER_EXIT=0 || CONTAINER_EXIT=$?
 
-[[ -n "$PROMPT_FILE" ]] && rm -f "$PROMPT_FILE"
+rm -f "$PROMPT_FILE"
 
 if [[ $CONTAINER_EXIT -ne 0 ]]; then
     echo "Error: container exited with status $CONTAINER_EXIT"
