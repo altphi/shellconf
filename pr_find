@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # List open PRs across a GitHub org, fuzzy search with fzf, open selected in browser
 # Set default org with GITHUB_DEFAULT_ORG
-# Requires: gh, fzf, open
+# Requires: gh, fzf, chromium (or set PR_FIND_USE_SYSTEM_OPEN=1 to use xdg-open/open)
 
 org="${1:-$GITHUB_DEFAULT_ORG}"
 if [[ -z "$org" ]]; then
@@ -84,7 +84,9 @@ while IFS= read -r line; do
     if command -v notify-send &>/dev/null; then
         notify-send "PR branch copied" "$branch"
     fi
-    if command -v xdg-open &>/dev/null; then
+    if [[ -z "$PR_FIND_USE_SYSTEM_OPEN" ]] && command -v chromium &>/dev/null; then
+        chromium --new-tab "$url" 2>/dev/null &
+    elif command -v xdg-open &>/dev/null; then
         xdg-open "$url" 2>/dev/null &
     else
         open "$url" 2>/dev/null &

@@ -221,7 +221,12 @@ query {
     local selected = trim(fh:read("*a"))
     fh:close()
     if selected ~= "" and url_map[selected] then
-        os.execute('xdg-open "' .. url_map[selected] .. '" 2>/dev/null')
+        local url = url_map[selected]
+        if not os.getenv("PR_FIND_USE_SYSTEM_OPEN") and os.execute("command -v chromium >/dev/null 2>&1") then
+            os.execute('chromium --new-tab "' .. url .. '" 2>/dev/null')
+        else
+            os.execute('xdg-open "' .. url .. '" 2>/dev/null')
+        end
     end
 end
 
