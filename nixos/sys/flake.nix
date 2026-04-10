@@ -19,8 +19,7 @@
           # Optionally, disable channels
           nix.nixPath = [ "nixpkgs=${nixpkgs.outPath}" ];
         }
-        # nixos-hardware.nixosModules.lenovo-thinkpad-p16s-amd-gen2
-        nixos-hardware.nixosModules.lenovo-thinkpad
+        nixos-hardware.nixosModules.lenovo-thinkpad-p16s-amd-gen4
       ];
       specialArgs = {
         unstable = import nixpkgs-unstable {

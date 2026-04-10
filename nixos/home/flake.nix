@@ -21,14 +21,13 @@
     # };
 
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
-    # ncspot-flake.url = "path:/home/stephen/nixos/home/custom_flakes/ncspot";
   };
 
   outputs = { self, nixpkgs, home-manager, zen-browser, nixpkgs-stable, ... }@inputs:
   let
     system = "x86_64-linux";
-    secrets = if builtins.pathExists ./secrets.nix
-      then import ./secrets.nix
+    secrets = if builtins.pathExists ./.secrets.nix
+      then import ./.secrets.nix
       else { location = { lat = 0.0; lng = 0.0; }; sshKeyPath = ""; vpnScriptPath = ""; };
     allowedUnfree = [
       "amp-cli"
@@ -53,7 +52,6 @@
         (final: prev: {
           zen = zen-browser.packages.${system}.default;
           # quickshell = quickshell.packages.${system}.default;
-          # ncspot = ncspot-flake.packages.${system}.ncspot;
         })
       ];
     };
@@ -75,14 +73,12 @@
 
           home.packages = with pkgs; [
             aerc
-            #aider-chat
             akkuPackages.scheme-langserver
             algol68g
             amp-cli
             anki-bin
             #audacious
             bzflag
-            #cheese
             chez
             cliphist
             cmatrix
@@ -133,7 +129,6 @@
             lua
             lua-language-server
             mako
-            #mmixware
             ncspot
             nixd
             nmap
@@ -145,7 +140,7 @@
             psmisc
             pdf4qt
             swi-prolog
-            # reaper
+            #reaper
             ripgrep
             rpi-imager
             rustlings
@@ -177,7 +172,6 @@
             wev
             wf-recorder
             whois
-            # zed-editor
             zen
             zip
             zoxide

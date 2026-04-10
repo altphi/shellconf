@@ -2,18 +2,39 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, unstable, ... }:
+{ config, lib, pkgs, modulesPath, unstable, ... }:
 
 let
-  secrets = if builtins.pathExists ./secrets.nix
-    then import ./secrets.nix
+  secrets = if builtins.pathExists ./.secrets.nix
+    then import ./.secrets.nix
     else { cltHosts = []; };
 in
 {
   imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
+    [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
+
+  # Hardware configuration (inlined from hardware-configuration.nix)
+  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "thunderbolt" "uas" "sd_mod" ];
+  boot.initrd.kernelModules = [ ];
+  boot.extraModulePackages = [ ];
+
+  fileSystems."/" =
+    { device = "/dev/disk/by-uuid/a23e1f86-76aa-4680-8572-95d8fbb60105";
+      fsType = "ext4";
+    };
+
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/476B-0C00";
+      fsType = "vfat";
+      options = [ "fmask=0077" "dmask=0077" ];
+    };
+
+  swapDevices = [ ];
+
+  networking.useDHCP = lib.mkDefault true;
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
   hardware = {
     graphics = {
@@ -37,7 +58,7 @@ in
 
   boot.loader.systemd-boot.enable = false;
   boot.kernelPackages = pkgs.linuxPackages;
-  boot.kernelModules = [ "i2c-dev" ];
+  boot.kernelModules = [ "kvm-amd" "i2c-dev" ];
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {
     enable = true;
