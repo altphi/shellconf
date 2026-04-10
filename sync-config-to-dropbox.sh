@@ -4,6 +4,7 @@ set -a
 SRC_CONFIG="${HOME}/.config/";
 SRC_NIX="${HOME}/nixos/";
 SRC_VAULTS="${HOME}/vaults/";
+SRC_TODOS="${HOME}/todos/";
 
 TGT_DROPBOX="${HOME}/Dropbox/backups/"
 TGT_SYNCTHING="${HOME}/syncedthings/backups/"
@@ -28,6 +29,7 @@ sync () {
 
   rsync -aP --delete "${SRC_NIX}" "${1}nixos/"
   rsync -aP --delete "${SRC_VAULTS}" "${1}vaults/"
+  rsync -aP --delete "${SRC_TODOS}" "${1}todos/"
 }
 
 sync "${TGT_DROPBOX}"
