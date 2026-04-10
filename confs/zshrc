@@ -111,8 +111,8 @@ alias c-sys='vi ~/nixos/sys/configuration.nix'
 alias c-home='vi ~/nixos/home/home.nix'
 alias c-tmux='vi ~/.tmux.conf'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
-alias switch-sys='sudo nixos-rebuild switch --flake ~/nixos/sys\#euclid'
-alias switch-home='home-manager switch -b backup --flake ~/nixos/home'
+alias switch-sys='sudo nixos-rebuild switch --flake ~/bin/nixos/sys\#euclid'
+alias switch-home='home-manager switch -b backup --flake ~/bin/nixos/home'
 alias open="xdg-open"
 alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
 alias symbols="less $(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose"
@@ -350,7 +350,7 @@ set_standard_perms() {
 
 eval "$(direnv hook zsh)"
 
-[[ kubectl ]] && source <(kubectl completion zsh)
+[[ -x $(command -v kubectl) ]] && source <(kubectl completion zsh)
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "/usr/share/nvm/nvm.sh" ] && \. "/usr/share/nvm/nvm.sh"  # This loads nvm
