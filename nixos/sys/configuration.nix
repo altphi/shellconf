@@ -4,11 +4,6 @@
 
 { config, lib, pkgs, modulesPath, unstable, ... }:
 
-let
-  secrets = if builtins.pathExists ./.secrets.nix
-    then import ./.secrets.nix
-    else { cltHosts = []; };
-in
 {
   imports =
     [ (modulesPath + "/installer/scan/not-detected.nix")
@@ -70,7 +65,13 @@ in
   networking.hostName = "euclid";
   networking.networkmanager.enable = true;
   networking.hosts = {
-    "127.0.0.1" = secrets.cltHosts;
+    "127.0.0.1" = [
+      "dev.cltexam.com"
+      "clt2-dev.cltexam.com"
+      "app2-dev.cltexam.com"
+      "backroom-dev.cltexam.com"
+      "cat-dev.cltexam.com"
+    ];
   };
   networking.firewall = {
     enable = true;
@@ -108,12 +109,15 @@ in
     shell = pkgs.zsh;
   };
 
+  services.power-profiles-daemon.enable = true;
   services.udev.packages = [ pkgs.ddcutil ];
   nixpkgs.config.allowUnfree = true;
   nix.settings = {
     experimental-features = ["nix-command" "flakes"];
     allowed-users = [ "stephen" ];
     auto-optimise-store = true;
+    extra-substituters = [ "https://noctalia.cachix.org" ];
+    extra-trusted-public-keys = [ "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4=" ];
   };
   environment.systemPackages = with pkgs; [
     nautilus

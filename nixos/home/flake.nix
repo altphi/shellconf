@@ -26,10 +26,7 @@
   outputs = { self, nixpkgs, home-manager, zen-browser, nixpkgs-stable, noctalia, ... }@inputs:
   let
     system = "x86_64-linux";
-    secrets = if builtins.pathExists ./.secrets.nix
-      then import ./.secrets.nix
-      else { location = { lat = 0.0; lng = 0.0; }; sshKeyPath = ""; vpnScriptPath = ""; };
-    allowedUnfree = [
+allowedUnfree = [
       "amp-cli"
       "anki-bin"
       "codex"
@@ -78,7 +75,6 @@
             algol68g
             amp-cli
             anki-bin
-            #audacious
             bzflag
             chez
             cliphist
@@ -97,10 +93,11 @@
             emmylua-ls
             etlegacy
             etlegacy-assets
-            #eww # replaced by noctalia-shell
+            eww # replaced by noctalia-shell
             exercism
             exiftool
             evtest
+            #fastfetch
             fastmail-desktop
             fd
             fractal
@@ -129,7 +126,7 @@
             lsof
             lua
             lua-language-server
-            #mako # replaced by noctalia-shell
+            mako
             ncspot
             nixd
             nmap
@@ -231,32 +228,11 @@
           };
 
           services = {
-            darkman = {
-              enable = true;
-              settings = {
-                lat = secrets.location.lat;
-                lng = secrets.location.lng;
-                usegeoclue = false;
-                portal = true;
-              };
-            };
+            darkman.enable = true;
             easyeffects.enable = true;
           };
 
-          systemd.user.services.cltvpn = {
-            Unit = {
-              Description = "clt vpn";
-              After = [ "graphical-session.target" ];
-            };
-            Service = {
-              ExecStart = "${pkgs.writeShellScript "cltvpn" ''
-                ssh-add ${secrets.sshKeyPath}
-                ${secrets.vpnScriptPath}
-              ''}";
-              Restart = "on-failure";
-              Environment = [ "USE_AUTOSSH=true" ];
-            };
-          };
+
         }
       ];
     };

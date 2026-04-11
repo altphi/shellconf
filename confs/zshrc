@@ -1,14 +1,5 @@
 #!/usr/bin/env zsh
 
-# if [[ `darkman get` = "light" ]]; then
-#   # for some reason I have to call this twice for the history entry to be made
-#   theme.sh "$(theme.sh --light -l|tail -n2|head -n1)"
-#   theme.sh "$(theme.sh --light -l|tail -n2|head -n1)"
-# else
-#   theme.sh "$(theme.sh --dark -l|tail -n2|head -n1)"
-# 	theme.sh "$(theme.sh --dark -l|tail -n2|head -n1)"
-# fi
-
 setopt ALL_EXPORT
 readonly SYSTYPE="$(uname)"
 PATH="$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
@@ -107,8 +98,8 @@ alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --
 alias c-niri='vi ~/.config/niri/config.kdl'
 alias c-nvim='cd ~/.config/nvim && vi .'
 alias c-ghostty='vi ~/.config/ghostty/config'
-alias c-sys='vi ~/nixos/sys/configuration.nix'
-alias c-home='vi ~/nixos/home/home.nix'
+alias c-sys='vi ~/bin/nixos/sys/configuration.nix'
+alias c-home='vi ~/bin/nixos/home/flake.nix'
 alias c-tmux='vi ~/.tmux.conf'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias switch-sys='sudo nixos-rebuild switch --flake ~/bin/nixos/sys\#euclid'
@@ -371,8 +362,6 @@ function zle-keymap-select {
 }
 zle -N zle-keymap-select
 
-shuf -n 1 ~/bin/misc/perlis_epigrams
-
 _self_completing() {
   local script="${words[1]}"
   [[ -f "$script" ]] || script="$(command -v "$script" 2>/dev/null)"
@@ -382,3 +371,5 @@ _self_completing() {
 }
 
 compdef _self_completing airpods.sh
+
+shuf -n 1 ~/bin/misc/perlis_epigrams
