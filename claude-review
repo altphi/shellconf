@@ -323,7 +323,7 @@ RAW_OUTPUT=$($RUNTIME run --rm \
     ${EXTRA_MOUNTS[@]+"${EXTRA_MOUNTS[@]}"} \
     ${EXTRA_ENV[@]+"${EXTRA_ENV[@]}"} \
     "${PROMPT_MOUNTS[@]}" \
-    -e CLAUDE_EXTRA_ARGS="$CLAUDE_EXTRA_ARGS" \
+    -e CLAUDE_EXTRA_ARGS="--effort max --model claude-opus-4-7 $CLAUDE_EXTRA_ARGS" \
     -e REMOTE_URL="$REMOTE_URL" \
     "$CONTAINER_IMAGE" \
     sh -c 'mkdir -p "$HOME" && git config --global safe.directory "*" && if [ -n "$REMOTE_URL" ] && ! git remote get-url origin >/dev/null 2>&1; then git remote add origin "$REMOTE_URL" 2>/dev/null || true; fi && claude --dangerously-skip-permissions $CLAUDE_EXTRA_ARGS -p < /tmp/prompt.txt') && CONTAINER_EXIT=0 || CONTAINER_EXIT=$?
