@@ -14,9 +14,7 @@
       modules = [
         ./configuration.nix
         {
-          # Set the path to the Flake for reproducibility
           nix.registry.nixpkgs.flake = nixpkgs;
-          # Optionally, disable channels
           nix.nixPath = [ "nixpkgs=${nixpkgs.outPath}" ];
         }
         nixos-hardware.nixosModules.lenovo-thinkpad-p16s-amd-gen4

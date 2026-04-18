@@ -10,6 +10,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-index-database = {
+       url = "github:nix-community/nix-index-database";
+       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixvim = {
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -23,7 +28,7 @@
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
   };
 
-  outputs = { self, nixpkgs, home-manager, zen-browser, nixpkgs-stable, noctalia, ... }@inputs:
+  outputs = { self, nixpkgs, nix-index-database, home-manager, zen-browser, nixpkgs-stable, noctalia, ... }@inputs:
   let
     system = "x86_64-linux";
 allowedUnfree = [
@@ -62,6 +67,7 @@ allowedUnfree = [
     homeConfigurations."stephen" = home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       modules = [
+        nix-index-database.homeModules.default
         noctalia.homeModules.default
         ./noctalia.nix
         {
@@ -93,12 +99,13 @@ allowedUnfree = [
             emmylua-ls
             etlegacy
             etlegacy-assets
-            eww # replaced by noctalia-shell
+            eww
             exercism
             exiftool
             evtest
             #fastfetch
             fastmail-desktop
+            firefox-bin-unwrapped
             fd
             fractal
             geoclue2
@@ -112,6 +119,9 @@ allowedUnfree = [
             hyprlock
             imagemagick
             iw
+            jjui
+            lazyjj
+            jujutsu
             kubeaudit
             kubetui
             kube-bench

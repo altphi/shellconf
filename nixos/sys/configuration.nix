@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, lib, pkgs, modulesPath, unstable, ... }:
+{ config, lib, pkgs, modulesPath, unstable, inputs, ... }:
 
 {
   imports =
@@ -105,11 +105,10 @@
     isNormalUser = true;
     description = "Stephen";
     extraGroups = [ "networkmanager" "wheel" "video" "audio" "docker" "i2c" ];
-    packages = with pkgs; [];
+    # packages = with pkgs; [];
     shell = pkgs.zsh;
   };
 
-  services.power-profiles-daemon.enable = true;
   services.udev.packages = [ pkgs.ddcutil ];
   nixpkgs.config.allowUnfree = true;
   nix.settings = {
@@ -120,6 +119,9 @@
     extra-trusted-public-keys = [ "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4=" ];
   };
   environment.systemPackages = with pkgs; [
+    comma
+    hyprlandPlugins.hyprscrolling
+    pulsemixer
     nautilus
     tuigreet
     gsettings-desktop-schemas
@@ -150,6 +152,7 @@
     pinentry-all
     pipewire
     plocate
+    powertop
     pstree
     pwvucontrol
     rocmPackages.rocminfo
@@ -181,7 +184,9 @@
   programs = {
     zsh.enable = true;
     niri.enable = true;
-    hyprland.enable = true;
+    hyprland = {
+      enable = true;
+    };
     neovim = {
       enable = true;
       vimAlias = true;
@@ -240,6 +245,9 @@
     wireplumber.enable = true;
   };
   services.upower.enable = true;
+  # services.power-profiles-daemon.enable = true;
+  powerManagement.powertop.enable = true;
+  services.tlp.enable = true;
   services.locate.enable = true;
   security.rtkit.enable = true;
 
