@@ -81,6 +81,9 @@ alias gbD=' git branch -D '
 alias gdf=' git diff --name-only'
 alias gs=' git status'
 alias gl=' git log --graph --name-status --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"'
+alias jl=' jj log'
+alias jll=" jj log -r 'all()'"
+alias js=" jj st"
 alias gwl=' git worktree list'
 alias gwr=' git worktree remove'
 alias gwa=' git worktree add'
@@ -251,19 +254,49 @@ LOGCHECK=0
 if [[ "$TERM" == "dumb" ]] ; then
   PS1=$(print '\n\n%n@%m:%/ %%')
 else
-  autoload -Uz vcs_info
-  precmd_vcs_info() { vcs_info }
-  precmd_functions+=( precmd_vcs_info )
+  # autoload -Uz vcs_info
+  # precmd_vcs_info() { vcs_info }
+  # precmd_functions+=( precmd_vcs_info )
   setopt prompt_subst
 
-  zstyle ':vcs_info:*' enable git
-  zstyle ':vcs_info:git:*' check-for-changes true  # Enable dirty check
-  zstyle ':vcs_info:git:*' stagedstr '%F{green}+%f'    # Staged changes
-  zstyle ':vcs_info:git:*' unstagedstr '%F{red}!%f'    # Unstaged changes
-  zstyle ':vcs_info:git:*' formats '%F{cyan}(%b%u%c)%f'  # Clean: cyan branch; dirty: with !/+
-  zstyle ':vcs_info:git:*' actionformats '(%b|%a%u%c)'
+  # zstyle ':vcs_info:*' enable jj
+  # zstyle ':vcs_info:jj:*' formats '%b'
+  # zstyle ':vcs_info:jj:*' actionformats '%b|%a'
 
-  PS1=$(print '\n\n%{\e[0;34m%}%n@%m:%{\e[0;32m%}%/ %{\e[0;0m%} ${vcs_info_msg_0_}\n%! : %? %% ')
+  # zstyle ':vcs_info:*' enable git
+  # zstyle ':vcs_info:git:*' check-for-changes true  # Enable dirty check
+  # zstyle ':vcs_info:git:*' stagedstr '%F{green}+%f'    # Staged changes
+  # zstyle ':vcs_info:git:*' unstagedstr '%F{red}!%f'    # Unstaged changes
+  # zstyle ':vcs_info:git:*' formats '%F{cyan}(%b%u%c)%f'  # Clean: cyan branch; dirty: with !/+
+  # zstyle ':vcs_info:git:*' actionformats '(%b|%a%u%c)'
+  # PS1=$(print '\n\n%{\e[0;34m%}%n@%m:%{\e[0;32m%}%/ %{\e[0;0m%} ${vcs_info_msg_0_}\n%! : %? %% ')
+
+jj_prompt() {
+    local desc upstream_status
+
+    # Working commit description (or change ID if empty description)
+    desc=$(jj log -r @ --no-graph --ignore-working-copy -T \
+        'coalesce(description.first_line(), "(no description)")' 2>/dev/null) || return
+
+    # Truncate to keep prompt tidy
+    desc="${desc:0:40}"
+
+    # Check if any local bookmark is ahead of its remote
+    # This lists bookmarks that have commits not on the remote
+    local ahead
+    ahead=$(jj log -r 'bookmarks() & ~remote_bookmarks()' \
+        --no-graph --ignore-working-copy -T 'change_id' 2>/dev/null)
+
+    if [ -n "$ahead" ]; then
+        upstream_status=" ↑"
+    else
+        upstream_status=""
+    fi
+
+    printf '[%s%s]' "$desc" "$upstream_status"
+}
+
+  PS1=$(print '\n\n%{\e[0;34m%}%n@%m:%{\e[0;32m%}%/ %{\e[0;0m%} $(jj_prompt)\n%! : %? %% ')
   HOSTNAME=$(hostname -s)
 fi
 
@@ -353,13 +386,20 @@ eval "$(zoxide init zsh)"
 source ~/.secret-env
 
 # cursor style
-function zle-keymap-select {
+# 1 → blinking block
+# 2 → steady block
+# 3 → blinking underline
+# 4 → steady underline
+# 5 → blinking bar (the “stick”)
+# 6 → steady bar
+function zle-keymap-select zle-line-init {
     if [[ ${KEYMAP} == vicmd ]]; then
         echo -ne '\e[2 q'
     else
         echo -ne '\e[1 q'
     fi
 }
+zle -N zle-line-init
 zle -N zle-keymap-select
 
 _self_completing() {
@@ -371,5 +411,6 @@ _self_completing() {
 }
 
 compdef _self_completing airpods.sh
+source <(jj util completion zsh)
 
 shuf -n 1 ~/bin/misc/perlis_epigrams
