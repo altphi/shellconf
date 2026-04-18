@@ -11,6 +11,36 @@ local function trim(s)
     return s:gsub("^%s+", ""):gsub("%s+$", "")
 end
 
+local history_path = os.getenv("HOME") .. "/.cache/launcher_history"
+local history_limit = 10
+
+local function load_history()
+    local f = io.open(history_path, "r")
+    if not f then return {} end
+    local items = {}
+    for line in f:lines() do
+        if line ~= "" then table.insert(items, line) end
+    end
+    f:close()
+    return items
+end
+
+local function save_history(entry)
+    local existing = load_history()
+    local deduped = { entry }
+    for _, v in ipairs(existing) do
+        if v ~= entry and #deduped < history_limit then
+            table.insert(deduped, v)
+        end
+    end
+    local f = io.open(history_path, "w")
+    if not f then return end
+    for _, v in ipairs(deduped) do
+        f:write(v, "\n")
+    end
+    f:close()
+end
+
 local function truncate_path(full_path, home)
     local relative = full_path:gsub("^" .. home .. "/", "~/")
     if relative == full_path then
@@ -88,6 +118,27 @@ local function handle_snip(query)
         local copy = io.popen("wl-copy -t text/plain", "w")
         copy:write(result)
         copy:close()
+    end
+end
+
+local function handle_emoji(query)
+    local emoji_path = os.getenv("HOME") .. "/bin/emoji.txt"
+    local search_flag = ""
+    if query ~= "" then
+        search_flag = ' --search="' .. query:gsub('"', '\\"') .. '"'
+    end
+    local cmd = 'fuzzel -w ' .. width .. ' --dmenu --prompt="emoji> "' .. search_flag .. ' < "' .. emoji_path .. '"'
+    local h = io.popen(cmd)
+    if h == nil then os.exit(1) end
+    local selected = trim(h:read("*a"))
+    h:close()
+    if selected ~= "" then
+        local emoji = selected:match("^([^\t]+)")
+        if emoji then
+            local copy = io.popen("wl-copy -n -t text/plain", "w")
+            copy:write(emoji)
+            copy:close()
+        end
     end
 end
 
@@ -246,6 +297,7 @@ local commands = {
     { key = "sb",    desc = "Seek -10s",          exec = "playerctl -a position -10" },
     { key = "sbb",   desc = "Seek -30s",          exec = "playerctl -a position -30" },
     { key = "snip",  desc = "Snippets",           handler = handle_snip },
+    { key = "e",     desc = "Emoji",              handler = handle_emoji },
     { key = "p",     desc = "Open PDF",           handler = handle_pdf },
     { key = "pr",    desc = "Find PR",            handler = handle_pr },
 }
@@ -260,9 +312,20 @@ for _, entry in ipairs(commands) do
 end
 table.sort(sorted_commands, function(a, b) return #a.key < #b.key end)
 local lines = {}
+local seen = {}
+for _, recent in ipairs(load_history()) do
+    local entry = cmd_map[recent]
+    if entry and not seen[recent] then
+        local padded = entry.key .. string.rep(" ", 8 - #entry.key)
+        table.insert(lines, padded .. entry.desc)
+        seen[recent] = true
+    end
+end
 for _, entry in ipairs(sorted_commands) do
-    local padded = entry.key .. string.rep(" ", 8 - #entry.key)
-    table.insert(lines, padded .. entry.desc)
+    if not seen[entry.key] then
+        local padded = entry.key .. string.rep(" ", 8 - #entry.key)
+        table.insert(lines, padded .. entry.desc)
+    end
 end
 local fuzzel_input = table.concat(lines, "\\n")
 
@@ -284,6 +347,7 @@ local query = trim(input:match("^%S+%s+(.*)") or "")
 
 local cmd = cmd_map[shortcut]
 if cmd then
+    save_history(cmd.key)
     -- If user selected from the list, query will be the description — treat as empty
     if query == cmd.desc then
         query = ""
