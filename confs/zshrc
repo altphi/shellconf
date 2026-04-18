@@ -1,5 +1,9 @@
 #!/usr/bin/env zsh
 
+if [[ -z "$TMUX" && "$TERM_PROGRAM" == "ghostty" ]]; then
+    exec tmux new-session -A -t main
+fi
+
 setopt ALL_EXPORT
 readonly SYSTYPE="$(uname)"
 PATH="$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
@@ -81,10 +85,11 @@ alias gbD=' git branch -D '
 alias gdf=' git diff --name-only'
 alias gs=' git status'
 alias gl=' git log --graph --name-status --date=local --pretty=format:"%Cblue%s%Creset / %Cred%h%Creset%n    son of %p / on tree %t / %ad%n    author: %an%n    committer: %cn%n"'
-alias jl=" jj log -r 'since_bookmark()'"
+alias jl=" jj log"
 alias je=' jj edit'
-alias jll=" jj log -r 'all()'"
+alias jb=' jj bookmark'
 alias jbl=" jj bookmark list"
+alias jll=" jj log -r 'all()'"
 alias js=" jj st"
 alias gwl=' git worktree list'
 alias gwr=' git worktree remove'
@@ -107,11 +112,15 @@ alias c-sys='vi ~/bin/nixos/sys/configuration.nix'
 alias c-home='vi ~/bin/nixos/home/flake.nix'
 alias c-tmux='vi ~/.tmux.conf'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
-alias switch-sys='sudo nixos-rebuild switch --flake ~/bin/nixos/sys\#euclid'
-alias switch-home='home-manager switch -b backup --flake ~/bin/nixos/home'
 alias open="xdg-open"
 alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
 alias symbols="less $(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose"
+alias switch-home='home-manager switch -b backup --flake ~/bin/nixos/home'
+
+switch-sys() {
+  sudo nixos-rebuild switch --flake ~/bin/nixos/sys\#euclid
+  notify-send "switch-sys finished, exit code: $?"
+}
 
 find_symbol() {
   grep -i "${1}" "$(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose"
@@ -172,6 +181,14 @@ hdmi-brightness () {
 }
 
 brightness () {
+  if [[ -z "$1" ]]; then
+    echo "Built-in: $(brightnessctl -m | awk -F, '{print $4}')"
+    ddcutil getvcp 10 2>/dev/null | while read -r line; do
+      local val=$(echo "$line" | grep -oP 'current value =\s*\K\d+')
+      [[ -n "$val" ]] && echo "HDMI:     ${val}%"
+    done
+    return
+  fi
   hdmi-brightness "$1"
   brightnessctl set "${1}%"
 }
@@ -426,3 +443,5 @@ compdef _self_completing airpods.sh
 source <(COMPLETE=zsh jj)
 
 shuf -n 1 ~/bin/misc/perlis_epigrams
+
+

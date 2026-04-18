@@ -35,3 +35,8 @@ sync () {
 sync "${TGT_DROPBOX}"
 sync "${TGT_SYNCTHING}"
 
+# .local/share
+
+SRC_SHARE="${HOME}/.local/share/";
+TGT_SHARE="${HOME}/Dropbox/backups/dotlocal-share/";
+
