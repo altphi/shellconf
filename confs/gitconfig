@@ -29,3 +29,16 @@
 	defaultBranch = main
 [fetch]
 	prune = true
+[delta]
+  side-by-side = true
+  line-numbers = true
+	navigate = true
+[diff]
+  external = difft
+  tool = difftastic
+[interactive]
+	diffFilter = delta --color-only
+[pager]
+  difftool = true
+[difftool]
+  prompt = false
