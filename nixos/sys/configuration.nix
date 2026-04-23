@@ -30,7 +30,7 @@
   };
 
   boot.loader.systemd-boot.enable = false;
-  boot.kernelPackages = pkgs.linuxPackages;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "i2c-dev" ];
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {
@@ -88,6 +88,7 @@
     shell = pkgs.zsh;
   };
 
+  services.fwupd.enable = true;
   services.udev.packages = [ pkgs.ddcutil ];
   nixpkgs.config.allowUnfree = true;
   nix.settings = {
@@ -190,7 +191,7 @@
     };
   };
 
-  boot.kernelParams = [ "console=tty3" ];
+  boot.kernelParams = [ "console=tty3" "resume=UUID=9c6645d4-4d56-444b-8f32-36890a1c8dae" ];
   systemd.services."getty@tty2".enable = false; # disable tty2 for Ly
   systemd.services."getty@tty3".enable = true; # send dmesg here
 
@@ -232,11 +233,12 @@
   # unclean shutdowns that corrupted the ext4 inode table. Until/unless BIOS
   # exposes S3 deep sleep, prefer hibernate on lid close.
   boot.resumeDevice = "/dev/disk/by-uuid/9c6645d4-4d56-444b-8f32-36890a1c8dae";
-  services.logind = {
-    lidSwitch = "hibernate";
-    lidSwitchExternalPower = "hibernate";
-    lidSwitchDocked = "ignore";
+  services.logind.settings.Login = {
+    HandleLidSwitch = "suspend-then-hibernate";
+    HandleLidSwitchExternalPower = "suspend-then-hibernate";
+    HandleLidSwitchDocked = "ignore";
   };
+  systemd.sleep.extraConfig = "HibernateDelaySec=1h";
   services.locate.enable = true;
   security.rtkit.enable = true;
 
