@@ -5,31 +5,9 @@
 { config, lib, pkgs, modulesPath, unstable, inputs, ... }:
 
 {
-  imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
-    ];
-
-  # Hardware configuration (inlined from hardware-configuration.nix)
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "thunderbolt" "uas" "sd_mod" ];
-  boot.initrd.kernelModules = [ ];
-  boot.extraModulePackages = [ ];
-
-  fileSystems."/" =
-    { device = "/dev/disk/by-uuid/a23e1f86-76aa-4680-8572-95d8fbb60105";
-      fsType = "ext4";
-    };
-
-  fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/476B-0C00";
-      fsType = "vfat";
-      options = [ "fmask=0077" "dmask=0077" ];
-    };
-
-  swapDevices = [ ];
+  imports = [ ./hardware-configuration.nix ];
 
   networking.useDHCP = lib.mkDefault true;
-  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
   hardware = {
     graphics = {
@@ -53,7 +31,7 @@
 
   boot.loader.systemd-boot.enable = false;
   boot.kernelPackages = pkgs.linuxPackages;
-  boot.kernelModules = [ "kvm-amd" "i2c-dev" ];
+  boot.kernelModules = [ "i2c-dev" ];
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {
     enable = true;
@@ -61,6 +39,7 @@
     efiSupport = true;
     useOSProber = true;
     configurationLimit = 20;
+    memtest86.enable = true;
   };
   networking.hostName = "euclid";
   networking.networkmanager.enable = true;
@@ -248,6 +227,16 @@
   # services.power-profiles-daemon.enable = true;
   powerManagement.powertop.enable = true;
   services.tlp.enable = true;
+
+  # Hibernate wiring. s2idle on this AMD laptop is unreliable and has caused
+  # unclean shutdowns that corrupted the ext4 inode table. Until/unless BIOS
+  # exposes S3 deep sleep, prefer hibernate on lid close.
+  boot.resumeDevice = "/dev/disk/by-uuid/9c6645d4-4d56-444b-8f32-36890a1c8dae";
+  services.logind = {
+    lidSwitch = "hibernate";
+    lidSwitchExternalPower = "hibernate";
+    lidSwitchDocked = "ignore";
+  };
   services.locate.enable = true;
   security.rtkit.enable = true;
 

@@ -122,6 +122,8 @@ allowedUnfree = [
             jjui
             lazyjj
             jujutsu
+            delta
+            difftastic
             kubeaudit
             kubetui
             kube-bench
