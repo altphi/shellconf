@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 if [[ -z "$TMUX" && "$TERM_PROGRAM" == "ghostty" ]]; then
-    exec tmux new-session -A -t main
+    exec tmux new-session -s "ghostty-$$"
 fi
 
 setopt ALL_EXPORT
