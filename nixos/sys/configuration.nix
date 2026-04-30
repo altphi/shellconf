@@ -38,7 +38,7 @@
     device = "nodev";
     efiSupport = true;
     useOSProber = true;
-    configurationLimit = 20;
+    configurationLimit = 10;
     memtest86.enable = true;
   };
   networking.hostName = "euclid";
@@ -124,7 +124,6 @@
     gnumake
     i2c-tools
     jq
-    niri
     pass-wayland
     pavucontrol
     pciutils
@@ -163,7 +162,10 @@
 
   programs = {
     zsh.enable = true;
-    niri.enable = true;
+    niri = {
+      enable = true;
+      package = unstable.niri;
+    };
     hyprland = {
       enable = true;
     };
