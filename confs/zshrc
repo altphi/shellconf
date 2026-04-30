@@ -5,7 +5,7 @@ if [[ -z "$TMUX" && "$TERM_PROGRAM" == "ghostty" ]]; then
 fi
 
 setopt ALL_EXPORT
-readonly SYSTYPE="$(uname)"
+readonly SYSTYPE=$OSTYPE
 PATH="$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 # NODE_PATH="/usr/local/share/npm/lib/node_modules:/usr/local/lib/jsctags/:${NODE_PATH}"
 # LDFLAGS="-L/usr/local/opt/php@7.4/lib -L/opt/homebrew/opt/mysql-client@8.0/lib"
@@ -39,14 +39,23 @@ setopt HIST_IGNORE_SPACE
 setopt interactivecomments
 unset MANPATH
 unset PAGER
-autoload -Uz compinit && compinit
 GREP_OPTIONS='--binary-files=without-match --directories=skip'
+
+ZSH_CACHE_DIR="$HOME/.zsh/cache"
+mkdir -p "$ZSH_CACHE_DIR"
+
+autoload -Uz compinit
+if [[ -n $ZSH_CACHE_DIR/zcompdump(#qN.mh+24) ]]; then
+  compinit -d "$ZSH_CACHE_DIR/zcompdump"
+else
+  compinit -C -d "$ZSH_CACHE_DIR/zcompdump"
+fi
 
 # completion
 zmodload -i zsh/complist
 zstyle ':completion:*' list-colors '$LSCOLORS'
 zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path ~/.zsh/cache
+zstyle ':completion:*' cache-path "$ZSH_CACHE_DIR"
 zstyle ':completion:*' menu select=2
 
 # complete SSH hosts
@@ -114,8 +123,11 @@ alias c-tmux='vi ~/.tmux.conf'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias open="xdg-open"
 alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
-alias symbols="less $(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose"
 alias switch-home='home-manager switch -b backup --flake ~/bin/nixos/home'
+
+symbols() {
+  less $(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose
+}
 
 switch-sys() {
   sudo nixos-rebuild switch --flake ~/bin/nixos/sys\#euclid
@@ -325,7 +337,7 @@ jj_prompt() {
 }
 
   PS1=$(print '\n\n%{\e[0;34m%}%n@%m:%{\e[0;32m%}%/ %{\e[0;0m%} $(jj_prompt)\n%! : %? %% ')
-  HOSTNAME=$(hostname -s)
+  HOSTNAME=${HOST%%.*}
 fi
 
 # prevent dangerous commands from entering history
@@ -400,17 +412,27 @@ set_standard_perms() {
   find . -type d -exec chmod 755 '{}' \;
 }
 
-eval "$(direnv hook zsh)"
+# Cached subprocess-eval init. Delete a cache file to regenerate after upgrades.
+_kubectl_cache="$ZSH_CACHE_DIR/kubectl_completion"
+_jj_cache="$ZSH_CACHE_DIR/jj_completion"
+_direnv_cache="$ZSH_CACHE_DIR/direnv_hook"
+_zoxide_cache="$ZSH_CACHE_DIR/zoxide_init"
 
-[[ -x $(command -v kubectl) ]] && source <(kubectl completion zsh)
+_load_cached() {
+  local cache="$1"; shift
+  [[ -s $cache ]] || "$@" > $cache 2>/dev/null
+  [[ -s $cache ]] && source $cache
+}
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "/usr/share/nvm/nvm.sh" ] && \. "/usr/share/nvm/nvm.sh"  # This loads nvm
-[ -s "/usr/share/nvm/bash_completion" ] && \. "/usr/share/nvm/bash_completion"
+_load_cached "$_kubectl_cache" kubectl completion zsh
+_load_cached "$_jj_cache"      env COMPLETE=zsh jj
+_load_cached "$_direnv_cache"  direnv hook zsh
+_load_cached "$_zoxide_cache"  zoxide init zsh
+
+unset -f _load_cached
+
 # fix double paste issue in Wayland
 unset zle_bracketed_paste
-
-eval "$(zoxide init zsh)"
 source ~/.secret-env
 
 # cursor style
@@ -439,8 +461,7 @@ _self_completing() {
 }
 
 compdef _self_completing airpods.sh
-#source <(jj util completion zsh)
-source <(COMPLETE=zsh jj)
+
 
 shuf -n 1 ~/bin/misc/perlis_epigrams
 
