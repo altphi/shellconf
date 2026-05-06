@@ -115,7 +115,10 @@ alias open="xdg-open"
 alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
 alias switch-home='home-manager switch -b backup --flake ~/bin/nixos/home'
 
-vif() { nvim "$(fzf --walker-skip='.git,node_modules,.direnv,renv,build' --query="${1:-}")" }
+vif() {
+  nvim "$(rg --files --hidden --glob '!.git' | fzf --query="${1:-}")"
+  # nvim "$(fzf --walker-skip='.git,node_modules,.direnv,renv,build' --query="${1:-}")"
+}
 vig() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}" }
 
 symbols() {
