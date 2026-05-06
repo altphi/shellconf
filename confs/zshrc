@@ -22,9 +22,6 @@ HISTFILE=~/.zsh_history
 GDK_BACKEND=wayland
 R_PROFILE_USER="$HOME/.Rprofile"
 
-source ~/.jj.zsh
-
-
 setopt AUTO_CD
 setopt CDABLE_VARS
 setopt SHARE_HISTORY
@@ -47,6 +44,8 @@ if [[ -n $ZSH_CACHE_DIR/zcompdump(#qN.mh+24) ]]; then
 else
   compinit -C -d "$ZSH_CACHE_DIR/zcompdump"
 fi
+
+source ~/.jj.zsh
 
 # completion
 zmodload -i zsh/complist

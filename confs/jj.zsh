@@ -22,28 +22,30 @@ jn() {
     fi
   }
 
-
-_jj_bookmarks_local() {
-    local -a bookmarks
-    bookmarks=(${(f)"$(jj bookmark list -T 'name ++ "\n"' 2>/dev/null)"})
-    _arguments "1:bookmark:($bookmarks)"
-  }
-
 _jj_bookmarks_all() {
   local -a bookmarks
   bookmarks=(${(f)"$(jj bookmark list --all-remotes -T 'if(remote == "git", "", if(remote, name ++ "@" ++ remote, name) ++ "\n")' 2>/dev/null)"})
   _arguments "1:bookmark:($bookmarks)"
 }
 
+_jj_push() {
+    local -a bookmarks
+    bookmarks=(${(f)"$(jj bookmark list -T 'name ++ "\n"' 2>/dev/null)"})
+    _arguments \
+      "1:bookmark:($bookmarks)" \
+      "2::revision: "
+  }
+
 jj-push() {
     local bookmark="$1"
+    local rev="${2:-@}"
     if [[ -z "$bookmark" ]]; then
-      echo "usage: jj-push <bookmark>" >&2
+      echo "usage: jj-push <bookmark> [revision]" >&2
       return 1
     fi
-    jj bookmark set "$bookmark" -r @ && jj git push -b "$bookmark"
+    jj bookmark set "$bookmark" -r "$rev" && jj git push -b "$bookmark"
 }
-compdef _jj_bookmarks_local jj-push
+compdef _jj_push jj-push
 
 jl-bookmark() {
   local b="${1:?bookmark name required}"
