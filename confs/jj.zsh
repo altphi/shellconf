@@ -13,6 +13,27 @@ alias jl-heads-mine=" jj log -r 'heads(mine())'"
 alias jl-heads-all=" jj log -r 'heads(all())'"
 alias jj-abandon-empty=" jj abandon -r 'empty() & mutable() & ~@'"
 
+jj-abandon-unowned-orphans() {
+      local revset='~mine() & ~::remote_bookmarks()'
+      local preview
+      preview=$(jj log -r "$revset" --no-graph --ignore-working-copy \
+                -T 'change_id.shortest() ++ "\n"' 2>/dev/null)
+      if [[ -z "$preview" ]]; then
+          echo "nothing to abandon."
+          return 0
+      fi
+      jj log -r "$revset"
+      local reply
+      read "reply?abandon these commits? [y/N] "
+      if [[ "$reply" == (y|Y|yes|YES) ]]; then
+          jj abandon -r "$revset"
+      else
+          echo "aborted."
+          return 1
+      fi
+  }
+
+
 jn() {
     if (( $# == 0 )); then
       jj new
