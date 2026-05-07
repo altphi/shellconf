@@ -75,6 +75,7 @@
             #bzflag
             chez
             cliphist
+            vscode-extensions.vadimcn.vscode-lldb
             cmatrix
             csvkit
             darkman

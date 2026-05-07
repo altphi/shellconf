@@ -32,6 +32,7 @@
   boot.loader.systemd-boot.enable = false;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "i2c-dev" ];
+  boot.kernelParams = [ "console=tty3" "resume=UUID=9c6645d4-4d56-444b-8f32-36890a1c8dae" ];
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {
     enable = true;
@@ -197,7 +198,6 @@
     };
   };
 
-  boot.kernelParams = [ "console=tty3" "resume=UUID=9c6645d4-4d56-444b-8f32-36890a1c8dae" ];
   systemd.services."getty@tty2".enable = false; # disable tty2 for Ly
   systemd.services."getty@tty3".enable = true; # send dmesg here
 
