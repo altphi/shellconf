@@ -1,5 +1,6 @@
 alias jl=" jj log -r 'fork_point(@ | trunk())::@'"
 alias jll=" jj log"
+alias jlll=" jj log -r 'all()'"
 alias je=' jj edit'
 alias jd=' jj describe'
 alias jc=' jj commit'
@@ -99,6 +100,7 @@ jl-contains() {
 #   tigger#123                -> classiclearning/tigger#123
 #   issues#123                -> classiclearning/issues#123
 #   someorg/somerepo#123      -> someorg/somerepo#123
+unalias ghpr 2>/dev/null
 ghpr() {
     local input="$1"
     local target="${2:-staging}"
@@ -109,9 +111,9 @@ ghpr() {
     fi
 
     local repo issue
-    if [[ "$input" == *"#"* ]]; then
-      repo="${input%#*}"
-      issue="${input#*#}"
+    if [[ "$input" == *[#]* ]]; then
+      repo="${input%[#]*}"
+      issue="${input#*[#]}"
       [[ "$repo" != */* ]] && repo="classiclearning/$repo"
     else
       repo="classiclearning/issues"
@@ -144,6 +146,7 @@ ghpr() {
       -t "$repo#$issue: $description" \
       -b "closes $repo#$issue"
 }
+alias ghpr='noglob ghpr'
 
 _jj_prompt() {
     local info upstream_status output nearest distance
