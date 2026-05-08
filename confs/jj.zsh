@@ -44,9 +44,15 @@ jn() {
     fi
   }
 
+_jj_bookmark_names() {
+  jj bookmark list --all-remotes \
+    -T 'if(remote == "git", "", if(remote, name ++ "@" ++ remote, name) ++ "\n")' \
+    2>/dev/null
+}
+
 _jj_bookmarks_all() {
   local -a bookmarks
-  bookmarks=(${(f)"$(jj bookmark list --all-remotes -T 'if(remote == "git", "", if(remote, name ++ "@" ++ remote, name) ++ "\n")' 2>/dev/null)"})
+  bookmarks=(${(f)"$(_jj_bookmark_names)"})
   _arguments "1:bookmark:($bookmarks)"
 }
 
@@ -147,6 +153,52 @@ ghpr() {
       -b "closes $repo#$issue"
 }
 alias ghpr='noglob ghpr'
+_ghpr() {
+    local -a targets
+    targets=(${(f)"$(_jj_bookmark_names)"})
+    _arguments \
+      '1: :' \
+      "2:target branch:($targets)"
+}
+compdef _ghpr ghpr
+
+# lists tracked jj bookmarks alongside any matching open PR (yours, current repo),
+# and surfaces open PRs whose head branch doesn't match a tracked bookmark.
+ghpr-list() {
+    local bookmarks prs
+    bookmarks=$(jj bookmark list --tracked -T 'name ++ "\n"' 2>/dev/null | sort -u) || return 1
+    prs=$(gh pr list --author @me --state open \
+        --json number,title,headRefName,baseRefName \
+        --jq '.[] | [.headRefName, .number, .baseRefName, .title] | @tsv') || return 1
+
+    echo "─ tracked bookmarks ─"
+    local b pr_line
+    while IFS= read -r b; do
+        [[ -z "$b" ]] && continue
+        pr_line=$(echo "$prs" | awk -F'\t' -v b="$b" '$1 == b {print; exit}')
+        if [[ -n "$pr_line" ]]; then
+            printf '%s\t→ #%s\t→ %s\t%s\n' \
+                "$b" \
+                "$(echo "$pr_line" | cut -f2)" \
+                "$(echo "$pr_line" | cut -f3)" \
+                "$(echo "$pr_line" | cut -f4)"
+        else
+            printf '%s\t—\n' "$b"
+        fi
+    done <<< "$bookmarks" | column -t -s$'\t'
+
+    local orphans
+    orphans=$(echo "$prs" | awk -F'\t' -v bm="$bookmarks" '
+        BEGIN { n = split(bm, a, "\n"); for (i = 1; i <= n; i++) tracked[a[i]] = 1 }
+        !($1 in tracked) { print }
+    ')
+    if [[ -n "$orphans" ]]; then
+        echo
+        echo "─ open PRs without a tracked bookmark ─"
+        echo "$orphans" | awk -F'\t' '{ printf "#%s\t%s\t→ %s\t%s\n", $2, $1, $3, $4 }' \
+            | column -t -s$'\t'
+    fi
+}
 
 _jj_prompt() {
     local info upstream_status output nearest distance
