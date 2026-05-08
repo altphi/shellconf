@@ -280,19 +280,69 @@ LOGCHECK=0
 if [[ "$TERM" == "dumb" ]] ; then
   PS1=$'\n\n%n@%m:%/ %%'
 else
-  # autoload -Uz vcs_info
-  # precmd_vcs_info() { vcs_info }
-  # precmd_functions+=( precmd_vcs_info )
   setopt prompt_subst
+  zmodload zsh/datetime
+  autoload -Uz add-zsh-hook
 
   HOSTNAME=${HOST%%.*}
   if [[ "$USER" != "stephen" || "$HOSTNAME" != "euclid" ]]; then
-    _userhost=$'%{\e[0;34m%}%n@%m:'
+    _p_userhost='%F{blue}%n@%m:%f'
   else
-    _userhost=''
+    _p_userhost=''
   fi
-  PS1=$'\n\n'"${_userhost}"$'%{\e[0;32m%}%~%{\e[0;0m%} $(_jj_prompt)\n%! : %? %% '
-  unset _userhost
+  _p_path='%F{green}%(5~|…/%4~|%~)%f'
+  #_p_env() {
+  #  [[ -n $IN_NIX_SHELL ]] && print -n '%F{cyan}❄ %f'
+  #  [[ -n $DIRENV_DIR ]]   && print -n '%F{magenta}◆ %f'
+  #}
+  _p_exit='%(?..%F{red}✗ %?%f )'
+  _p_jobs='%(1j.%F{yellow}[%j]%f .)'
+
+  # last command duration (>2s); populated by precmd hook
+  _p_duration=''
+  _p_preexec_timer() { _p_cmd_start=$EPOCHREALTIME }
+  _p_precmd_timer()  {
+    if [[ -n $_p_cmd_start ]]; then
+      local elapsed=$(( EPOCHREALTIME - _p_cmd_start ))
+      if (( elapsed > 2 )); then
+        _p_duration="%F{8}$(printf '%.1f' $elapsed)s%f "
+      else
+        _p_duration=''
+      fi
+      unset _p_cmd_start
+    fi
+  }
+  add-zsh-hook preexec _p_preexec_timer
+  add-zsh-hook precmd  _p_precmd_timer
+  _p_vimode=''
+  _p_time='%F{8}%*%f'
+  _p_topline() {
+    local left right left_v right_v pad
+    left="${_p_userhost}${_p_path} $(_jj_prompt)"
+    right="${_p_duration}"
+    if [[ -z $right ]]; then
+      printf '%s' "$left"
+      return
+    fi
+    left_v="${(%)left}"
+    right_v="${(%)right}"
+    left_v="${left_v//$'\e['[0-9;]#[a-zA-Z]/}"
+    right_v="${right_v//$'\e['[0-9;]#[a-zA-Z]/}"
+    pad=$(( COLUMNS - ${#left_v} - ${#right_v} ))
+    (( pad < 1 )) && pad=1
+    printf '%s%*s%s' "$left" $pad '' "$right"
+  }
+
+  # leading blank line is empty on new shell or after ^L
+  _p_lead=''
+  _p_set_lead() { _p_lead=$'\n' }
+  add-zsh-hook preexec _p_set_lead
+  _p_clear_screen() { _p_lead=''; zle clear-screen }
+  zle -N _p_clear_screen
+  bindkey "^L" _p_clear_screen
+
+  PS1='${_p_lead}$(_p_topline)'$'\n''${_p_vimode}${_p_exit}${_p_jobs}%% '
+  #RPROMPT='${_p_time}'
 fi
 
 # prevent dangerous commands from entering history
@@ -397,15 +447,22 @@ source ~/.secret-env
 # 4 → steady underline
 # 5 → blinking bar (the “stick”)
 # 6 → steady bar
-function zle-keymap-select zle-line-init {
+function zle-keymap-select {
     if [[ ${KEYMAP} == vicmd ]]; then
         echo -ne '\e[2 q'
+        _p_vimode='%F{yellow}[N]%f '
     else
         echo -ne '\e[1 q'
+        _p_vimode=''
     fi
+    zle reset-prompt
 }
-zle -N zle-line-init
+function zle-line-init {
+    echo -ne '\e[1 q'
+    _p_vimode=''
+}
 zle -N zle-keymap-select
+zle -N zle-line-init
 
 _self_completing() {
   local script="${words[1]}"
@@ -417,11 +474,12 @@ _self_completing() {
 
 compdef _self_completing airpods.sh
 
-
-# Random epigram, fork-free: $(<file) is a builtin read, RANDOM is a builtin RNG.
-() {
+perlisism() {
   local -a e=( "${(@f)$(<~/bin/misc/perlis_epigrams)}" )
   (( $#e )) && print -r -- "${e[RANDOM%$#e+1]}"
 }
 
+if [[ $(pwd) == "$HOME" ]]; then
+  perlisism
+fi
 
