@@ -285,9 +285,14 @@ else
   # precmd_functions+=( precmd_vcs_info )
   setopt prompt_subst
 
-
-  PS1=$'\n\n%{\e[0;34m%}%n@%m:%{\e[0;32m%}%/ %{\e[0;0m%} $(_jj_prompt)\n%! : %? %% '
   HOSTNAME=${HOST%%.*}
+  if [[ "$USER" != "stephen" || "$HOSTNAME" != "euclid" ]]; then
+    _userhost=$'%{\e[0;34m%}%n@%m:'
+  else
+    _userhost=''
+  fi
+  PS1=$'\n\n'"${_userhost}"$'%{\e[0;32m%}%~%{\e[0;0m%} $(_jj_prompt)\n%! : %? %% '
+  unset _userhost
 fi
 
 # prevent dangerous commands from entering history
