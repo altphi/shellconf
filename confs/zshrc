@@ -362,8 +362,30 @@ shuffle() {
 }
 
 fname() {
-  echo "searching for *${1}*"
-  find . -iname "*${1}*"
+  local query="$*"
+  local -a rg_files=(
+    --files
+    --hidden
+    --glob '!.git'
+    --glob '!.direnv'
+    --glob '!node_modules'
+    --glob '!renv'
+    --glob '!build'
+  )
+
+  if [[ -z "$query" ]]; then
+    rg "${rg_files[@]}" | fzf
+    return
+  fi
+
+  rg "${rg_files[@]}" | awk -v query="$query" '
+    BEGIN { query = tolower(query) }
+    {
+      name = $0
+      sub(/^.*\//, "", name)
+      if (index(tolower(name), query)) print
+    }
+  '
 }
 
 # timer script, e.g. `t minutes title`
