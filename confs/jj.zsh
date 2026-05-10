@@ -2,47 +2,57 @@ alias jl=" jj log -r 'fork_point(@ | trunk())::@'"
 alias jll=" jj log"
 alias jlll=" jj log -r 'all()'"
 alias je=' jj edit'
-alias jd=' jj describe'
-alias jc=' jj commit'
-alias jb=' jj bookmark'
 alias jbl=" jj bookmark list"
 alias jbl-untracking=" comm -23  <(jj bookmark list -T 'name ++ \"\n\"' | sort -u)  <(jj bookmark list --tracked -T 'name ++ \"\n\"' | sort -u)"
 alias js=" jj st"
 alias jl-unmerged=" jj log -r 'mine() & ~::trunk()'"
-alias jl-unpushed=" jj log -r 'mine() & ~::remote_bookmarks()'"
+alias jl-unpushed=" jj log -r 'mine() & ~::(remote_bookmarks() | tags())'"
 alias jl-heads-mine=" jj log -r 'heads(mine())'"
 alias jl-heads-all=" jj log -r 'heads(all())'"
+alias jl-wip=" jj log -r 'mine() & mutable()'"
 alias jj-abandon-empty=" jj abandon -r 'empty() & mutable() & ~@'"
 
-jj-abandon-unowned-orphans() {
-      local revset='~mine() & ~::remote_bookmarks()'
-      local preview
-      preview=$(jj log -r "$revset" --no-graph --ignore-working-copy \
-                -T 'change_id.shortest() ++ "\n"' 2>/dev/null)
-      if [[ -z "$preview" ]]; then
-          echo "nothing to abandon."
-          return 0
-      fi
-      jj log -r "$revset"
-      local reply
-      read "reply?abandon these commits? [y/N] "
-      if [[ "$reply" == (y|Y|yes|YES) ]]; then
-          jj abandon -r "$revset"
-      else
-          echo "aborted."
-          return 1
-      fi
-  }
+jj-abandon-unowned-orphan-revs() {
+  local revset='~mine() & ~::remote_bookmarks()'
+  local preview
+  preview=$(jj log -r "$revset" --no-graph --ignore-working-copy \
+            -T 'change_id.shortest() ++ "\n"' 2>/dev/null)
+  if [[ -z "$preview" ]]; then
+      echo "nothing to abandon."
+      return 0
+  fi
+  jj log -r "$revset"
+  local reply
+  read "reply?abandon these commits? [y/N] "
+  if [[ "$reply" == (y|Y|yes|YES) ]]; then
+      jj abandon -r "$revset"
+  else
+      echo "aborted."
+      return 1
+  fi
+}
 
+jj-abandon-revs-for-untracking-bookmark() {
+  local b="${1:?bookmark name required}"
 
-jn() {
-    if (( $# == 0 )); then
-      jj new
-    else
-      local msg="$1"; shift
-      jj new -m "$msg" "$@"
-    fi
-  }
+  if jj bookmark list --tracked | grep -q "$b" ; then
+    echo "bookmark $b is tracked."
+    return 1
+  fi
+
+  local revset="::${b} & mutable() & ~::trunk()"
+  jj log -r "$revset"
+
+  local reply
+  read "reply?abandon these commits and bookmark ${b}? [y/N] "
+  if [[ "$reply" == (y|Y|yes|YES) ]]; then
+    jj abandon -r "$revset"
+  else
+    echo "aborted."
+    return 1
+  fi
+}
+compdef _jj_push jj-abandon-revs-for-untracking-bookmark
 
 _jj_bookmark_names() {
   jj bookmark list --all-remotes \
