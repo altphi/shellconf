@@ -7,6 +7,7 @@
 [core]
 	editor = /usr/bin/vi
 	excludesfile = /home/stephen/bin/confs/gitignore
+  pager = delta
 [filter "media"]
 	clean = git-media-clean %f
 	smudge = git-media-smudge %f
@@ -25,6 +26,7 @@
 	template = /home/stephen/.config/git/default-commit-msg
 [merge]
 	suppressDriveby = false
+  conflictStyle = zdiff3
 [init]
 	defaultBranch = main
 [fetch]

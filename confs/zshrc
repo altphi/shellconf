@@ -18,20 +18,30 @@ PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 
 EDITOR=vim
 GIT_EDITOR=vim
-HISTSIZE=10000
-SAVEHIST=10000
-HISTFILE=~/.zsh_history
 GDK_BACKEND=wayland
 R_PROFILE_USER="$HOME/.Rprofile"
 
 setopt AUTO_CD
 setopt CDABLE_VARS
-setopt SHARE_HISTORY
+
+HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=40000
+
 setopt INC_APPEND_HISTORY
+
+setopt APPEND_HISTORY
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_SAVE_NO_DUPS
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_FIND_NO_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt HIST_IGNORE_SPACE
 setopt HIST_NO_STORE
+
 setopt nohup
 setopt EXTENDED_GLOB
-setopt HIST_IGNORE_SPACE
 setopt interactivecomments
 unset MANPATH
 unset PAGER
@@ -324,6 +334,13 @@ else
   }
   add-zsh-hook preexec _p_preexec_timer
   add-zsh-hook precmd  _p_precmd_timer
+
+  # ring bell when a command finishes, so tmux flags the window
+  _p_cmd_ran=0
+  _p_bell_preexec() { _p_cmd_ran=1 }
+  _p_bell_precmd()  { (( _p_cmd_ran )) && print -n '\a'; _p_cmd_ran=0 }
+  add-zsh-hook preexec _p_bell_preexec
+  add-zsh-hook precmd  _p_bell_precmd
   _p_vimode=''
   _p_time='%F{8}%*%f'
   _p_topline() {
