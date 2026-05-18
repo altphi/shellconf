@@ -1,6 +1,45 @@
-alias jl=" jj log -r 'fork_point(@ | trunk())::@'"
-alias jll=" jj log"
-alias jlll=" jj log -r 'all()'"
+_jl_template() {
+  local default_email
+  default_email=$(jj config get user.email 2>/dev/null)
+  cat <<TEMPLATE
+    if(root,
+      format_root_commit(self),
+      label(if(current_working_copy, "working_copy"),
+        separate(" ",
+          pad_end(3, change_id.shortest()),
+          if(author.email() != "$default_email", format_short_signature(author)),
+          bookmarks,
+          tags,
+          working_copies,
+          if(conflict, label("conflict", "conflict")),
+          if(empty, label("empty", "(empty)")),
+        ) ++ "\n" ++
+        if(description,
+          description.first_line(),
+          label("description placeholder", "(no description set)")
+        ) ++ "\n"
+      )
+    )
+TEMPLATE
+}
+
+unalias jl 2>/dev/null
+jl() {
+  local revset='fork_point(@ | trunk())::@'
+  if [[ $# -gt 0 && "$1" != -* ]]; then
+    revset="$1"
+    shift
+  fi
+  jj log -r "$revset" -T "$(_jl_template)" "$@"
+}
+alias jlf=" jl --name-only"
+unalias jll 2>/dev/null
+jll() {
+  jj log -T "$(_jl_template)" "$@"
+}
+alias jllf=" jll --name-only"
+alias jlll=" jl 'all()'"
+alias jlllf=" jlll --name-only"
 alias je=' jj edit'
 unalias jbl 2>/dev/null
 jbl() {
@@ -95,6 +134,13 @@ jj-push() {
     local rev="${2:-@}"
     if [[ -z "$bookmark" ]]; then
       echo "usage: jj-push <bookmark> [revision]" >&2
+      return 1
+    fi
+    local check
+    check=$(jj log -r "$rev" --no-graph --limit 1 \
+        -T 'if(empty, if(description, "OK", "BAD"), "OK")' 2>/dev/null)
+    if [[ "$check" == "BAD" ]]; then
+      echo "error: revision $rev is empty with no description; refusing to push" >&2
       return 1
     fi
     jj bookmark set "$bookmark" -r "$rev" && jj git push -b "$bookmark"
