@@ -39,7 +39,7 @@
     device = "nodev";
     efiSupport = true;
     useOSProber = true;
-    configurationLimit = 10;
+    configurationLimit = 5;
     memtest86.enable = true;
   };
   networking.hostName = "euclid";
