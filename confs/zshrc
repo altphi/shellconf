@@ -315,7 +315,7 @@ else
   #  [[ -n $IN_NIX_SHELL ]] && print -n '%F{cyan}❄ %f'
   #  [[ -n $DIRENV_DIR ]]   && print -n '%F{magenta}◆ %f'
   #}
-  _p_exit='%(?..%F{red}✗ %?%f )'
+  _p_exit='%(?..%F{red}✗ %?%f)'
   _p_jobs='%(1j.%F{yellow}[%j]%f .)'
 
   # last command duration (>2s); populated by precmd hook
@@ -368,8 +368,8 @@ else
   zle -N _p_clear_screen
   bindkey "^L" _p_clear_screen
 
-  PS1='${_p_lead}$(_p_topline)'$'\n''${_p_vimode}${_p_exit}${_p_jobs}%% '
-  #RPROMPT='${_p_time}'
+  PS1='${_p_lead}$(_p_topline)'$'\n''${_p_vimode}${_p_jobs}%(?.%%.%F{red}%%%f) '
+  RPROMPT='${_p_exit}'
 fi
 
 # prevent dangerous commands from entering history
