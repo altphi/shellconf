@@ -15,7 +15,7 @@ _jl_template() {
           if(empty, label("empty", "(empty)")),
         ) ++ "\n" ++
         if(description,
-          description.first_line(),
+          label("log_description", description.first_line()),
           label("description placeholder", "(no description set)")
         ) ++ "\n"
       )
