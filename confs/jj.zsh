@@ -32,14 +32,14 @@ jl() {
   fi
   jj log -r "$revset" -T "$(_jl_template)" "$@"
 }
-alias jlf=" jl --name-only"
+alias jlf=" jl --summary"
 unalias jll 2>/dev/null
 jll() {
   jj log -T "$(_jl_template)" "$@"
 }
-alias jllf=" jll --name-only"
+alias jllf=" jll --summary"
 alias jlll=" jl 'all()'"
-alias jlllf=" jlll --name-only"
+alias jlllf=" jlll --summary"
 alias je=' jj edit'
 unalias jbl 2>/dev/null
 jbl() {
