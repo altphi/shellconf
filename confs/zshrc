@@ -92,7 +92,7 @@ alias vi='nvim'
 alias ls=' ls -GF'
 alias ll=' ls -lhGF'
 alias la=' ls -lahGF'
-alias R='R --no-save'
+# alias R='R --no-save'
 alias g=' ls -a | xargs grep --color=auto ';
 alias ga=' git add'
 alias gc=' git checkout'

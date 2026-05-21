@@ -173,9 +173,10 @@ jl-contains() {
 }
 
 # creates a PR for an already-pushed jj bookmark.
-# opens $EDITOR pre-populated with concatenated commit descriptions and any
-# detected "closes <org>/<repo>#<n>" lines. first non-comment line becomes the
-# PR title; everything after the first blank line becomes the body.
+# opens $EDITOR pre-populated with concatenated commit descriptions, any
+# detected "closes <org>/<repo>#<n>" lines, and a close line derived from
+# bookmark names like repo-123-short-description. first non-comment line becomes
+# the PR title; everything after the first blank line becomes the body.
 # target = repo's GitHub default branch unless overridden.
 unalias ghpr-create 2>/dev/null
 ghpr-create() {
@@ -204,10 +205,21 @@ ghpr-create() {
       return 1
     fi
 
+    local issue_ref
+    if [[ "$bookmark" =~ '^([A-Za-z0-9_.]+)-([0-9]+)-' ]]; then
+      local owner issue_repo issue_number
+      issue_repo="${match[1]}"
+      issue_number="${match[2]}"
+      owner=$(gh repo view --json owner -q .owner.login) || return 1
+      issue_ref="${owner}/${issue_repo}#${issue_number}"
+    fi
+
     local refs
-    refs=$(echo "$descriptions" \
-        | grep -oE '[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[0-9]+' \
-        | sort -u)
+    refs=$({
+      echo "$descriptions" \
+        | grep -oE '[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[0-9]+'
+      [[ -n "$issue_ref" ]] && echo "$issue_ref"
+    } | sort -u)
 
     local tmpfile
     tmpfile=$(mktemp --suffix=.PR_EDITMSG) || return 1
@@ -373,10 +385,13 @@ _jj_prompt() {
     # Bookmark commit renders its name (with "*" suffix if ahead of remote);
     # intermediate commits render "·" so we can count lines reliably.
     # latest(..., 1) keeps it deterministic when multiple bookmarks sit at the
-    # same DAG level on parallel branches.
-    output=$(jj log -r 'latest(::@ & bookmarks(), 1)::@' \
+    # same DAG level on parallel branches. Include remote_bookmarks so we land
+    # on an untracked remote tip (e.g. foo@origin) rather than walking past it
+    # to an older local bookmark; filter "@git" since it's just a mirror of the
+    # colocated repo's refs.
+    output=$(jj log -r 'latest(::@ & (bookmarks() | remote_bookmarks()), 1)::@' \
         --no-graph --ignore-working-copy --reversed \
-        -T 'if(local_bookmarks, local_bookmarks, "·") ++ "\n"' 2>/dev/null) || return
+        -T 'coalesce(local_bookmarks, remote_bookmarks.filter(|b| b.remote() != "git"), "·") ++ "\n"' 2>/dev/null) || return
 
     if [ -n "$output" ]; then
         local -a lines=("${(@f)output}")
