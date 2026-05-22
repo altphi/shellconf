@@ -119,6 +119,7 @@ _jj_bookmarks_all() {
   local -a bookmarks
   bookmarks=(${(f)"$(_jj_bookmark_names)"})
   _arguments "1:bookmark:($bookmarks)"
+  _arguments "2:bookmark2:($bookmarks)"
 }
 
 _jj_push() {
@@ -146,6 +147,16 @@ jj-push() {
     jj bookmark set "$bookmark" -r "$rev" && jj git push -b "$bookmark"
 }
 compdef _jj_push jj-push
+
+jj-bookmark-rename() {
+  local from_b="${1:?source bookmark name required}"
+  local to_b="${2:?target bookmark name required}"
+
+  jj bookmark rename $from_b $to_b
+  jj git push --bookmark $from_b
+  jj git push --bookmark $to_b
+}
+compdef _jj_bookmarks_all jj-rename-bookmark
 
 jl-bookmark() {
   local b="${1:?bookmark name required}"
