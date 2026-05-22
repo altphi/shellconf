@@ -9,3 +9,5 @@ fnb-login.sh
 .claude/
 misc/backgrounds/
 pr-reviews/
+confs/nvim/lazy-lock.json
+.luarc.json
