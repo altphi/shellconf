@@ -73,6 +73,7 @@
             #amp-cli
             anki-bin
             #bzflag
+            bat
             chez
             cliphist
             vscode-extensions.vadimcn.vscode-lldb
