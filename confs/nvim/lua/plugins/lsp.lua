@@ -63,7 +63,7 @@ return {
       )
 
       require("mason-lspconfig").setup({
-        ensure_installed = { "eslint", "phpactor", "ts_ls" },
+        ensure_installed = { "eslint", "phpactor", "ts_ls", "lua_ls" },
         handlers = {
           -- Default handler (for all servers without custom config)
           function(server_name)

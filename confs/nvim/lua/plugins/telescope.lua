@@ -90,10 +90,10 @@ return {
 
       vim.api.nvim_create_autocmd("VimEnter", {
         callback = function(data)
-          if vim.fn.argc() == 0 then
-            find_files()
-            return
-          end
+          --if vim.fn.argc() == 0 then
+          --  find_files()
+          --  return
+          --end
 
           if vim.fn.isdirectory(data.file) == 1 then
             vim.cmd.cd(data.file)
@@ -104,14 +104,11 @@ return {
 
 
       vim.keymap.set("n", "<leader>c", builtin.git_status, { desc = "Telescope: Changed files" })
-      --vim.keymap.set("n", "<leader>j", builtin.loclist, { desc = "Telescope: Jump list" })
-      --vim.keymap.set("n", "<leader>f", builtin.find_files, { desc = "Telescope: Find files" })
       vim.keymap.set("n", "<leader>f", find_files, { desc = "Telescope: Find files (including hidden)" })
       vim.keymap.set("n", "<leader>g", builtin.live_grep, { desc = "Telescope: Live grep" })
       vim.keymap.set("n", "<leader>b", builtin.buffers, { desc = "Telescope: Buffers" })
-      -- vim.keymap.set("n", "<leader>ph", builtin.help_tags, { desc = "Telescope: Help tags" })
       vim.keymap.set('n', '<leader>s', builtin.treesitter, { desc = 'Search Tree-sitter symbols' })
-      vim.keymap.set('n', '<leader>h', builtin.resume, { desc = "Telescope prompt history" })
+      --vim.keymap.set('n', '<leader>h', builtin.resume, { desc = "Telescope prompt history" })
       vim.keymap.set("n", "<leader>?", ':Telescope keymaps<CR>', { silent = true })
       vim.keymap.set("n", "<leader>of", ':Telescope oldfiles only_cwd=true<CR>', { silent = true })
       vim.keymap.set('n', '<leader>dg', telescope_grep_in_directory, { desc = 'Telescope live_grep in current or selected directory' })
