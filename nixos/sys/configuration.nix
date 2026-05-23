@@ -171,9 +171,6 @@
       enable = true;
       package = unstable.niri;
     };
-    hyprland = {
-      enable = true;
-    };
     neovim = {
       enable = true;
       vimAlias = true;
