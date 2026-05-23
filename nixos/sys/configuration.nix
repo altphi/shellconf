@@ -171,12 +171,12 @@
       enable = true;
       package = unstable.niri;
     };
-    neovim = {
-      enable = true;
-      vimAlias = true;
-      viAlias = true;
-      withNodeJs = true;
-    };
+    #neovim = {
+    #  enable = true;
+    #  vimAlias = true;
+    #  viAlias = true;
+    #  withNodeJs = true;
+    #};
     git.enable = true;
     light.enable = true;
     xwayland.enable = true;
