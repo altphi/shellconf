@@ -1,51 +1,12 @@
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
-vim.g.mapleader = " "
-vim.g.maplocalleader = ","
-
-vim.opt.number = false
-vim.opt.relativenumber = false
-vim.opt.tabstop = 2
-vim.opt.shiftwidth = 2
-vim.opt.expandtab = true
-vim.opt.clipboard = "unnamedplus"
-vim.opt.ignorecase = true
-vim.opt.linespace = 2
-vim.opt.conceallevel = 2
-vim.opt.autowriteall = true
-vim.opt.signcolumn = "yes"
-vim.opt.termguicolors = false
-vim.opt.scrolloff = 5
-vim.opt.guicursor = {
-  "n-v-c:block",
-  "i-ci:block-blinkwait700-blinkon400-blinkoff250",
-  "r-cr:block-blinkwait700-blinkon400-blinkoff250",
-}
 vim.opt.diffopt:append({
   "iwhite",
   "algorithm:histogram",
   "indent-heuristic",
   "context:3",
 })
-vim.opt.wrap = false
-vim.opt.linebreak = true
-vim.opt.textwidth = 0
-vim.opt.sidescrolloff = 5
-vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-vim.opt.foldlevel = 99
-vim.opt.updatetime = 200
-vim.opt.swapfile = false
-vim.opt.undofile = true
 vim.opt.undodir = vim.fn.stdpath("data") .. "/.nvim-undo//"
 vim.fn.mkdir(vim.fn.stdpath("cache"), "p")
-
-vim.cmd("set title")
-
-vim.api.nvim_set_hl(0, "DiffAdd", { fg = "#a6e3a1", bg = "NONE" })
-vim.api.nvim_set_hl(0, "DiffDelete", { fg = "#f38ba8", bg = "NONE" })
-vim.api.nvim_set_hl(0, "DiffChange", { bg = "NONE" })
-vim.api.nvim_set_hl(0, "DiffText", { bg = "#45475a" })
 
 local autosave_timer = vim.uv.new_timer()
 autosave_timer:start(15000, 15000, vim.schedule_wrap(function()
@@ -92,7 +53,6 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
-vim.api.nvim_set_hl(0, "ExtraWhitespace", { bg = "red", ctermbg = "red" })
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile", "InsertLeave" }, {
   pattern = "*",
   callback = function()
@@ -118,8 +78,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
-vim.api.nvim_create_user_command("RemoveTrailingWhitespace", "%s/\\s\\+$//e", {})
-vim.api.nvim_create_user_command("BlameToggle", "Gitsigns blame", {})
 vim.api.nvim_create_user_command("LineNumbersToggle", function()
   vim.o.number = not vim.o.number
 end, {})
@@ -141,12 +99,3 @@ vim.keymap.set("n", "\\wb", function()
   vim.fn.mkdir(folder, "p")
   vim.cmd("edit " .. filename)
 end, { desc = "Create new timestamped file" })
-vim.keymap.set("n", "<C-s>", "<cmd>w<CR>", { desc = "Save file" })
-vim.keymap.set("i", "<C-s>", "<Esc><cmd>w<CR>a", { desc = "Save file" })
-vim.keymap.set("n", "<A-Down>", "<cmd>m .+1<CR>==", { desc = "Move line down" })
-vim.keymap.set("n", "<A-Up>", "<cmd>m .-2<CR>==", { desc = "Move line up" })
-vim.keymap.set("i", "<A-Down>", "<Esc><cmd>m .+1<CR>==gi", { desc = "Move line down" })
-vim.keymap.set("i", "<A-Up>", "<Esc><cmd>m .-2<CR>==gi", { desc = "Move line up" })
-vim.keymap.set("v", "<A-Down>", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
-vim.keymap.set("v", "<A-Up>", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
-vim.keymap.set("x", "<leader>s", [[:s/\%V]])

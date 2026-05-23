@@ -18,6 +18,10 @@ let
   ]);
 in
 {
+  imports = [
+    ./nixvim/01-core.nix
+  ];
+
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
@@ -81,7 +85,6 @@ in
     ];
 
     extraConfigLua = builtins.concatStringsSep "\n" [
-      (builtins.readFile ./nvim-lua/01-core.lua)
       (builtins.readFile ./nvim-lua/02-lsp.lua)
       (builtins.readFile ./nvim-lua/03-treesitter.lua)
       (builtins.readFile ./nvim-lua/04-telescope.lua)
