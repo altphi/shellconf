@@ -78,6 +78,8 @@ vim.keymap.set("n", "<leader>c", builtin.git_status, { desc = "Telescope: Change
 vim.keymap.set("n", "<leader>f", find_files, { desc = "Telescope: Find files (including hidden)" })
 vim.keymap.set("n", "<leader>g", builtin.live_grep, { desc = "Telescope: Live grep" })
 vim.keymap.set("n", "<leader>b", builtin.buffers, { desc = "Telescope: Buffers" })
+vim.keymap.set("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
+vim.keymap.set("n", "<leader>j", builtin.jumplist, { desc = "Telescope: Jumps" })
 vim.keymap.set("n", "<leader>s", builtin.treesitter, { desc = "Search Tree-sitter symbols" })
 vim.keymap.set("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
 vim.keymap.set("n", "<leader>of", ":Telescope oldfiles only_cwd=true<CR>", { silent = true })

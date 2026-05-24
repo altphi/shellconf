@@ -10,8 +10,8 @@
     };
 
     opts = {
-      number = false;
-      relativenumber = false;
+      number = true;
+      relativenumber = true;
       tabstop = 2;
       shiftwidth = 2;
       expandtab = true;
@@ -38,6 +38,8 @@
       swapfile = false;
       undofile = true;
       title = true;
+      wrapscan = false;
+      hlsearch = false;
     };
 
     highlight.ExtraWhitespace = {

@@ -20,6 +20,7 @@ in
 {
   imports = [
     ./nixvim/01-core.nix
+    ./nixvim/02-lsp.nix
   ];
 
   programs.nixvim = {
