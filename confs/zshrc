@@ -6,14 +6,13 @@ fi
 
 set -o histverify
 
-setopt ALL_EXPORT
+# setopt ALL_EXPORT
 readonly SYSTYPE=$OSTYPE
 PATH="$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 CLASSPATH="${HOME}/bin/jars/algs4.jar:."
 AWS_PROFILE="CLT-Main"
 GITHUB_DEFAULT_ORG="classiclearning"
 PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
-
 
 
 EDITOR=vim
@@ -119,7 +118,7 @@ alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
 alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --load '
 alias c-niri='vi ~/.config/niri/config.kdl'
-alias c-nvim='cd ~/.config/nvim && vi'
+alias c-nvim='cd ~/bin/nixos/home/ && vi'
 alias c-ghostty='vi ~/.config/ghostty/config'
 alias c-sys='vi ~/bin/nixos/sys/configuration.nix'
 alias c-home='vi ~/bin/nixos/home/flake.nix'
