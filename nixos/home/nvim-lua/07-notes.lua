@@ -45,9 +45,6 @@ require("obsidian").setup({
     nvim_cmp = true,
     min_chars = 2,
   },
-  follow_url_func = function(url)
-    vim.ui.open(url)
-  end,
   note_id_func = function(title)
     if title ~= nil then
       return title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
@@ -57,9 +54,9 @@ require("obsidian").setup({
   end,
   callbacks = {
     enter_note = function()
-      vim.keymap.set("n", "<leader>q", ":Obsidian quick_switch<CR>", { buffer = true, desc = "Obsidian: Quick Switch" })
-      vim.keymap.set("n", "<C-Space>", ":Obsidian toggle_checkbox<CR>", { buffer = true, desc = "Obsidian: Toggle Checkbox" })
-      vim.keymap.set("n", "<CR>", ":Obsidian follow_link<CR>", { buffer = true, desc = "Obsidian: Follow Link" })
+      vim.keymap.set("n", "<leader>q", ":Obsidian quick_switch<CR>", { buf = 0, desc = "Obsidian: Quick Switch" })
+      vim.keymap.set("n", "<C-Space>", ":Obsidian toggle_checkbox<CR>", { buf = 0, desc = "Obsidian: Toggle Checkbox" })
+      vim.keymap.set("n", "<CR>", ":Obsidian follow_link<CR>", { buf = 0, desc = "Obsidian: Follow Link" })
     end,
   },
 })

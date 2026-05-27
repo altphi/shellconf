@@ -3,9 +3,13 @@ require("lazydev").setup({})
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLspConfig", {}),
   callback = function(ev)
-    local opts = { buffer = ev.buf, noremap = true, silent = true }
+    local opts = { buf = ev.buf, silent = true }
+    local hover_opts = {
+      border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+      max_width = 100,
+    }
     vim.keymap.set("n", "K", function()
-      vim.lsp.buf.hover({ border = "double" })
+      vim.lsp.buf.hover(hover_opts)
     end, opts)
     vim.keymap.set("n", "<C-k>", function()
       vim.lsp.buf.signature_help({ border = "double" })
@@ -43,10 +47,6 @@ vim.api.nvim_create_autocmd("CursorHold", {
   callback = function()
     vim.diagnostic.open_float(nil, { focus = false })
   end,
-})
-vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-  border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
-  max_width = 100,
 })
 
 vim.lsp.config("eslint", {})

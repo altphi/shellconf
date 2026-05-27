@@ -48,7 +48,7 @@ require("gitsigns").setup({
 
     local function map(mode, lhs, rhs, opts)
       opts = opts or {}
-      opts.buffer = bufnr
+      opts.buf = bufnr
       vim.keymap.set(mode, lhs, rhs, opts)
     end
 

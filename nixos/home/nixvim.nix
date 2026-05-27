@@ -23,8 +23,11 @@ in
     ./nixvim/02-lsp.nix
   ];
 
+  nixpkgs.config.allowUnfree = true;
+
   programs.nixvim = {
     enable = true;
+    nixpkgs.source = pkgs.path;
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
@@ -37,8 +40,8 @@ in
       lazygit
       lua-language-server
       nixd
-      nodePackages.typescript-language-server
-      nodePackages.vscode-langservers-extracted
+      typescript-language-server
+      vscode-langservers-extracted
       nodejs_24
       phpactor
       rPackages.languageserver

@@ -105,7 +105,6 @@
   };
   environment.systemPackages = with pkgs; [
     comma
-    hyprlandPlugins.hyprscrolling
     pulsemixer
     nautilus
     tuigreet
@@ -178,7 +177,6 @@
     #  withNodeJs = true;
     #};
     git.enable = true;
-    light.enable = true;
     xwayland.enable = true;
     uwsm = {
       enable = true;
@@ -187,28 +185,11 @@
         comment = "niri managed by UWSM";
         binPath = "/run/current-system/sw/bin/niri";
       };
-      waylandCompositors.hyprland = {
-        prettyName = "Hyprland";
-        comment = "Hyprland compositor managed by UWSM";
-        binPath = "/run/current-system/sw/bin/Hyprland";
-      };
     };
   };
 
   systemd.services."getty@tty2".enable = false; # disable tty2 for Ly
   systemd.services."getty@tty3".enable = true; # send dmesg here
-
-  #services.displayManager.ly = {
-  #  enable = true;
-  #  settings = {
-  #    animation = "matrix";
-  #    bigclock = true;
-  #    bg = 0;
-  #    blank_box = true;
-  #    hide_borders = false;
-  #  };
-  #};
-
   services.greetd = {
     enable = true;
     settings.default_session = {
@@ -241,7 +222,7 @@
     HandleLidSwitchExternalPower = "suspend-then-hibernate";
     HandleLidSwitchDocked = "ignore";
   };
-  systemd.sleep.extraConfig = "HibernateDelaySec=1h";
+  systemd.sleep.settings.Sleep = { HibernateDelaySec = "1h"; };
   services.locate.enable = true;
   security.rtkit.enable = true;
 

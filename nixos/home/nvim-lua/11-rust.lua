@@ -100,7 +100,7 @@ vim.api.nvim_create_autocmd("FileType", {
 
     vim.keymap.set("n", "<leader>dR", function()
       vim.cmd.RustLsp("debuggables")
-    end, { desc = "Rust: Launch debuggable", buffer = ev.buf })
-    vim.keymap.set("n", "<leader>dA", attach_to_running, { desc = "Rust: Attach to running process", buffer = ev.buf })
+    end, { desc = "Rust: Launch debuggable", buf = ev.buf })
+    vim.keymap.set("n", "<leader>dA", attach_to_running, { desc = "Rust: Attach to running process", buf = ev.buf })
   end,
 })
