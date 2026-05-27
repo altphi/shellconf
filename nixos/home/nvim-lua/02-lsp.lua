@@ -24,6 +24,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 local orig_open_floating_preview = vim.lsp.util.open_floating_preview
 function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
   opts = opts or {}
+  opts.border = opts.border or "rounded"
   opts.pad_top = opts.pad_top or 1
   opts.pad_bottom = opts.pad_bottom or 1
   contents = vim.tbl_map(function(line)

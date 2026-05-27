@@ -30,6 +30,8 @@
         "r-cr:block-blinkwait700-blinkon400-blinkoff250"
       ];
       wrap = false;
+      winborder = "rounded";
+      pumborder = "rounded";
       linebreak = true;
       textwidth = 0;
       sidescrolloff = 5;
