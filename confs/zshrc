@@ -197,15 +197,39 @@ docker-compose-rebuild-no-cache () {
   fi
 }
 
+_ddc_brightness_bus () {
+  if [[ -n "$DDCUTIL_BRIGHTNESS_BUS" ]]; then
+    echo "$DDCUTIL_BRIGHTNESS_BUS"
+    return
+  fi
+
+  ddcutil detect 2>/dev/null | awk '
+    /^Display [0-9]+/ { in_display = 1; next }
+    in_display && /I2C bus:/ {
+      sub("/dev/i2c-", "", $3)
+      print $3
+      exit
+    }
+    /^Invalid display/ { in_display = 0 }
+  '
+}
+
 hdmi-brightness () {
   # arg 1 is a number between 1-100 for percent of full brightness
-  ddcutil setvcp 10 "$1"
+  local bus
+  bus=$(_ddc_brightness_bus)
+  [[ -n "$bus" ]] || return 0
+
+  ddcutil --bus "$bus" setvcp 10 "$1"
 }
 
 brightness () {
   if [[ -z "$1" ]]; then
     echo "Built-in: $(brightnessctl -m | awk -F, '{print $4}')"
-    ddcutil getvcp 10 2>/dev/null | while read -r line; do
+    local bus
+    bus=$(_ddc_brightness_bus)
+    [[ -n "$bus" ]] || return 0
+    ddcutil --bus "$bus" getvcp 10 2>/dev/null | while read -r line; do
       local val=$(echo "$line" | grep -oP 'current value =\s*\K\d+')
       [[ -n "$val" ]] && echo "HDMI:     ${val}%"
     done
@@ -531,4 +555,3 @@ perlisism() {
 if [[ $(pwd) == "$HOME" ]]; then
   perlisism
 fi
-
