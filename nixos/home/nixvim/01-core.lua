@@ -43,6 +43,12 @@ local function delete_current_file()
   end)
 end
 
+local function toggle_line_numbers()
+  local enabled = not vim.wo.number
+  vim.wo.number = enabled
+  vim.wo.relativenumber = enabled
+end
+
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
     local mark = vim.api.nvim_buf_get_mark(0, '"')
@@ -65,32 +71,10 @@ vim.api.nvim_create_autocmd("InsertEnter", {
     vim.cmd([[match none]])
   end,
 })
-
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*",
-  callback = function()
-    local mode = vim.api.nvim_get_mode().mode
-    if mode ~= "i" and vim.bo.filetype ~= "markdown" then
-      local pos = vim.api.nvim_win_get_cursor(0)
-      vim.cmd("%s/\\s\\+$//e")
-      pcall(vim.api.nvim_win_set_cursor, 0, pos)
-    end
-  end,
-})
-
-vim.api.nvim_create_user_command("LineNumbersToggle", function()
-  vim.o.number = not vim.o.number
-end, {})
 vim.api.nvim_create_user_command("DeleteFile", delete_current_file, {
   desc = "Delete the file for the current buffer",
 })
-
-vim.keymap.set("n", "<leader>ll", function()
-  vim.wo.number = true
-  vim.defer_fn(function()
-    vim.wo.number = false
-  end, 3000)
-end)
+vim.keymap.set("n", "<leader>ll", toggle_line_numbers, { desc = "Toggle line numbers" })
 vim.keymap.set("n", "\\wb", function()
   local folder = vim.fn.expand("~/code/blog/posts")
   local date = os.date("%Y-%m-%d")

@@ -11,8 +11,8 @@
     };
 
     opts = {
-      number = true;
-      relativenumber = true;
+      number = false;
+      relativenumber = false;
       tabstop = 2;
       shiftwidth = 2;
       expandtab = true;
@@ -41,7 +41,7 @@
       swapfile = false;
       undofile = true;
       title = true;
-      wrapscan = false;
+      wrapscan = true;
       hlsearch = false;
     };
 
