@@ -351,6 +351,26 @@ ghpr-merge() {
 }
 compdef _jj_bookmarks_all ghpr-merge
 
+jj-clean-up-merged-bookmark() {
+  local bookmark=$1
+
+  if git ls-remote --exit-code --refs origin "refs/heads/${bookmark}" >/dev/null 2>&1; then
+    echo "$bookmark still exists upstream. exiting..."
+    return 1
+  fi
+
+  if ! jj bookmark list | grep -q "${bookmark}"; then
+    echo "jj bookmark, ${bookmark}, does not exist. exiting..."
+    return 1
+  fi
+
+  jj bookmark untrack $bookmark
+  jj git fetch
+  jj abandon "trunk()..${bookmark}"
+  jj rebase -o "trunk()"
+}
+compdef _jj_bookmarks_all jj-clean-up-merged-bookmark
+
 # lists tracked jj bookmarks alongside any matching open PR (yours, current repo),
 # and surfaces open PRs whose head branch doesn't match a tracked bookmark.
 ghpr-list() {
