@@ -270,9 +270,14 @@
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gnome ];
     configPackages = [ pkgs.darkman ];
-    config.common = {
-      default = [ "gnome" ];
-      "org.freedesktop.impl.portal.Settings" = "darkman";
+    config = {
+      common = {
+        default = [ "gnome" ];
+        "org.freedesktop.impl.portal.Settings" = "darkman";
+      };
+      niri = {
+        "org.freedesktop.impl.portal.Settings" = "darkman";
+      };
     };
   };
 

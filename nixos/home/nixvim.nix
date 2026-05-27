@@ -1,6 +1,10 @@
 { pkgs, ... }:
 
 let
+  debugAdapterPaths = ''
+    vim.g.nixvim_js_debug_adapter = "${pkgs.vscode-js-debug}/bin/js-debug"
+    vim.g.nixvim_php_debug_adapter = "${pkgs.vscode-extensions.xdebug.php-debug}/share/vscode/extensions/xdebug.php-debug/out/phpDebug.js"
+  '';
   treesitter = pkgs.vimPlugins.nvim-treesitter.withPlugins (p: with p; [
     bash
     javascript
@@ -65,8 +69,6 @@ in
       lazydev-nvim
       lazygit-nvim
       luasnip
-      mason-nvim
-      mason-nvim-dap-nvim
       mini-surround
       nvim-cmp
       nvim-dap
@@ -89,6 +91,7 @@ in
     ];
 
     extraConfigLua = builtins.concatStringsSep "\n" [
+      debugAdapterPaths
       (builtins.readFile ./nvim-lua/02-lsp.lua)
       (builtins.readFile ./nvim-lua/03-treesitter.lua)
       (builtins.readFile ./nvim-lua/04-telescope.lua)

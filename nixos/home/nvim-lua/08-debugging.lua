@@ -1,9 +1,4 @@
 require("nvim-dap-virtual-text").setup()
-require("mason").setup()
-require("mason-nvim-dap").setup({
-  ensure_installed = { "js", "php", "r", "codelldb" },
-  automatic_installation = false,
-})
 local dap = require("dap")
 local dapui = require("dapui")
 dapui.setup()
@@ -22,7 +17,24 @@ vim.keymap.set("n", "<F11>", dap.step_into, { desc = "Debug: Step Into" })
 vim.keymap.set("n", "<F12>", dap.step_out, { desc = "Debug: Step Out" })
 vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
 vim.keymap.set("n", "<leader>dr", dap.repl.open, { desc = "Debug: Open REPL" })
-dap.configurations.javascript = {
+
+dap.adapters["pwa-node"] = {
+  type = "server",
+  host = "127.0.0.1",
+  port = "${port}",
+  executable = {
+    command = vim.g.nixvim_js_debug_adapter,
+    args = { "${port}" },
+  },
+}
+
+dap.adapters.php = {
+  type = "executable",
+  command = "node",
+  args = { vim.g.nixvim_php_debug_adapter },
+}
+
+local js_configurations = {
   {
     type = "pwa-node",
     request = "launch",
@@ -35,6 +47,11 @@ dap.configurations.javascript = {
     internalConsoleOptions = "neverOpen",
   },
 }
+dap.configurations.javascript = js_configurations
+dap.configurations.javascriptreact = js_configurations
+dap.configurations.typescript = js_configurations
+dap.configurations.typescriptreact = js_configurations
+
 dap.configurations.php = {
   {
     type = "php",
