@@ -123,6 +123,7 @@ alias c-ghostty='vi ~/.config/ghostty/config'
 alias c-sys='vi ~/bin/nixos/sys/configuration.nix'
 alias c-home='vi ~/bin/nixos/home/flake.nix'
 alias c-tmux='vi ~/.tmux.conf'
+alias c-nixos='cd ~/bin/nixos/ && vi'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias open="xdg-open"
 alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"

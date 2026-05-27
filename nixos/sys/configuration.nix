@@ -211,7 +211,14 @@
   services.upower.enable = true;
   # services.power-profiles-daemon.enable = true;
   powerManagement.powertop.enable = true;
-  services.tlp.enable = true;
+  services.tlp = {
+    enable = true;
+    settings = {
+      PLATFORM_PROFILE_ON_AC = "balanced";
+      PLATFORM_PROFILE_ON_BAT = "balanced";
+      PLATFORM_PROFILE_ON_SAV = "low-power";
+    };
+  };
 
   # Hibernate wiring. s2idle on this AMD laptop is unreliable and has caused
   # unclean shutdowns that corrupted the ext4 inode table. Until/unless BIOS

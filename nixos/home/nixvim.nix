@@ -103,6 +103,7 @@ in
       (builtins.readFile ./nvim-lua/10-ui.lua)
       (builtins.readFile ./nvim-lua/11-rust.lua)
       (builtins.readFile ./nvim-lua/12-tmux.lua)
+      (builtins.readFile ./nvim-lua/13-todos.lua)
     ];
   };
 }
