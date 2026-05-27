@@ -2,6 +2,8 @@ local tags = { "TODO", "WIP", "FIXME", "HACK", "XXX" }
 local rg_pattern = "\\b(" .. table.concat(tags, "|") .. ")\\b"
 local count_cache = {}
 
+vim.api.nvim_set_hl(0, "TodoStatusLine", { fg = "#5fd7d7", ctermfg = 14, bold = true })
+
 local function todo_col(text)
   for _, tag in ipairs(tags) do
     local col = text:find("%f[%w_]" .. tag .. "%f[^%w_]")
@@ -118,11 +120,34 @@ function _G.nvim_todo_statusline()
     return ""
   end
 
-  return "T:" .. count .. " "
+  return "%#TodoStatusLine#T:" .. count .. "%##"
+end
+
+function _G.nvim_todo_diagnostic_statusline()
+  local diagnostic_status = ""
+  if package.loaded["vim.diagnostic"] and next(vim.diagnostic.count()) then
+    diagnostic_status = vim.diagnostic.status()
+  end
+
+  local todo_status = _G.nvim_todo_statusline()
+  if diagnostic_status == "" and todo_status == "" then
+    return ""
+  end
+
+  if diagnostic_status == "" then
+    return todo_status .. " "
+  end
+
+  if todo_status == "" then
+    return diagnostic_status .. " "
+  end
+
+  return diagnostic_status:gsub("%%##$", "") .. " " .. todo_status .. " "
 end
 
 do
   local todo_status = "%{%v:lua.nvim_todo_statusline()%}"
+  local combined_status = "%{%v:lua.nvim_todo_diagnostic_statusline()%}"
   local diagnostic_expr =
     "luaeval('(package.loaded[''vim.diagnostic''] and next(vim.diagnostic.count()) and vim.diagnostic.status() .. '' '') or '''' ')"
   local diagnostic_status = "%{% " .. diagnostic_expr .. " %}"
@@ -134,13 +159,22 @@ do
   end, 1)
   vim.o.statusline = vim.o.statusline:gsub(vim.pesc(broken_todo_status), "", 1)
 
-  if not vim.o.statusline:find("nvim_todo_statusline", 1, true) then
-    if vim.o.statusline:find(diagnostic_status, 1, true) then
+  if not vim.o.statusline:find("nvim_todo_diagnostic_statusline", 1, true) then
+    local diagnostic_and_todo = diagnostic_status .. todo_status
+    if vim.o.statusline:find(diagnostic_and_todo, 1, true) then
+      vim.o.statusline = vim.o.statusline:gsub(vim.pesc(diagnostic_and_todo), function()
+        return combined_status
+      end, 1)
+    elseif vim.o.statusline:find(diagnostic_status, 1, true) then
       vim.o.statusline = vim.o.statusline:gsub(vim.pesc(diagnostic_status), function()
-        return diagnostic_status .. todo_status
+        return combined_status
+      end, 1)
+    elseif vim.o.statusline:find(todo_status, 1, true) then
+      vim.o.statusline = vim.o.statusline:gsub(vim.pesc(todo_status), function()
+        return combined_status
       end, 1)
     else
-      vim.o.statusline = vim.o.statusline .. todo_status
+      vim.o.statusline = vim.o.statusline .. combined_status
     end
   end
 end
