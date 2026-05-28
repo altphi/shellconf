@@ -58,11 +58,9 @@ in
       barbar-nvim
       bullets-vim
       cmp-buffer
-      cmp-conjure
       cmp-nvim-lsp
       cmp-path
       cmp_luasnip
-      conjure
       gitlinker-nvim
       gitsigns-nvim
       grug-far-nvim

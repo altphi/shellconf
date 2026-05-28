@@ -8,15 +8,9 @@ vim.g.bullets_custom_mappings = {
   { "inoremap", "<C-CR>", "<CR>" },
   { "nmap", "o", "<Plug>(bullets-newline)" },
 }
-
-vim.g["conjure#mapping#prefix"] = "<leader>c"
-
-
 local function open_vault_file(name)
-  local obsidian = require("obsidian")
-  local client = obsidian.get_client()
-  local workspace = client.current_workspace
-  local base_path = tostring(workspace.path or "~/vaults/sdb")
+  local workspace = _G.Obsidian and _G.Obsidian.workspace
+  local base_path = workspace and tostring(workspace.path) or "~/vaults/sdb"
   local path = vim.fn.resolve(vim.fn.expand(base_path .. "/" .. name))
 
   if vim.fn.filereadable(path) == 1 then
@@ -25,7 +19,6 @@ local function open_vault_file(name)
     vim.notify(name .. " not found in path: " .. path, vim.log.levels.WARN)
   end
 end
-
 
 require("obsidian").setup({
   legacy_commands = false,
@@ -45,7 +38,7 @@ require("obsidian").setup({
     default_tags = { "daily-notes" },
     template = "daily-mo",
   },
-  templates = { subdir = "templates" },
+  templates = { folder = "templates" },
   completion = {
     nvim_cmp = true,
     min_chars = 2,
@@ -59,9 +52,18 @@ require("obsidian").setup({
   end,
   callbacks = {
     enter_note = function()
-      vim.keymap.set("n", "<leader>q", ":Obsidian quick_switch<CR>", { buf = 0, desc = "Obsidian: Quick Switch" })
-      vim.keymap.set("n", "<C-Space>", ":Obsidian toggle_checkbox<CR>", { buf = 0, desc = "Obsidian: Toggle Checkbox" })
-      vim.keymap.set("n", "<CR>", ":Obsidian follow_link<CR>", { buf = 0, desc = "Obsidian: Follow Link" })
+      vim.keymap.set("n", "<leader>q", ":Obsidian quick_switch<CR>", {
+        buf = 0,
+        desc = "Obsidian: Quick Switch",
+      })
+      vim.keymap.set("n", "<C-Space>", ":Obsidian toggle_checkbox<CR>", {
+        buf = 0,
+        desc = "Obsidian: Toggle Checkbox",
+      })
+      vim.keymap.set("n", "<CR>", ":Obsidian follow_link<CR>", {
+        buf = 0,
+        desc = "Obsidian: Follow Link",
+      })
     end,
   },
 })

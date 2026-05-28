@@ -7,7 +7,6 @@
       loaded_netrwPlugin = 1;
       mapleader = " ";
       maplocalleader = ",";
-      "conjure#client_on_load" = false;
     };
 
     opts = {
