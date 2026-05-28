@@ -9,7 +9,8 @@ vim.g.bullets_custom_mappings = {
   { "nmap", "o", "<Plug>(bullets-newline)" },
 }
 local function open_vault_file(name)
-  local workspace = _G.Obsidian and _G.Obsidian.workspace
+  local obsidian_state = rawget(_G, "Obsidian")
+  local workspace = obsidian_state and obsidian_state.workspace
   local base_path = workspace and tostring(workspace.path) or "~/vaults/sdb"
   local path = vim.fn.resolve(vim.fn.expand(base_path .. "/" .. name))
 

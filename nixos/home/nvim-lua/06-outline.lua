@@ -9,7 +9,7 @@ require("aerial").setup({
     "Method",
     "Function",
   },
-  post_parse_symbol = function(bufnr, item, _ctx)
+  post_parse_symbol = function(bufnr, item)
     local ft = vim.bo[bufnr].filetype
     if ft == "markdown" then
       return true
