@@ -67,6 +67,10 @@ zstyle ':completion:*' list-colors '$LSCOLORS'
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path "$ZSH_CACHE_DIR"
 zstyle ':completion:*' menu select=2
+zstyle ':completion:*' ignored-patterns \
+    '*-lock' '*-lock.*' \
+    '*.tmp' '*.temp' \
+    '*.swp' '*~'
 
 # complete SSH hosts
 if test -s "$HOME/.ssh/known_hosts"
@@ -129,6 +133,7 @@ alias open="xdg-open"
 alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
 alias switch-home='home-manager switch -b backup --flake ~/bin/nixos/home'
 alias nr="npm run"
+alias cat=bat
 
 vif() {
   nvim "$(rg --files --hidden --glob '!.git' | fzf --query="${1:-}")"
