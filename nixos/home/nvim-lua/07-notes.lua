@@ -3,6 +3,11 @@ vim.g.bullets_enable = 1
 vim.g.bullets_checkbox_markers = " ~x"
 vim.g.bullets_outline_levels = { "std-", "std*", "std+", "num", "rom", "abc", "ROM" }
 vim.g.bullets_set_mappings = 0
+vim.g.bullets_custom_mappings = {
+  { "imap", "<CR>", "<Plug>(bullets-newline)" },
+  { "inoremap", "<C-CR>", "<CR>" },
+  { "nmap", "o", "<Plug>(bullets-newline)" },
+}
 
 vim.g["conjure#mapping#prefix"] = "<leader>c"
 
