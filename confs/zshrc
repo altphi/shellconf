@@ -136,7 +136,9 @@ alias nr="npm run"
 alias cat=bat
 
 vif() {
-  nvim "$(rg --files --hidden --glob '!.git' | fzf --query="${1:-}")"
+  local file
+  file=$(rg --files --hidden --glob '!.git' | fzf --select-1 --query="${1:-}") || return
+  [[ -n "$file" ]] && nvim "$file"
   # nvim "$(fzf --walker-skip='.git,node_modules,.direnv,renv,build' --query="${1:-}")"
 }
 vig() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}" }
