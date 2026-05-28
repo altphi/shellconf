@@ -1,7 +1,10 @@
-# Check and reset .zcompdump if too large
-MAX_SIZE=1048576
-if [[ -f ~/.zcompdump && $(stat -f %z ~/.zcompdump 2>/dev/null || stat -c %s ~/.zcompdump 2>/dev/null) -gt $MAX_SIZE ]]; then
-    rm -f ~/.zcompdump
-    echo "Removed large .zcompdump file"
+if [[ -f ~/.zcompdump ]]; then
+    MAX_SIZE=1048576
+
+    zcompdump_size=$(stat -c %s ~/.zcompdump 2>/dev/null || stat -f %z ~/.zcompdump 2>/dev/null)
+    if [[ $zcompdump_size == <-> ]] && (( zcompdump_size > MAX_SIZE )); then
+        rm -f ~/.zcompdump
+        echo "Removed large .zcompdump file"
+    fi
 fi
 clear

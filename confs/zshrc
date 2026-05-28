@@ -137,11 +137,11 @@ alias cat=bat
 
 vif() {
   local file
-  file=$(rg --files --hidden --glob '!.git' | fzf --select-1 --query="${1:-}") || return
+  file=$(rg --files --hidden --glob '!.git' | fzf --exact --select-1 --query="${1:-}") || return
   [[ -n "$file" ]] && nvim "$file"
-  # nvim "$(fzf --walker-skip='.git,node_modules,.direnv,renv,build' --query="${1:-}")"
+  # nvim "$(fzf --exact --walker-skip='.git,node_modules,.direnv,renv,build' --query="${1:-}")"
 }
-vig() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}" }
+vig() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --exact --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}" }
 
 symbols() {
   less $(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose
@@ -554,6 +554,11 @@ _self_completing() {
 }
 
 compdef _self_completing airpods.sh
+
+# make sure ctrl-d from zsh kills a tmux pane (tmux will keep unexpected failure-panes open for inspection)
+if [[ -n $TMUX && -o interactive ]]; then
+  TRAPEXIT() { exit 0 }
+fi
 
 perlisism() {
   local -a e=( "${(@f)$(<~/bin/misc/perlis_epigrams)}" )
