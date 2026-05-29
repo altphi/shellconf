@@ -20,7 +20,7 @@
       linespace = 2;
       conceallevel = 2;
       autowriteall = true;
-      cursorline = false;
+      cursorline = true;
       cursorlineopt = "line";
       signcolumn = "yes";
       termguicolors = false;
