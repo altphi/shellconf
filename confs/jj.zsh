@@ -23,6 +23,8 @@ _jl_template() {
 TEMPLATE
 }
 
+alias jd="jj desc"
+
 unalias jl 2>/dev/null
 jl() {
   local revset='fork_point(@ | trunk())::@'
