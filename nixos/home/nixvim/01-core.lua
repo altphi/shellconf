@@ -49,6 +49,10 @@ local function toggle_line_numbers()
   vim.wo.relativenumber = enabled
 end
 
+local function toggle_cursor_line()
+  vim.wo.cursorline = not vim.wo.cursorline
+end
+
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
     local mark = vim.api.nvim_buf_get_mark(0, '"')
@@ -83,3 +87,4 @@ vim.keymap.set("n", "\\wb", function()
   vim.fn.mkdir(folder, "p")
   vim.cmd("edit " .. filename)
 end, { desc = "Create new timestamped file" })
+vim.keymap.set("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor line" })

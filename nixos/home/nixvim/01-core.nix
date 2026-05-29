@@ -20,6 +20,8 @@
       linespace = 2;
       conceallevel = 2;
       autowriteall = true;
+      cursorline = false;
+      cursorlineopt = "line";
       signcolumn = "yes";
       termguicolors = false;
       scrolloff = 5;
