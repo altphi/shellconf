@@ -157,16 +157,16 @@
             telegram-desktop
             timer
             tree-sitter
-            (texlive.combine {
-            inherit (texlive) scheme-medium
-              collection-langenglish
-              collection-mathscience
-              collection-bibtexextra
-              collection-latexextra
-              collection-fontsrecommended
-              dvisvgm;   # for SVG previews in some viewers
-            })
-            latexrun
+            # (texlive.combine {
+            # inherit (texlive) scheme-medium
+            #   collection-langenglish
+            #   collection-mathscience
+            #   collection-bibtexextra
+            #   collection-latexextra
+            #   collection-fontsrecommended
+            #   dvisvgm;   # for SVG previews in some viewers
+            # })
+            # latexrun
             yq
             wev
             wf-recorder
