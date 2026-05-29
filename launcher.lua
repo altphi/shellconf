@@ -11,6 +11,67 @@ local function trim(s)
     return s:gsub("^%s+", ""):gsub("%s+$", "")
 end
 
+local function shell_quote(s)
+    return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
+local function command_succeeded(ok)
+    return ok == true or ok == 0
+end
+
+local function truncate(s, max_len)
+    if #s <= max_len then return s end
+    return s:sub(1, max_len - 3) .. "..."
+end
+
+local function notify(title, body)
+    os.execute("notify-send " .. shell_quote(title) .. " " .. shell_quote(truncate(body, 900)))
+end
+
+local interactive_commands = {
+    btop = true,
+    info = true,
+    less = true,
+    man = true,
+    more = true,
+    nvim = true,
+    vi = true,
+    vim = true,
+    ssh = true,
+    sudo = true,
+    tmux = true,
+    watch = true,
+    pulsemixer = true,
+}
+
+local function first_word(command)
+    local s = trim(command)
+    while true do
+        local word = s:match("^(%S+)")
+        if not word then return "" end
+        if word == "command" or word == "exec" or word == "noglob" then
+            s = trim(s:sub(#word + 1))
+        elseif word:match("^[%w_]+=") then
+            s = trim(s:sub(#word + 1))
+        else
+            return word
+        end
+    end
+end
+
+local function needs_terminal(command)
+    local word = first_word(command)
+    local cmd = word:gsub("^%$%{?", ""):gsub("}?$", "")
+    if cmd == "EDITOR" or cmd == "VISUAL" then
+        cmd = os.getenv(cmd) or cmd
+    end
+    cmd = cmd:gsub(".*/", "")
+    if interactive_commands[cmd] then return true end
+    if command:match("%f[%w_%-]%-it%f[^%w_%-]") then return true end
+
+    return false
+end
+
 local history_path = os.getenv("HOME") .. "/.cache/launcher_history"
 local history_limit = 10
 
@@ -281,7 +342,53 @@ query {
     end
 end
 
+local function run_zsh_command(command, force_terminal)
+    if command == "" then return end
+
+    if force_terminal or needs_terminal(command) then
+        local keep_open = command .. '; status=$?; print; print -r -- "[exit $status] press Enter to close"; read -r; exit $status'
+        os.execute("ghostty -e env TERM_PROGRAM=launcher zsh -ic " .. shell_quote(keep_open) .. " >/dev/null 2>&1 &")
+        return
+    end
+
+    local h = io.popen("TERM_PROGRAM=launcher zsh -ic " .. shell_quote(command) .. " 2>&1")
+    if h == nil then
+        notify("launcher", "failed to start zsh")
+        return
+    end
+
+    local output = h:read("*a") or ""
+    local ok = h:close()
+    local display_output = output:gsub("%s+$", "")
+
+    if not command_succeeded(ok) then
+        local body = "zsh command failed: " .. command
+        if display_output ~= "" then
+            body = body .. "\n\n" .. display_output
+        end
+        notify("launcher", body)
+    elseif display_output ~= "" then
+        notify("launcher", display_output)
+    end
+end
+
+local function handle_shell(query)
+    if query == "" then
+        local h = io.popen('fuzzel -w ' .. width .. ' --dmenu --prompt="zsh> "')
+        if h then
+            query = trim(h:read("*a"))
+            h:close()
+        end
+    end
+    if query:sub(1, 1) == "!" then
+        run_zsh_command(trim(query:sub(2)), true)
+    else
+        run_zsh_command(query)
+    end
+end
+
 local commands = {
+    { key = "%",     desc = "Run zsh command",    handler = handle_shell },
     { key = "a",     desc = "Amazon search",     url = "https://www.amazon.com/s?k=" },
     { key = "g",     desc = "Google search",      url = "https://www.google.com/search?q=" },
     { key = "d",     desc = "DuckDuckGo search",  url = "https://duckduckgo.com/?q=" },
@@ -327,9 +434,9 @@ for _, entry in ipairs(sorted_commands) do
         table.insert(lines, padded .. entry.desc)
     end
 end
-local fuzzel_input = table.concat(lines, "\\n")
+local fuzzel_input = table.concat(lines, "\n")
 
-local handle = io.popen('printf "' .. fuzzel_input .. '\\n" | fuzzel -w ' .. width .. ' --dmenu --match-mode=exact --no-sort --prompt="launch> "')
+local handle = io.popen('printf "%s\n" ' .. shell_quote(fuzzel_input) .. ' | fuzzel -w ' .. width .. ' --dmenu --match-mode=exact --no-sort --prompt="launch> "')
 
 if handle == nil then
     return 1
@@ -339,6 +446,21 @@ local input = trim(handle:read("*a"))
 handle:close()
 
 if input == "" then
+    os.exit(0)
+end
+
+if input:sub(1, 1) == "`" then
+    local shell_command = trim(input:sub(2))
+    if shell_command:sub(-1) == "`" then
+        shell_command = trim(shell_command:sub(1, -2))
+    end
+    run_zsh_command(shell_command)
+    os.exit(0)
+end
+
+if input:sub(1, 2) == "%!" then
+    save_history("%")
+    run_zsh_command(trim(input:sub(3)), true)
     os.exit(0)
 end
 
@@ -370,6 +492,9 @@ if cmd then
     elseif cmd.handler then
         cmd.handler(query)
     end
+elseif input:sub(1, 1) == "%" then
+    save_history("%")
+    run_zsh_command(trim(input:sub(2)))
 elseif input:match("^http") then
     os.execute('xdg-open "' .. input .. '" 2>/dev/null')
 else
