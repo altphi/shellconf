@@ -1,0 +1,500 @@
+#!/usr/bin/env bash
+# Review a git branch inside an isolated container using Codex.
+# Runs focused correctness, security/robustness, and test/maintainability
+# passes, then synthesizes a final markdown review.
+#
+# Usage: codex-review [-w] [-h] <branch> [base-branch]
+#        codex-review -w [base-branch]
+#   -w  Review the working tree (uncommitted changes) instead of a branch
+#
+# In branch mode (default), creates a worktree and reviews committed changes.
+# With -w, reviews the current working directory (including uncommitted
+# changes) against the base branch.
+#
+# Review output is saved to pr-reviews/<branch>.md in the current directory.
+#
+# Requires: docker (or podman), git, codex CLI (authenticated via 'codex login')
+
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: codex-review [-w] [-h] <branch> [base-branch]
+       codex-review -w [base-branch]
+
+Review a git branch inside an isolated Docker container using Codex.
+
+Runs focused correctness, security/robustness, and test/maintainability
+passes, then synthesizes a final markdown review.
+
+Options:
+  -w    Review working tree (uncommitted changes) instead of a branch
+  -h    Show this help message
+
+Arguments:
+  branch       Branch to review (required unless -w is used)
+  base-branch  Branch to diff against (default: auto-detected)
+
+In branch mode (default), creates a worktree and reviews committed changes.
+With -w, reviews the current working directory (including uncommitted
+changes) against the base branch.
+
+Review output is saved to pr-reviews/<branch>.md in the current directory.
+
+Requires: docker (or podman), git, codex CLI (authenticated via 'codex login')
+EOF
+}
+
+WORKDIR_MODE=false
+while getopts "wh" opt; do
+    case "$opt" in
+        w) WORKDIR_MODE=true ;;
+        h) usage; exit 0 ;;
+        *) usage >&2; exit 1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+if [[ "$WORKDIR_MODE" == true ]]; then
+    if [[ $# -gt 1 ]]; then
+        echo "Error: too many arguments for -w mode (expected at most 1, got $#)" >&2
+        echo >&2
+        usage >&2
+        exit 1
+    fi
+    BASE="${1:-}"
+    BRANCH="$(git branch --show-current 2>/dev/null)" || true
+    if [[ -z "$BRANCH" ]]; then
+        echo "Error: not on a branch (detached HEAD?). Cannot use -w mode." >&2
+        exit 1
+    fi
+else
+    if [[ $# -lt 1 ]]; then
+        echo "Error: branch argument required (or use -w for working tree mode)" >&2
+        echo >&2
+        usage >&2
+        exit 1
+    fi
+    if [[ $# -gt 2 ]]; then
+        echo "Error: too many arguments (expected at most 2, got $#)" >&2
+        echo >&2
+        usage >&2
+        exit 1
+    fi
+    BRANCH="${1}"
+    BASE="${2:-}"
+fi
+
+CONTAINER_IMAGE="${CODEX_REVIEW_IMAGE:-codex-review:latest}"
+CODEX_REVIEW_CLI_VERSION="${CODEX_REVIEW_CLI_VERSION:-latest}"
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+
+CODEX_CONFIG_SRC="${CODEX_HOME:-$HOME/.codex}"
+if [[ ! -f "$CODEX_CONFIG_SRC/auth.json" ]]; then
+    echo "Error: no codex credentials found at $CODEX_CONFIG_SRC/auth.json"
+    echo "Run 'codex login' first."
+    exit 1
+fi
+
+CODEX_REVIEW_MODEL="${CODEX_REVIEW_MODEL:-}"
+if [[ -z "$CODEX_REVIEW_MODEL" && -f "$CODEX_CONFIG_SRC/config.toml" ]]; then
+    CODEX_REVIEW_MODEL="$(sed -n 's/^[[:space:]]*model[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' "$CODEX_CONFIG_SRC/config.toml" | head -1)"
+fi
+
+CODEX_CONFIG="$(mktemp -d)"
+WORKTREE=""
+CREATED_WORKTREE=false
+REVIEW_OUTPUT_FILE=""
+
+cleanup() {
+    [[ -n "$REVIEW_OUTPUT_FILE" ]] && rm -f "$REVIEW_OUTPUT_FILE"
+    [[ -n "$CODEX_CONFIG" ]] && rm -rf "$CODEX_CONFIG"
+    if [[ "$CREATED_WORKTREE" == true ]]; then
+        echo "Cleaning up worktree..."
+        git worktree remove --force "$WORKTREE" 2>/dev/null || {
+            rm -rf "$WORKTREE"
+            git worktree prune 2>/dev/null
+        }
+    fi
+}
+trap cleanup EXIT
+
+cp "$CODEX_CONFIG_SRC/auth.json" "$CODEX_CONFIG/"
+
+if command -v docker &>/dev/null; then
+    RUNTIME=docker
+elif command -v podman &>/dev/null; then
+    RUNTIME=podman
+else
+    echo "Error: docker or podman required"
+    exit 1
+fi
+
+if ! $RUNTIME image inspect "$CONTAINER_IMAGE" &>/dev/null; then
+    echo "Building $CONTAINER_IMAGE..."
+    $RUNTIME build \
+        --build-arg CODEX_VERSION="$CODEX_REVIEW_CLI_VERSION" \
+        -t "$CONTAINER_IMAGE" \
+        -f "$SCRIPT_DIR/confs/codex-review.Dockerfile" \
+        "$SCRIPT_DIR/confs"
+fi
+
+GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+    echo "Error: not inside a git repository"
+    exit 1
+}
+
+if [[ -z "$BASE" ]]; then
+    # 1. Try the upstream tracking branch.
+    UPSTREAM="$(git rev-parse --abbrev-ref "$BRANCH@{upstream}" 2>/dev/null)" || true
+    if [[ -n "$UPSTREAM" ]]; then
+        BASE="$UPSTREAM"
+    fi
+    # 2. Try the remote default branch.
+    if [[ -z "$BASE" ]]; then
+        REMOTE_HEAD="$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null)" || true
+        if [[ -n "$REMOTE_HEAD" ]]; then
+            BASE="${REMOTE_HEAD#refs/remotes/}"
+        fi
+    fi
+    # 3. Fall back to well-known names.
+    if [[ -z "$BASE" ]]; then
+        for candidate in staging master main; do
+            if git rev-parse --verify "$candidate" &>/dev/null; then
+                BASE="$candidate"
+                break
+            elif git rev-parse --verify "origin/$candidate" &>/dev/null; then
+                BASE="origin/$candidate"
+                break
+            fi
+        done
+    fi
+    # 4. Prompt the user to pick from local branches.
+    if [[ -z "$BASE" ]]; then
+        echo "Could not detect base branch."
+        echo "Pick a base branch to diff against:"
+        select BASE in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
+            [[ -n "$BASE" ]] && break
+        done
+        if [[ -z "$BASE" ]]; then
+            echo "No branch selected."
+            exit 1
+        fi
+    fi
+    # Don't diff a branch against itself.
+    if [[ "$BASE" == "$BRANCH" || "$BASE" == "origin/$BRANCH" ]]; then
+        echo "Error: base branch '$BASE' is the same as the review branch." >&2
+        echo >&2
+        usage >&2
+        exit 1
+    fi
+fi
+
+if [[ "$WORKDIR_MODE" == true ]]; then
+    WORKTREE="$GIT_ROOT"
+    echo "Reviewing working directory (branch '$BRANCH') vs '$BASE'..."
+else
+    BRANCH_EXISTS_LOCALLY=false
+    REMOTE_REF=""
+    if git rev-parse --verify "$BRANCH" &>/dev/null; then
+        BRANCH_EXISTS_LOCALLY=true
+    else
+        # Check for a remote tracking branch (try origin first, then any remote).
+        if git rev-parse --verify "origin/$BRANCH" &>/dev/null; then
+            REMOTE_REF="origin/$BRANCH"
+        else
+            REMOTE_REF="$(git for-each-ref --format='%(refname:short)' "refs/remotes/*/$BRANCH" | head -1)"
+        fi
+        if [[ -z "$REMOTE_REF" ]]; then
+            echo "Error: branch '$BRANCH' does not exist locally or on any remote"
+            exit 1
+        fi
+    fi
+
+    EXISTING_WORKTREE="$(git worktree list --porcelain | awk -v branch="refs/heads/$BRANCH" '
+        /^worktree /{ wt=$2 }
+        /^branch /{ if ($2 == branch) print wt }
+    ')"
+
+    if [[ -n "$EXISTING_WORKTREE" ]]; then
+        WORKTREE="$EXISTING_WORKTREE"
+        echo "Reusing existing worktree for '$BRANCH' at $WORKTREE"
+    else
+        WORKTREE="$(mktemp -d)"
+        CREATED_WORKTREE=true
+        if [[ "$BRANCH_EXISTS_LOCALLY" == true ]]; then
+            echo "Creating worktree for '$BRANCH' at $WORKTREE..."
+            git worktree add "$WORKTREE" "$BRANCH" --quiet
+        else
+            echo "Creating worktree for '$BRANCH' (from $REMOTE_REF) at $WORKTREE..."
+            git worktree add "$WORKTREE" "$BRANCH" --quiet 2>/dev/null \
+                || git worktree add -b "$BRANCH" "$WORKTREE" "$REMOTE_REF" --quiet \
+                || { echo "Error: failed to create worktree for '$BRANCH' from '$REMOTE_REF'"; exit 1; }
+        fi
+    fi
+fi
+
+if [[ "$WORKDIR_MODE" == true ]]; then
+    UNTRACKED="$(git -C "$WORKTREE" ls-files --others --exclude-standard)"
+    if git -C "$WORKTREE" diff --quiet "$BASE" && [[ -z "$UNTRACKED" ]]; then
+        echo "No changes between '$BASE' and working directory"
+        exit 0
+    fi
+else
+    if git diff --quiet "$BASE...$BRANCH"; then
+        echo "No changes between '$BASE' and '$BRANCH'"
+        exit 0
+    fi
+fi
+
+# Get the remote URL for use inside the container (worktree .git links break in Docker).
+REMOTE_URL="$(git remote get-url origin 2>/dev/null || true)"
+# Convert SSH URLs to HTTPS so the container can use HTTPS auth if available.
+if [[ "$REMOTE_URL" == git@github.com:* ]]; then
+    REMOTE_URL="https://github.com/${REMOTE_URL#git@github.com:}"
+    REMOTE_URL="${REMOTE_URL%.git}.git"
+fi
+
+echo "Starting container review of '$BRANCH' vs '$BASE'..."
+echo "Image: $CONTAINER_IMAGE"
+if [[ -n "$CODEX_REVIEW_MODEL" ]]; then
+    echo "Model: $CODEX_REVIEW_MODEL"
+fi
+echo "---"
+
+REVIEW_OUTPUT_FILE="$(mktemp)"
+
+GIT_COMMON_DIR="$(git rev-parse --git-common-dir)"
+GIT_COMMON_DIR="$(cd "$GIT_COMMON_DIR" && pwd)"
+
+MODEL_ENV=()
+if [[ -n "$CODEX_REVIEW_MODEL" ]]; then
+    MODEL_ENV=(-e CODEX_REVIEW_MODEL="$CODEX_REVIEW_MODEL")
+fi
+
+RAW_OUTPUT=$($RUNTIME run --rm \
+    --mount "type=bind,source=$WORKTREE,target=$WORKTREE,readonly" \
+    --mount "type=bind,source=$GIT_COMMON_DIR,target=$GIT_COMMON_DIR,readonly" \
+    -w "$WORKTREE" \
+    --network=host \
+    --user "$(id -u):$(id -g)" \
+    -e HOME=/tmp/home \
+    -e CODEX_HOME=/codex-config \
+    -e BRANCH="$BRANCH" \
+    -e BASE="$BASE" \
+    -e WORKDIR_MODE="$WORKDIR_MODE" \
+    -e REMOTE_URL="$REMOTE_URL" \
+    "${MODEL_ENV[@]}" \
+    -v "$CODEX_CONFIG:/codex-config" \
+    "$CONTAINER_IMAGE" \
+    bash -lc 'set -euo pipefail
+        mkdir -p "$HOME" "$CODEX_HOME"
+        git config --global safe.directory "*"
+        if [[ -n "$REMOTE_URL" ]] && ! git remote get-url origin >/dev/null 2>&1; then
+            git remote add origin "$REMOTE_URL" 2>/dev/null || true
+        fi
+
+        if [[ "$WORKDIR_MODE" == true ]]; then
+            REVIEW_TARGET="working tree on branch $BRANCH against $BASE, including committed, staged, unstaged, and untracked changes"
+            DIFF_LABEL="$BASE"
+            DIFF_ARGS=("$BASE")
+            UNTRACKED_FILES="$(git ls-files --others --exclude-standard || true)"
+            STATUS_OUTPUT="$(git status --short || true)"
+            EXTRA_CONTEXT="Working tree status:
+$STATUS_OUTPUT
+
+Untracked files:
+$UNTRACKED_FILES"
+        else
+            REVIEW_TARGET="branch $BRANCH against $BASE"
+            DIFF_LABEL="$BASE...HEAD"
+            DIFF_ARGS=("$BASE...HEAD")
+            EXTRA_CONTEXT="Current HEAD:
+$(git rev-parse --short HEAD || true)"
+        fi
+
+        DIFF_STAT="$(git diff --stat --find-renames "${DIFF_ARGS[@]}" || true)"
+        CHANGED_FILES="$(git diff --name-only --find-renames "${DIFF_ARGS[@]}" || true)"
+
+        cat > /tmp/codex-review-correctness.prompt <<EOF
+You are a focused correctness reviewer. Review $REVIEW_TARGET.
+
+The repository is mounted read-only. Do not modify files. Use shell commands only to inspect code and git history.
+
+Before answering, inspect the full diff and surrounding code for each changed file. Follow call sites or tests when a changed symbol is used elsewhere.
+
+Useful commands:
+- git diff --stat --find-renames $DIFF_LABEL
+- git diff --find-renames $DIFF_LABEL
+- git diff --find-renames $DIFF_LABEL -- path/to/file
+- git show $BASE:path/to/file
+- git status --short
+
+Changed files:
+$CHANGED_FILES
+
+Diff stat:
+$DIFF_STAT
+
+$EXTRA_CONTEXT
+
+Focus only on correctness: broken behavior, state bugs, regressions, bad edge cases, incorrect assumptions, async/order-of-operations bugs, and compatibility breaks.
+
+Output concrete findings only. For each finding include severity, confidence, file_path:line_number, evidence from the changed code, and the user-visible impact. If you find nothing, say No correctness findings.
+EOF
+
+        cat > /tmp/codex-review-security.prompt <<EOF
+You are a focused security, data-integrity, and robustness reviewer. Review $REVIEW_TARGET.
+
+The repository is mounted read-only. Do not modify files. Use shell commands only to inspect code and git history.
+
+Before answering, inspect the full diff and surrounding code for each changed file. Follow call sites, error paths, and trust boundaries when a changed symbol is used elsewhere.
+
+Useful commands:
+- git diff --stat --find-renames $DIFF_LABEL
+- git diff --find-renames $DIFF_LABEL
+- git diff --find-renames $DIFF_LABEL -- path/to/file
+- git show $BASE:path/to/file
+- git status --short
+
+Changed files:
+$CHANGED_FILES
+
+Diff stat:
+$DIFF_STAT
+
+$EXTRA_CONTEXT
+
+Focus on security, authorization, privacy, input validation, data loss, concurrency, error handling, null handling, and operational failure modes. Also check whether the change accidentally widens scope or trust boundaries.
+
+Output concrete findings only. For each finding include severity, confidence, file_path:line_number, evidence from the changed code, and the impact. If you find nothing, say No security or robustness findings.
+EOF
+
+        cat > /tmp/codex-review-tests.prompt <<EOF
+You are a focused test and maintainability reviewer. Review $REVIEW_TARGET.
+
+The repository is mounted read-only. Do not modify files. Use shell commands only to inspect code and git history.
+
+Before answering, inspect the full diff and surrounding code for each changed file. Follow nearby tests, fixtures, and similar implementations when they exist.
+
+Useful commands:
+- git diff --stat --find-renames $DIFF_LABEL
+- git diff --find-renames $DIFF_LABEL
+- git diff --find-renames $DIFF_LABEL -- path/to/file
+- git show $BASE:path/to/file
+- git status --short
+
+Changed files:
+$CHANGED_FILES
+
+Diff stat:
+$DIFF_STAT
+
+$EXTRA_CONTEXT
+
+Focus on missing tests for changed behavior, brittle tests, maintainability risks, confusing control flow, duplicated logic, and mismatches with nearby code patterns. Do not report generic style preferences.
+
+Output concrete findings only. For each finding include severity, confidence, file_path:line_number, evidence from the changed code, and why it matters. If you find nothing, say No test or maintainability findings.
+EOF
+
+        model_args=()
+        if [[ -n "${CODEX_REVIEW_MODEL:-}" ]]; then
+            model_args=(-m "$CODEX_REVIEW_MODEL")
+        fi
+
+        run_pass() {
+            local label="$1"
+            local prompt_file="$2"
+            local output_file="$3"
+
+            echo "--- $label pass ---" >&2
+            codex \
+                exec \
+                --dangerously-bypass-approvals-and-sandbox \
+                --ephemeral \
+                --ignore-user-config \
+                --ignore-rules \
+                --skip-git-repo-check \
+                --output-last-message "$output_file" \
+                "${model_args[@]}" \
+                - < "$prompt_file" >&2
+
+            if [[ ! -s "$output_file" ]]; then
+                echo "Error: $label pass produced no output" >&2
+                exit 1
+            fi
+        }
+
+        run_pass "correctness" /tmp/codex-review-correctness.prompt /tmp/codex-review-correctness.md
+        run_pass "security-robustness" /tmp/codex-review-security.prompt /tmp/codex-review-security.md
+        run_pass "tests-maintainability" /tmp/codex-review-tests.prompt /tmp/codex-review-tests.md
+
+        cat > /tmp/codex-review-synthesis.prompt <<EOF
+You are the final code reviewer. Produce the final PR review for $REVIEW_TARGET.
+
+The repository is mounted read-only. Do not modify files. You may inspect the diff and source files yourself.
+
+Focused review pass outputs are available at:
+- /tmp/codex-review-correctness.md
+- /tmp/codex-review-security.md
+- /tmp/codex-review-tests.md
+
+Read those files, inspect the diff yourself, discard weak or false-positive claims, merge duplicates, and write one final review.
+
+Before finalizing, verify every included finding against the current diff and source code. Prefer a shorter accurate review over a long speculative one.
+
+Useful commands:
+- git diff --stat --find-renames $DIFF_LABEL
+- git diff --find-renames $DIFF_LABEL
+- git diff --find-renames $DIFF_LABEL -- path/to/file
+- git show $BASE:path/to/file
+- git status --short
+
+Changed files:
+$CHANGED_FILES
+
+Output format:
+- Findings first, ordered by severity.
+- Every finding must include file_path:line_number, severity, confidence, and a concise explanation of the bug or risk.
+- Include only issues that are specific and actionable.
+- If there are no actionable findings, say that clearly, then include the strongest residual test gaps or risks.
+- Do not include process commentary or mention the focused passes.
+EOF
+
+        args=(
+            exec
+            --dangerously-bypass-approvals-and-sandbox
+            --ephemeral
+            --ignore-user-config
+            --ignore-rules
+            --skip-git-repo-check
+            --output-last-message /tmp/codex-review-output.md
+        )
+        if [[ -n "${CODEX_REVIEW_MODEL:-}" ]]; then
+            args+=(-m "$CODEX_REVIEW_MODEL")
+        fi
+        args+=(-)
+        echo "--- synthesis pass ---" >&2
+        codex "${args[@]}" < /tmp/codex-review-synthesis.prompt >&2
+        cat /tmp/codex-review-output.md') && CONTAINER_EXIT=0 || CONTAINER_EXIT=$?
+
+if [[ $CONTAINER_EXIT -ne 0 ]]; then
+    echo "Error: container exited with status $CONTAINER_EXIT"
+    [[ -n "$RAW_OUTPUT" ]] && echo "$RAW_OUTPUT"
+    exit $CONTAINER_EXIT
+fi
+
+printf '%s\n' "$RAW_OUTPUT" > "$REVIEW_OUTPUT_FILE"
+
+cat "$REVIEW_OUTPUT_FILE"
+
+if [[ -s "$REVIEW_OUTPUT_FILE" ]]; then
+    mkdir -p pr-reviews
+    REVIEW_FILE="pr-reviews/${BRANCH//\//-}.md"
+    cp "$REVIEW_OUTPUT_FILE" "$REVIEW_FILE"
+    echo "---"
+    echo "Review saved to: $REVIEW_FILE"
+else
+    echo "Error: no review output captured"
+    exit 1
+fi
