@@ -44,6 +44,8 @@
       title = true;
       wrapscan = true;
       hlsearch = false;
+      modeline = false;
+      modelines = 0;
     };
 
     highlight.ExtraWhitespace = {
