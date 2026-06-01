@@ -5,7 +5,10 @@
 { config, lib, pkgs, modulesPath, unstable, inputs, ... }:
 
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [
+    ./hardware-configuration.nix
+    ./niri-monitor-unplug.nix
+  ];
 
   networking.useDHCP = lib.mkDefault true;
 
