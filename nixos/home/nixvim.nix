@@ -50,6 +50,7 @@ in
       phpactor
       rPackages.languageserver
       ripgrep
+      rust-analyzer
       tree-sitter
     ];
 
