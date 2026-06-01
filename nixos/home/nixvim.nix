@@ -38,6 +38,7 @@ in
 
     extraPackages = with pkgs; [
       akkuPackages.scheme-langserver
+      beautysh
       fd
       gh
       git
