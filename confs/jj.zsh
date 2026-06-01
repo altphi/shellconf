@@ -69,6 +69,10 @@ alias jl-heads-all=" jj log -r 'heads(all())'"
 alias jl-wip=" jj log -r 'mine() & mutable()'"
 alias jj-abandon-empty=" jj abandon -r 'empty() & mutable() & ~@'"
 
+jl-file-history() {
+  jj log -r 'all()' -- "${1}"
+}
+
 jj-abandon-unowned-orphan-revs() {
   local revset='~mine() & ~::remote_bookmarks()'
   local preview
