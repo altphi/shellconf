@@ -511,22 +511,33 @@ source ~/.secret-env
 # 4 → steady underline
 # 5 → blinking bar (the “stick”)
 # 6 → steady bar
+_p_insert_mode_prompt() {
+    print -n -- $'\e[1 q'
+    _p_vimode=''
+}
+
+_p_reset_vimode_precmd() {
+    _p_vimode=''
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _p_reset_vimode_precmd
+
 function zle-keymap-select {
     if [[ ${KEYMAP} == vicmd ]]; then
-        echo -ne '\e[2 q'
+        print -n -- $'\e[2 q'
         _p_vimode='%F{yellow}[N]%f '
     else
-        echo -ne '\e[1 q'
-        _p_vimode=''
+        _p_insert_mode_prompt
     fi
     zle reset-prompt
 }
 function zle-line-init {
-    echo -ne '\e[1 q'
-    _p_vimode=''
+    zle -K viins
+    _p_insert_mode_prompt
 }
 zle -N zle-keymap-select
 zle -N zle-line-init
+zle -D zle-line-finish 2>/dev/null || true
 
 _self_completing() {
   local script="${words[1]}"
