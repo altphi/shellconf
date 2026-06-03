@@ -33,7 +33,7 @@ end
 
 local function apply_cursor_line_highlight()
   vim.api.nvim_set_hl(0, "CursorLine", {
-    ctermbg = get_system_appearance() == "light" and 15 or 0,
+    ctermbg = get_system_appearance() == "light" and 15 or 234,
   })
 end
 

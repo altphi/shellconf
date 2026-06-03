@@ -1,3 +1,9 @@
+vim.treesitter.query.set("zsh", "aerial", [[
+(function_definition
+  name: (word) @name
+  (#set! "kind" "Function")) @symbol
+]])
+
 require("aerial").setup({
   backends = { "treesitter", "markdown" },
   filter_kind = {

@@ -7,6 +7,7 @@ let
   '';
   treesitter = pkgs.vimPlugins.nvim-treesitter.withPlugins (p: with p; [
     bash
+    zsh
     javascript
     latex
     lua
