@@ -58,7 +58,7 @@ in
 
     extraPlugins = with pkgs.vimPlugins; [
       aerial-nvim
-      barbar-nvim
+      # barbar-nvim
       bullets-vim
       cmp-buffer
       cmp-nvim-lsp
@@ -94,6 +94,7 @@ in
     extraConfigLua = builtins.concatStringsSep "\n" [
       debugAdapterPaths
       (builtins.readFile ./nvim-lua/02-lsp.lua)
+      (builtins.readFile ./nvim-lua/02-lsp-autoformatting.lua)
       (builtins.readFile ./nvim-lua/03-treesitter.lua)
       (builtins.readFile ./nvim-lua/04-telescope.lua)
       (builtins.readFile ./nvim-lua/05-completion.lua)

@@ -22,7 +22,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
     vim.keymap.set("n", "<C-k>", function()
       vim.lsp.buf.signature_help({ border = "double" })
     end, opts)
-    vim.keymap.set("n", "<leader>lf", vim.lsp.buf.format, vim.tbl_extend("force", opts, { desc = "Format buffer" }))
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
     vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
     vim.keymap.set("n", "gI", vim.lsp.buf.implementation, opts)
@@ -55,54 +54,6 @@ vim.diagnostic.config({
 vim.api.nvim_create_autocmd("CursorHold", {
   callback = function()
     vim.diagnostic.open_float(nil, { focus = false })
-  end,
-})
-
-local lsp_format_on_save_filetypes = {
-  javascript = true,
-  javascriptreact = true,
-  lua = true,
-  nix = true,
-  php = true,
-  r = true,
-  rmd = true,
-  rust = true,
-  scheme = true,
-  typescript = true,
-  typescriptreact = true,
-}
-
-vim.api.nvim_create_autocmd("BufWritePre", {
-  group = vim.api.nvim_create_augroup("LspFormatOnSave", { clear = true }),
-  pattern = "*",
-  callback = function(ev)
-    if not lsp_format_on_save_filetypes[vim.bo[ev.buf].filetype] then
-      return
-    end
-
-    if #vim.lsp.get_clients({ bufnr = ev.buf, method = "textDocument/formatting" }) > 0 then
-      vim.lsp.buf.format({ bufnr = ev.buf })
-    end
-  end,
-})
-
-vim.api.nvim_create_autocmd("BufWritePre", {
-  group = vim.api.nvim_create_augroup("ZshFormatOnSave", { clear = true }),
-  pattern = "*",
-  callback = function(ev)
-    if vim.bo[ev.buf].filetype ~= "zsh" then
-      return
-    end
-
-    local formatted = vim.fn.systemlist(
-      { "beautysh", "--indent-size", "2", "-" },
-      vim.api.nvim_buf_get_lines(ev.buf, 0, -1, false)
-    )
-    if vim.v.shell_error == 0 then
-      vim.api.nvim_buf_set_lines(ev.buf, 0, -1, false, formatted)
-    else
-      vim.notify(table.concat(formatted, "\n"), vim.log.levels.ERROR, { title = "beautysh" })
-    end
   end,
 })
 
