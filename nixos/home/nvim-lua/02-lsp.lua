@@ -9,7 +9,15 @@ vim.api.nvim_create_autocmd("LspAttach", {
       max_width = 100,
     }
     vim.keymap.set("n", "K", function()
-      vim.lsp.buf.hover(hover_opts)
+      if vim.tbl_contains({ "javascript", "javascriptreact", "typescript", "typescriptreact" }, vim.bo.filetype) then
+        vim.lsp.buf.definition({
+          on_list = function(options)
+            vim.lsp.util.preview_location(options.items[1].user_data, hover_opts)
+          end,
+        })
+      else
+        vim.lsp.buf.hover(hover_opts)
+      end
     end, opts)
     vim.keymap.set("n", "<C-k>", function()
       vim.lsp.buf.signature_help({ border = "double" })
