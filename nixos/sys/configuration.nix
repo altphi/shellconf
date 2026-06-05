@@ -52,7 +52,7 @@
       "clt2-dev.cltexam.com"
       "app2-dev.cltexam.com"
       "backroom-dev.cltexam.com"
-      "cat-dev.cltexam.com"
+      "elgato-dev.cltexam.com"
     ];
   };
   networking.firewall = {

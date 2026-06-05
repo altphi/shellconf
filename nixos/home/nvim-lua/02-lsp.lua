@@ -2,8 +2,8 @@ require("lazydev").setup({})
 
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLspConfig", {}),
-  callback = function(ev)
-    local opts = { buf = ev.buf, silent = true }
+  callback = function(args)
+    local opts = { buf = args.buf, silent = true }
     local hover_opts = {
       border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
       max_width = 100,
@@ -57,7 +57,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
   end,
 })
 
-vim.lsp.config("eslint", {})
+--vim.lsp.config("eslint", {})
 vim.lsp.config("phpactor", {
   filetypes = { "php" },
   init_options = {
@@ -65,7 +65,8 @@ vim.lsp.config("phpactor", {
     ["language_server_psalm.enabled"] = false,
   },
 })
-vim.lsp.config("ts_ls", {
+
+vim.lsp.config("vtsls", {
   filetypes = {
     "typescript",
     "typescriptreact",
@@ -86,15 +87,13 @@ vim.lsp.config("lua_ls", {
     },
   },
 })
-vim.lsp.config("r_language_server", {})
 vim.lsp.config("nixd", {})
 vim.lsp.config("scheme_langserver", { filetypes = { "scheme" } })
 vim.lsp.enable({
-  "eslint",
+  -- "eslint",
   "phpactor",
-  "ts_ls",
+  "vtsls",
   "lua_ls",
-  "r_language_server",
   "nixd",
   "scheme_langserver",
 })

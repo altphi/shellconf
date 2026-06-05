@@ -10,8 +10,8 @@
     };
 
     opts = {
-      number = true;
-      relativenumber = true;
+      number = false;
+      relativenumber = false;
       tabstop = 2;
       shiftwidth = 2;
       expandtab = true;
@@ -19,7 +19,7 @@
       ignorecase = true;
       linespace = 2;
       conceallevel = 2;
-      autowriteall = true;
+      autowriteall = false;
       cursorline = true;
       cursorlineopt = "line";
       signcolumn = "yes";
@@ -38,12 +38,13 @@
       sidescrolloff = 5;
       foldmethod = "expr";
       foldlevel = 99;
-      updatetime = 200;
-      swapfile = false;
+      foldlevelstart = 1;
+      updatetime = 5000;
       undofile = true;
+      swapfile = true;
       title = true;
       wrapscan = true;
-      hlsearch = false;
+      hlsearch = true;
       modeline = false;
       modelines = 0;
     };
@@ -69,6 +70,7 @@
     userCommands = {
       RemoveTrailingWhitespace.command = "%s/\\s\\+$//e";
       BlameToggle.command = "Gitsigns blame";
+      DiffUnsaved.command = "w !diff -u % -";
     };
 
     keymaps = [

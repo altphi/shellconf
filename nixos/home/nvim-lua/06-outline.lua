@@ -9,6 +9,7 @@ require("aerial").setup({
   filter_kind = {
     "Class",
     "Enum",
+    "Variable",
     "Interface",
     "Struct",
     "Module",

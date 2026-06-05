@@ -5,9 +5,11 @@ require("nvim-treesitter").setup({
 vim.api.nvim_create_autocmd("FileType", {
   callback = function(ev)
     local ok = pcall(vim.treesitter.start, ev.buf)
-    if ok then
-      vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+    if not ok then
+      return
     end
+
+    vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
   end,
 })
 

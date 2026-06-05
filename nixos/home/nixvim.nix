@@ -18,6 +18,7 @@ let
     r
     rust
     scheme
+    tsx
     typescript
     vim
   ]);
@@ -46,7 +47,7 @@ in
       lazygit
       lua-language-server
       nixd
-      typescript-language-server
+      vtsls
       vscode-langservers-extracted
       nodejs_24
       phpactor
@@ -86,6 +87,7 @@ in
       telescope-file-browser-nvim
       telescope-fzf-native-nvim
       telescope-nvim
+      telescope-frecency-nvim
       treesitter
       trouble-nvim
       vim-tmux-navigator
@@ -98,8 +100,8 @@ in
       (builtins.readFile ./nvim-lua/03-treesitter.lua)
       (builtins.readFile ./nvim-lua/04-telescope.lua)
       (builtins.readFile ./nvim-lua/05-completion.lua)
-      (builtins.readFile ./nvim-lua/06-outline.lua)
-      (builtins.readFile ./nvim-lua/07-notes.lua)
+      # (builtins.readFile ./nvim-lua/06-aerial.lua)
+      (builtins.readFile ./nvim-lua/07-obsidian.lua)
       (builtins.readFile ./nvim-lua/08-debugging.lua)
       (builtins.readFile ./nvim-lua/09-git.lua)
       (builtins.readFile ./nvim-lua/10-ui.lua)

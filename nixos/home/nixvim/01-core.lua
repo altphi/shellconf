@@ -8,14 +8,6 @@ vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.opt.undodir = vim.fn.stdpath("data") .. "/.nvim-undo//"
 vim.fn.mkdir(vim.fn.stdpath("cache"), "p")
 
-local autosave_timer = vim.uv.new_timer()
-autosave_timer:start(15000, 15000, vim.schedule_wrap(function()
-  if not vim.bo.modified then
-    return
-  end
-  vim.cmd("silent! wall")
-end))
-
 local function delete_current_file()
   local bufnr = vim.api.nvim_get_current_buf()
   local filepath = vim.api.nvim_buf_get_name(bufnr)
@@ -97,3 +89,8 @@ vim.keymap.set("n", "\\wb", function()
   vim.cmd("edit " .. filename)
 end, { desc = "Create new timestamped file" })
 vim.keymap.set("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor line" })
+
+vim.o.laststatus = 0;
+vim.keymap.set("n", "<leader>e", function()
+  vim.o.laststatus = vim.o.laststatus == 0 and 2 or 0;
+end, { desc = "Toggle status line" })
