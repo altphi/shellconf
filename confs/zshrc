@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 if [[ -z "$TMUX" && "$TERM_PROGRAM" == "ghostty" ]]; then
-    exec tmux new-session -s "ghostty-$$"
+  exec tmux new-session -s "ghostty-$$"
 fi
 
 set -o histverify
@@ -68,9 +68,9 @@ zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path "$ZSH_CACHE_DIR"
 zstyle ':completion:*' menu select=2
 zstyle ':completion:*' ignored-patterns \
-    '*-lock' '*-lock.*' \
-    '*.tmp' '*.temp' \
-    '*.swp' '*~'
+  '*-lock' '*-lock.*' \
+  '*.tmp' '*.temp' \
+  '*.swp' '*~'
 
 # complete SSH hosts
 if test -s "$HOME/.ssh/known_hosts"
@@ -82,7 +82,7 @@ fi
 
 # Auto-create ~ shortcuts for every immediate subdir in ~/code
 for d in ~/code/*(/); do
-    hash -d "${d:t}"="$d"
+  hash -d "${d:t}"="$d"
 done
 alias vpn="~/code/clt-vpn-scripts"
 alias leet="~/code/rusty/leetbox/src/problems"
@@ -132,9 +132,9 @@ alias c-styles='vi ~/bin/nixos/home/styles.nix'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias open="xdg-open"
 alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
-alias switch-home='home-manager switch -b backup --flake ~/bin/nixos/home'
 alias nr="npm run"
 alias cat=bat
+
 
 vif() {
   local file
@@ -149,8 +149,13 @@ symbols() {
 }
 
 switch-sys() {
+  nix flake update --flake ~/bin/nixos/sys
   sudo nixos-rebuild switch --flake ~/bin/nixos/sys\#euclid
   notify-send "switch-sys finished, exit code: $?"
+}
+switch-home() {
+  nix flake update --flake ~/bin/nixos/home
+  home-manager switch -b backup --flake ~/bin/nixos/home
 }
 
 find_symbol() {
@@ -428,7 +433,7 @@ fname() {
     --glob '!node_modules' \
     --glob '!renv' \
     --glob '!build' |
-    grep -iF -- "$*"
+  grep -iF -- "$*"
 }
 
 # timer script, e.g. `t minutes title`
@@ -513,28 +518,28 @@ source ~/.secret-env
 # 5 → blinking bar (the “stick”)
 # 6 → steady bar
 _p_insert_mode_prompt() {
-    print -n -- $'\e[1 q'
-    _p_vimode=''
+  print -n -- $'\e[1 q'
+  _p_vimode=''
 }
 
 _p_reset_vimode_precmd() {
-    _p_vimode=''
+  _p_vimode=''
 }
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd _p_reset_vimode_precmd
 
 function zle-keymap-select {
-    if [[ ${KEYMAP} == vicmd ]]; then
-        print -n -- $'\e[2 q'
-        _p_vimode='%F{yellow}[N]%f '
-    else
-        _p_insert_mode_prompt
-    fi
-    zle reset-prompt
+  if [[ ${KEYMAP} == vicmd ]]; then
+    print -n -- $'\e[2 q'
+    _p_vimode='%F{yellow}[N]%f '
+  else
+    _p_insert_mode_prompt
+  fi
+  zle reset-prompt
 }
 function zle-line-init {
-    zle -K viins
-    _p_insert_mode_prompt
+  zle -K viins
+  _p_insert_mode_prompt
 }
 zle -N zle-keymap-select
 zle -N zle-line-init

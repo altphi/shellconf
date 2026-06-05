@@ -7,7 +7,7 @@ let
   '';
   treesitter = pkgs.vimPlugins.nvim-treesitter.withPlugins (p: with p; [
     bash
-    zsh
+    # zsh DO NOT USE because big memory leak
     javascript
     latex
     lua
