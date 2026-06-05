@@ -2,8 +2,7 @@
 
 if [[ "$1" == "mute-toggle" ]]; then
   wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
-  eww poll volume
-tmux refresh-client -S 2>/dev/null
+  tmux refresh-client -S 2>/dev/null
   exit 0;
 fi
 
@@ -14,5 +13,4 @@ else
 fi
 
 wpctl set-volume @DEFAULT_AUDIO_SINK@ $INC
-eww poll volume
 tmux refresh-client -S 2>/dev/null
