@@ -69,12 +69,21 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile", "InsertLeave" }, {
     vim.cmd([[match ExtraWhitespace /\s\+$/]])
   end,
 })
+
 vim.api.nvim_create_autocmd("InsertEnter", {
   pattern = "*",
   callback = function()
     vim.cmd([[match none]])
   end,
 })
+
+vim.api.nvim_create_autocmd({ "InsertEnter", "InsertLeave" }, {
+  pattern = "*",
+  callback = function()
+    toggle_cursor_line()
+  end,
+})
+
 vim.api.nvim_create_user_command("DeleteFile", delete_current_file, {
   desc = "Delete the file for the current buffer",
 })
