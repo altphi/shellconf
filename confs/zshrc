@@ -133,7 +133,6 @@ alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias open="xdg-open"
 alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
 alias nr="npm run"
-alias cat=bat
 
 
 vif() {
