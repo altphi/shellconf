@@ -39,7 +39,7 @@
       foldmethod = "expr";
       foldlevel = 99;
       foldlevelstart = 1;
-      updatetime = 5000;
+      updatetime = 300;
       undofile = true;
       swapfile = true;
       title = true;

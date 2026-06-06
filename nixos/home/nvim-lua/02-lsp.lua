@@ -40,20 +40,33 @@ function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
   return orig_open_floating_preview(contents, syntax, opts, ...)
 end
 
+local diagnostic_float_opts = {
+  border = "rounded",
+  pad_top = 1,
+  pad_bottom = 1,
+  scope = "line",
+  format = function(d)
+    return " " .. d.message .. " "
+  end,
+}
+
+local function show_line_diagnostics(focus)
+  vim.diagnostic.open_float(nil, vim.tbl_extend("force", diagnostic_float_opts, { focus = focus }))
+end
+
 vim.diagnostic.config({
   virtual_text = false,
-  float = {
-    border = "rounded",
-    pad_top = 1,
-    pad_bottom = 1,
-    format = function(d)
-      return " " .. d.message .. " "
-    end,
-  },
+  float = diagnostic_float_opts,
 })
+
+vim.keymap.set("n", "gl", function()
+  show_line_diagnostics(true)
+end, { desc = "Show line diagnostics" })
+
 vim.api.nvim_create_autocmd("CursorHold", {
+  group = vim.api.nvim_create_augroup("LineDiagnostics", { clear = true }),
   callback = function()
-    vim.diagnostic.open_float(nil, { focus = false })
+    show_line_diagnostics(false)
   end,
 })
 
