@@ -62,6 +62,9 @@ autoload -U zmv
 source ~/.jj.zsh
 
 # completion
+setopt auto_list
+unsetopt list_ambiguous
+unsetopt bash_auto_list
 zmodload -i zsh/complist
 zstyle ':completion:*' list-colors '$LSCOLORS'
 zstyle ':completion:*' use-cache on
