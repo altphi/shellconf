@@ -15,6 +15,14 @@ local function shell_quote(s)
     return "'" .. s:gsub("'", "'\\''") .. "'"
 end
 
+local function url_encode_query(s)
+    s = s:gsub("\n", " ")
+    s = s:gsub("([^%w%-_%.~ ])", function(c)
+        return string.format("%%%02X", string.byte(c))
+    end)
+    return s:gsub(" ", "+")
+end
+
 local function command_succeeded(ok)
     return ok == true or ok == 0
 end
@@ -396,6 +404,7 @@ local commands = {
     { key = "i",     desc = "CL Issues",          url = "https://github.com/classiclearning/Issues/issues/" },
     { key = "it",    desc = "Tigger Issues",      url = "https://github.com/classiclearning/tigger/issues/" },
     { key = "rust",  desc = "Rust api docs",      url = "https://doc.rust-lang.org/stable/std/index.html?search=" },
+    { key = "ts",    desc = "TypeScript docs",    url = "https://www.google.com/search?q=site%3Atypescriptlang.org%2Fdocs%2Fhandbook+" },
     { key = "sp",    desc = "Play/Pause",         exec = "playerctl -a play-pause" },
     { key = "sn",    desc = "Next track",         exec = "playerctl -a next" },
     { key = "sprev", desc = "Previous track",     exec = "playerctl -a previous" },
@@ -484,7 +493,7 @@ if cmd then
             end
         end
         if query ~= "" then
-            local encoded_query = query:gsub(" ", "+")
+            local encoded_query = url_encode_query(query)
             os.execute('xdg-open "' .. cmd.url .. encoded_query .. '" 2>/dev/null')
         end
     elseif cmd.exec then
