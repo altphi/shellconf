@@ -4,6 +4,8 @@ require("mini.surround").setup({
     ['('] = { output = { left = '(', right = ')' } },
     ['['] = { output = { left = '[', right = ']' } },
     [']'] = { output = { left = '[', right = ']' } },
+    ['{'] = { output = { left = '{', right = '}' } },
+    ['}'] = { output = { left = '{', right = '}' } },
   },
   highlight_duration = 500,
   mappings = {

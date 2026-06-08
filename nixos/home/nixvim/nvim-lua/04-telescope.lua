@@ -52,10 +52,19 @@ telescope.setup({
     frecency = {
       db_safe_mode = false,
     },
+    ast_grep = {
+      command = {
+        "ast-grep",
+        "--json=stream",
+      },                       -- must have --json=stream
+      grep_open_files = false, -- search in opened files
+      lang = nil,              -- string value, specify language for ast-grep `nil` for default
+    }
   },
 })
 telescope.load_extension("fzf")
 telescope.load_extension("file_browser")
+telescope.load_extension("ast_grep")
 
 vim.keymap.set("n", "<leader>ee", ":Telescope file_browser<CR>", { desc = "File browser with preview" })
 vim.keymap.set("n", "<leader>ef", ":Telescope file_browser path=%:p:h select_buffer=true<CR>",
@@ -84,6 +93,7 @@ vim.keymap.set("n", "<leader>b", builtin.buffers, { desc = "Telescope: Buffers" 
 vim.keymap.set("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
 vim.keymap.set("n", "<leader>j", builtin.jumplist, { desc = "Telescope: Jumps" })
 vim.keymap.set("n", "<leader>s", builtin.treesitter, { desc = "Search Tree-sitter symbols" })
+vim.keymap.set("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
 vim.keymap.set("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
 vim.keymap.set("n", "<leader>of", ":Telescope oldfiles only_cwd=true<CR>", { silent = true })
 --vim.keymap.set("n", "<leader>dg", telescope_grep_in_directory, { desc = "Telescope live_grep in selected directory" })

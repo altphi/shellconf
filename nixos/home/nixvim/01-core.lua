@@ -94,3 +94,28 @@ vim.o.laststatus = 0;
 vim.keymap.set("n", "<leader>e", function()
   vim.o.laststatus = vim.o.laststatus == 0 and 2 or 0;
 end, { desc = "Toggle status line" })
+
+---- tcd to nearest project
+local markers = {
+  ".jj",
+  ".git",
+  "flake.nix",
+  "package.json",
+  "Cargo.toml",
+}
+
+vim.api.nvim_create_autocmd({ "VimEnter", "BufEnter" }, {
+  callback = function(args)
+    local path = vim.api.nvim_buf_get_name(args.buf)
+    if path == "" then return end
+
+    local stat = vim.uv.fs_stat(path)
+    local start = stat and stat.type == "directory" and path or vim.fs.dirname(path)
+    local root = vim.fs.root(start, markers)
+
+    if root and root ~= vim.fn.getcwd() then
+      vim.cmd.tcd(vim.fn.fnameescape(root))
+    end
+  end,
+})
+----

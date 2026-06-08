@@ -67,7 +67,7 @@
       modules = [
         nix-index-database.homeModules.default
         nixvim.homeModules.nixvim
-        ./nixvim.nix
+        ./nixvim/main.nix
         {
           home.username = "stephen";
           home.homeDirectory = "/home/stephen";
@@ -80,8 +80,9 @@
             #algol68g
             #amp-cli
             anki-bin
-            #bzflag
+            ast-grep
             bat
+            #bzflag
             chez
             cliphist
             vscode-extensions.vadimcn.vscode-lldb
@@ -167,6 +168,7 @@
             #   dvisvgm;   # for SVG previews in some viewers
             # })
             # latexrun
+            yazi
             yq
             wev
             wf-recorder
@@ -176,7 +178,7 @@
             zoxide
             (import ./custom_derivations/tableplus.nix { inherit pkgs; })
             awscli2
-            libreoffice
+            # libreoffice   move me to a separate nix flake in a directory to avoid heavy updates
           ] ++ [
             pkgs-unstable.fastmail-desktop
             pkgs-unstable.claude-code

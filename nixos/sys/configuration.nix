@@ -52,6 +52,7 @@
       "clt2-dev.cltexam.com"
       "app2-dev.cltexam.com"
       "backroom-dev.cltexam.com"
+      "cat-dev.cltexam.com"
       "elgato-dev.cltexam.com"
     ];
   };
@@ -291,10 +292,10 @@
   };
 
   services.gnome.gnome-keyring.enable = true;
-  services.dbus.packages = [
-    pkgs.gnome-session
-    pkgs.gnome-shell
-  ];
+  #services.dbus.packages = [
+  #  pkgs.gnome-session
+  #  pkgs.gnome-shell
+  #];
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1"; # Enable Wayland support for Electron/Chromium apps

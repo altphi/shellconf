@@ -25,8 +25,8 @@ let
 in
 {
   imports = [
-    ./nixvim/01-core.nix
-    ./nixvim/02-lsp.nix
+    ./01-core.nix
+    ./02-lsp.nix
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -40,6 +40,7 @@ in
 
     extraPackages = with pkgs; [
       akkuPackages.scheme-langserver
+      ast-grep
       beautysh
       fd
       gh
@@ -87,6 +88,7 @@ in
       telescope-file-browser-nvim
       telescope-fzf-native-nvim
       telescope-nvim
+      telescope-sg
       telescope-frecency-nvim
       treesitter
       trouble-nvim

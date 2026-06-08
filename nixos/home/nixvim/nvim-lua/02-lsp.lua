@@ -70,7 +70,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
   end,
 })
 
---vim.lsp.config("eslint", {})
+vim.lsp.config("eslint", {})
 vim.lsp.config("phpactor", {
   filetypes = { "php" },
   init_options = {
@@ -103,10 +103,21 @@ vim.lsp.config("lua_ls", {
 vim.lsp.config("nixd", {})
 vim.lsp.config("scheme_langserver", { filetypes = { "scheme" } })
 vim.lsp.enable({
-  -- "eslint",
+  "eslint",
   "phpactor",
   "vtsls",
   "lua_ls",
   "nixd",
   "scheme_langserver",
 })
+
+
+--- ast grep
+vim.lsp.config("ast_grep", {
+  -- these are the default options, you only need to specify
+  -- options you'd like to change from the default
+  cmd = { 'ast-grep', 'lsp' },
+  filetypes = { "c", "cpp", "rust", "go", "java", "python", "javascript", "typescript", "html", "css", "kotlin", "dart", "lua" },
+  root_dir = require('lspconfig.util').root_pattern('sgconfig.yaml', 'sgconfig.yml')
+})
+---

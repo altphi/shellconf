@@ -6,14 +6,14 @@ fi
 
 set -o histverify
 
-# setopt ALL_EXPORT
+export MANPAGER="nvim +Man!"
+
 readonly SYSTYPE=$OSTYPE
 PATH="$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 CLASSPATH="${HOME}/bin/jars/algs4.jar:."
 AWS_PROFILE="CLT-Main"
 GITHUB_DEFAULT_ORG="classiclearning"
 PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
-
 
 EDITOR=vim
 GIT_EDITOR=vim
@@ -46,19 +46,19 @@ unset MANPATH
 unset PAGER
 GREP_OPTIONS='--binary-files=without-match --directories=skip'
 
-ZSH_CACHE_DIR="$HOME/.zsh/cache"
-[[ -d $ZSH_CACHE_DIR ]] || mkdir -p "$ZSH_CACHE_DIR"
-
 autoload -Uz compinit
-if [[ -n $ZSH_CACHE_DIR/zcompdump(#qN.mh+24) ]]; then
-  compinit -d "$ZSH_CACHE_DIR/zcompdump"
+ZSH_CACHE_DIR="$HOME/.zsh/cache"
+zcompdump="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zsh}/zcompdump"
+mkdir -p "${zcompdump:h}"
+if [[ ! -s "$zcompdump" || -n ${zcompdump}(#qN.mh+24) ]]; then
+  compinit -d "$zcompdump"
+  touch "$zcompdump"
+  zcompile "$zcompdump"
 else
-  compinit -C -d "$ZSH_CACHE_DIR/zcompdump"
+  compinit -C -d "$zcompdump"
 fi
 
 autoload -U zmv
-
-
 source ~/.jj.zsh
 
 # completion
@@ -74,6 +74,8 @@ zstyle ':completion:*' ignored-patterns \
   '*-lock' '*-lock.*' \
   '*.tmp' '*.temp' \
   '*.swp' '*~'
+zstyle ':completion:*:users' users "$USER" root
+
 
 # complete SSH hosts
 if test -s "$HOME/.ssh/known_hosts"
@@ -136,13 +138,13 @@ alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias open="xdg-open"
 alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
 alias nr="npm run"
+alias ct="cargo test"
 
 
 vif() {
   local file
   file=$(rg --files --hidden --glob '!.git' | fzf --exact --select-1 --query="${1:-}") || return
   [[ -n "$file" ]] && nvim "$file"
-  # nvim "$(fzf --exact --walker-skip='.git,node_modules,.direnv,renv,build' --query="${1:-}")"
 }
 vig() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --exact --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}" }
 
@@ -494,6 +496,7 @@ _kubectl_cache="$ZSH_CACHE_DIR/kubectl_completion"
 _jj_cache="$ZSH_CACHE_DIR/jj_completion"
 _direnv_cache="$ZSH_CACHE_DIR/direnv_hook"
 _zoxide_cache="$ZSH_CACHE_DIR/zoxide_init"
+_fzf_cache="$ZSH_CACHE_DIR/fzf_integration"
 
 _load_cached() {
   local cache="$1"; shift
@@ -505,6 +508,7 @@ _load_cached "$_kubectl_cache" kubectl completion zsh
 _load_cached "$_jj_cache"      env COMPLETE=zsh jj
 _load_cached "$_direnv_cache"  direnv hook zsh
 _load_cached "$_zoxide_cache"  zoxide init zsh
+_load_cached "$_fzf_cache"  fzf --zsh
 
 unset -f _load_cached
 
@@ -530,7 +534,7 @@ _p_reset_vimode_precmd() {
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd _p_reset_vimode_precmd
 
-function zle-keymap-select {
+zle-keymap-select() {
   if [[ ${KEYMAP} == vicmd ]]; then
     print -n -- $'\e[2 q'
     _p_vimode='%F{yellow}[N]%f '
@@ -539,7 +543,7 @@ function zle-keymap-select {
   fi
   zle reset-prompt
 }
-function zle-line-init {
+zle-line-init() {
   zle -K viins
   _p_insert_mode_prompt
 }
@@ -570,3 +574,26 @@ perlisism() {
 if [[ $(pwd) == "$HOME" ]]; then
   perlisism
 fi
+
+y() {
+  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+  command yazi "$@" --cwd-file="$tmp"
+  IFS= read -r -d '' cwd < "$tmp"
+  [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
+  command rm -f -- "$tmp"
+}
+
+export FZF_CTRL_T_COMMAND='fd --hidden --follow --exclude .git --type f --type d .'
+export FZF_ALT_C_COMMAND='fd --hidden --follow --exclude .git --type d .'
+
+_fzf_compgen_path() {
+  fd --hidden --follow --exclude .git . "$1"
+}
+
+_fzf_compgen_dir() {
+  fd --hidden --follow --exclude .git --type d . "$1"
+}
+
+kill-by-fzf() {
+  kill $(ps -u "$USER" -o pid,comm | fzf | awk '{print $1}')
+}

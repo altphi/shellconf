@@ -10,8 +10,8 @@
     };
 
     opts = {
-      number = false;
-      relativenumber = false;
+      number = true;
+      relativenumber = true;
       tabstop = 2;
       shiftwidth = 2;
       expandtab = true;
@@ -38,7 +38,7 @@
       sidescrolloff = 5;
       foldmethod = "expr";
       foldlevel = 99;
-      foldlevelstart = 1;
+      foldlevelstart = 99;
       updatetime = 300;
       undofile = true;
       swapfile = true;
@@ -74,6 +74,14 @@
     };
 
     keymaps = [
+      {
+        key = "<F1>";
+        action = "<Nop>";
+        mode = [ "n" "i" "v" "x" "s" "o" "c" ];
+        options = {
+          silent = true;
+        };
+      }
       {
         mode = "n";
         key = "<C-s>";
