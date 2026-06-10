@@ -142,12 +142,12 @@ alias nr="npm run"
 alias ct="cargo test"
 
 
-vif() {
+v() {
   local file
   file=$(rg --files --hidden --glob '!.git' | fzf --exact --select-1 --query="${1:-}") || return
   [[ -n "$file" ]] && nvim "$file"
 }
-vig() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --exact --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}" }
+vg() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --exact --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}" }
 
 symbols() {
   less $(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose

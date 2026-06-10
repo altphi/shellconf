@@ -678,7 +678,8 @@ telescope.load_extension("file_browser")
 telescope.load_extension("ast_grep")
 
 vim.keymap.set("n", "<leader>ee", ":Telescope file_browser<CR>", { desc = "File browser with preview" })
-vim.keymap.set("n", "<leader>ef", ":Telescope file_browser path=%:p:h select_buffer=true<CR>", { desc = "File browser focusing current file" })
+vim.keymap.set("n", "<leader>ef", ":Telescope file_browser path=%:p:h select_buffer=true<CR>",
+  { desc = "File browser focusing current file" })
 vim.api.nvim_create_user_command("E", "Telescope file_browser path=%:p:h select_buffer=true", {})
 vim.api.nvim_create_user_command("Explore", "Telescope file_browser path=%:p:h select_buffer=true", {})
 
@@ -767,9 +768,9 @@ vim.g.bullets_checkbox_markers = " ~x"
 vim.g.bullets_outline_levels = { "std-", "std*", "std+", "num", "rom", "abc", "ROM" }
 vim.g.bullets_set_mappings = 0
 vim.g.bullets_custom_mappings = {
-  { "imap", "<CR>", "<Plug>(bullets-newline)" },
+  { "imap",     "<CR>",   "<Plug>(bullets-newline)" },
   { "inoremap", "<C-CR>", "<CR>" },
-  { "nmap", "o", "<Plug>(bullets-newline)" },
+  { "nmap",     "o",      "<Plug>(bullets-newline)" },
 }
 local function open_vault_file(name)
   local obsidian_state = rawget(_G, "Obsidian")
@@ -794,7 +795,7 @@ require("obsidian").setup({
   },
   workspaces = {
     { name = "personal", path = "~/vaults/sdb" },
-    { name = "work", path = "~/vaults/clt" },
+    { name = "work",     path = "~/vaults/clt" },
   },
   daily_notes = {
     folder = "dailies",
@@ -969,9 +970,11 @@ require("trouble").setup({
   use_diagnostic_signs = true,
 })
 vim.keymap.set("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Trouble: Workspace Diagnostics" })
-vim.keymap.set("n", "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>", { desc = "Trouble: Buffer Diagnostics" })
+vim.keymap.set("n", "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>",
+  { desc = "Trouble: Buffer Diagnostics" })
 vim.keymap.set("n", "<leader>xs", "<cmd>Trouble symbols toggle focus=false<CR>", { desc = "Trouble: Symbols (LSP)" })
-vim.keymap.set("n", "<leader>xl", "<cmd>Trouble lsp toggle focus=false win.position=right<CR>", { desc = "Trouble: LSP Definitions / References" })
+vim.keymap.set("n", "<leader>xl", "<cmd>Trouble lsp toggle focus=false win.position=right<CR>",
+  { desc = "Trouble: LSP Definitions / References" })
 vim.keymap.set("n", "<leader>xq", "<cmd>Trouble qflist toggle<CR>", { desc = "Trouble: Quickfix List" })
 vim.keymap.set("n", "<leader>xL", "<cmd>Trouble loclist toggle<CR>", { desc = "Trouble: Location List" })
 
@@ -1153,7 +1156,8 @@ vim.api.nvim_create_autocmd("FileType", {
       local entries = {}
       for line in handle:lines() do
         local pid, cmdline = line:match("^(%d+)%s+(.*)$")
-        local is_binary = pid and (cmdline:find("target/debug/" .. name, 1, true) or cmdline:find("target/release/" .. name, 1, true))
+        local is_binary = pid and
+        (cmdline:find("target/debug/" .. name, 1, true) or cmdline:find("target/release/" .. name, 1, true))
         local is_cargo = pid and (cmdline:match("^cargo%s") or cmdline:find("/cargo ", 1, true))
         if is_binary or is_cargo then
           table.insert(entries, { pid = pid, cmdline = cmdline })
@@ -1368,7 +1372,7 @@ do
   local todo_status = "%{%v:lua.nvim_todo_statusline()%}"
   local combined_status = "%{%v:lua.nvim_todo_diagnostic_statusline()%}"
   local diagnostic_expr =
-    "luaeval('(package.loaded[''vim.diagnostic''] and next(vim.diagnostic.count()) and vim.diagnostic.status() .. '' '') or '''' ')"
+  "luaeval('(package.loaded[''vim.diagnostic''] and next(vim.diagnostic.count()) and vim.diagnostic.status() .. '' '') or '''' ')"
   local diagnostic_status = "%{% " .. diagnostic_expr .. " %}"
   local broken_diagnostic_status = "{ " .. diagnostic_expr .. " }"
   local broken_todo_status = "{ v:lua.nvim_todo_statusline() }"
@@ -1397,3 +1401,8 @@ do
     end
   end
 end
+
+-- misc keymaps (this whole file needs organizing)
+vim.keymap.set("n", "<leader>yf", function()
+  vim.fn.setreg("+", vim.fn.expand("%:p"))
+end)

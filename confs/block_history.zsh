@@ -8,6 +8,8 @@ typeset -ga HISTORY_BLOCK_COMMANDS_LIST=(
   "kubectl apply"
   exit
   rg
+  v
+  vg
 )
 
 typeset -ga HISTORY_BLOCK_TOKENS_LIST=(

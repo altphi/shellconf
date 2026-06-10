@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # switch tmux panes by process name with fuzzel, create new session if none found
 
-selection=$(tmux list-panes -a -F '#S:#I.#P #{pane_current_command}' | fuzzel --dmenu)
+selection=$(tmux list-panes -a -F '#S:#I.#{P} #{pane_current_command}' | fuzzel --dmenu)
 
 [ -z "$selection" ] && exit 0
 
