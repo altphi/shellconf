@@ -574,6 +574,40 @@ y() {
 
 export FZF_CTRL_T_COMMAND='fd --hidden --follow --exclude .git --type f --type d .'
 export FZF_ALT_C_COMMAND='fd --hidden --follow --exclude .git --type d .'
+typeset -g FZF_COMMANDS_FILE="${FZF_COMMANDS_FILE:-$HOME/.fzf_commands}"
+
+_fzf_whitelisted_command() {
+  emulate -L zsh
+
+  if [[ ! -r "$FZF_COMMANDS_FILE" ]]; then
+    zle -M "missing command list: $FZF_COMMANDS_FILE"
+    return 0
+  fi
+
+  local commands selected
+  commands=$(awk 'NF && $1 !~ /^#/ { print }' "$FZF_COMMANDS_FILE")
+  if [[ -z "$commands" ]]; then
+    zle -M "empty command list: $FZF_COMMANDS_FILE"
+    return 0
+  fi
+
+  zle -I
+  selected=$(print -r -- "$commands" | fzf --height=40% --reverse --query="$BUFFER" --prompt='cmd> ') || {
+    zle reset-prompt
+    return 0
+  }
+
+  [[ -z "$selected" ]] && {
+    zle reset-prompt
+    return 0
+  }
+
+  BUFFER="$selected"
+  CURSOR=${#BUFFER}
+  zle reset-prompt
+}
+zle -N _fzf_whitelisted_command
+bindkey "^F" _fzf_whitelisted_command
 
 _fzf_compgen_path() {
   fd --hidden --follow --exclude .git . "$1"

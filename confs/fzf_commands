@@ -1,0 +1,5 @@
+# Hand-edit this file; Ctrl-F in zsh fuzzy-selects from these commands.
+# Blank lines and comments are ignored.
+# One command per line.
+switch-home
+switch-sys

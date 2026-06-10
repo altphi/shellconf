@@ -6,6 +6,8 @@ typeset -ga HISTORY_BLOCK_COMMANDS_LIST=(
   yazi
   airpods.sh
   "kubectl apply"
+  exit
+  rg
 )
 
 typeset -ga HISTORY_BLOCK_TOKENS_LIST=(
