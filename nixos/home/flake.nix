@@ -67,7 +67,7 @@
       modules = [
         nix-index-database.homeModules.default
         nixvim.homeModules.nixvim
-        ./nixvim/main.nix
+        ./nixvim.nix
         {
           home.username = "stephen";
           home.homeDirectory = "/home/stephen";
