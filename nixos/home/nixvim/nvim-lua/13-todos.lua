@@ -149,7 +149,7 @@ do
   local todo_status = "%{%v:lua.nvim_todo_statusline()%}"
   local combined_status = "%{%v:lua.nvim_todo_diagnostic_statusline()%}"
   local diagnostic_expr =
-    "luaeval('(package.loaded[''vim.diagnostic''] and next(vim.diagnostic.count()) and vim.diagnostic.status() .. '' '') or '''' ')"
+  "luaeval('(package.loaded[''vim.diagnostic''] and next(vim.diagnostic.count()) and vim.diagnostic.status() .. '' '') or '''' ')"
   local diagnostic_status = "%{% " .. diagnostic_expr .. " %}"
   local broken_diagnostic_status = "{ " .. diagnostic_expr .. " }"
   local broken_todo_status = "{ v:lua.nvim_todo_statusline() }"

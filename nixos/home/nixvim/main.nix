@@ -5,6 +5,10 @@ let
     vim.g.nixvim_js_debug_adapter = "${pkgs.vscode-js-debug}/bin/js-debug"
     vim.g.nixvim_php_debug_adapter = "${pkgs.vscode-extensions.xdebug.php-debug}/share/vscode/extensions/xdebug.php-debug/out/phpDebug.js"
   '';
+  disableSyntaxAfterFtplugin = ''
+    pcall(vim.treesitter.stop)
+    vim.bo.syntax = "OFF"
+  '';
   treesitter = pkgs.vimPlugins.nvim-treesitter.withPlugins (p: with p; [
     bash
     # zsh DO NOT USE because big memory leak
@@ -94,6 +98,16 @@ in
       trouble-nvim
       vim-tmux-navigator
     ];
+
+    extraFiles = {
+      "after/ftplugin/help.lua".text = disableSyntaxAfterFtplugin;
+      "after/ftplugin/lua.lua".text = disableSyntaxAfterFtplugin;
+      "after/ftplugin/markdown.lua".text = disableSyntaxAfterFtplugin;
+      "after/ftplugin/query.lua".text = disableSyntaxAfterFtplugin;
+      "after/indent/lua.lua".text = ''
+        vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      '';
+    };
 
     extraConfigLua = builtins.concatStringsSep "\n" [
       debugAdapterPaths

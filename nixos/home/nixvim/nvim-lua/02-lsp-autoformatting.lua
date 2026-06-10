@@ -267,14 +267,28 @@ vim.api.nvim_create_autocmd("BufWritePre", {
       return
     end
 
-    local formatted = vim.fn.systemlist(
-      { "beautysh", "--indent-size", "2", "-" },
-      vim.api.nvim_buf_get_lines(ev.buf, 0, -1, false)
-    )
-    if vim.v.shell_error == 0 then
+    local lines = vim.api.nvim_buf_get_lines(ev.buf, 0, -1, false)
+    local stdin = table.concat(lines, "\n")
+    if vim.bo[ev.buf].endofline then
+      stdin = stdin .. "\n"
+    end
+
+    local result = vim.system({ "beautysh", "--indent-size", "2", "-" }, { stdin = stdin, text = true }):wait()
+    if result.code == 0 then
+      local formatted = vim.split(result.stdout or "", "\n", { plain = true })
+      if (result.stdout or ""):sub(-1) == "\n" then
+        table.remove(formatted)
+      end
       vim.api.nvim_buf_set_lines(ev.buf, 0, -1, false, formatted)
     else
-      vim.notify(table.concat(formatted, "\n"), vim.log.levels.ERROR, { title = "beautysh" })
+      local message = vim.trim(result.stderr or "")
+      message = message:match("[^\n]+") or message
+      if message == "" then
+        message = ("beautysh failed with exit code %s"):format(result.code)
+      elseif #message > 240 then
+        message = message:sub(1, 240) .. "..."
+      end
+      vim.notify(message, vim.log.levels.ERROR, { title = "beautysh" })
     end
   end,
 })

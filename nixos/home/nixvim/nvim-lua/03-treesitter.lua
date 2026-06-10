@@ -1,11 +1,12 @@
 require("nvim-treesitter").setup({
   install_dir = vim.fn.stdpath("data") .. "/site",
+  highlight = { enable = false, },
 })
 
 vim.api.nvim_create_autocmd("FileType", {
   callback = function(ev)
-    local ok = pcall(vim.treesitter.start, ev.buf)
-    if not ok then
+    local parser = vim.treesitter.get_parser(ev.buf)
+    if not parser then
       return
     end
 

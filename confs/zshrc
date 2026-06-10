@@ -23,6 +23,7 @@ R_PROFILE_USER="$HOME/.Rprofile"
 setopt AUTO_CD
 setopt CDABLE_VARS
 
+source ~/.block_history.zsh
 HISTFILE=~/.zsh_history
 HISTSIZE=50000
 SAVEHIST=40000
@@ -413,18 +414,6 @@ else
   PS1='${_p_lead}$(_p_topline)'$'\n''${_p_vimode}${_p_jobs}%(?.%%.%F{red}%%%f) '
   RPROMPT='${_p_exit}'
 fi
-
-# prevent dangerous commands from entering history
-zshaddhistory() {
-  local line=${1%%$'\n'}
-  if [[ $line =~ "NODE_ENV=production" ]]; then
-    return 1
-  fi
-  if [[ $line =~ "kubectl apply -f .*\bproduction\b.*" ]]; then
-    return 1
-  fi
-  return 0
-}
 
 shuffle() {
   awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8-

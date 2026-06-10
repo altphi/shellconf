@@ -47,6 +47,7 @@
       hlsearch = true;
       modeline = false;
       modelines = 0;
+      syntax = "OFF";
     };
 
     highlight.ExtraWhitespace = {
