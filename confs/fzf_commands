@@ -3,3 +3,4 @@ switch-sys
 ghostty +list-themes
 docker compose --profile all up
 docker compose --profile all --profile elgato up
+niri-flatten-workspaces.sh

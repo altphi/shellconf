@@ -417,15 +417,6 @@ ghpr-list() {
 
 _jj_prompt() {
   local info upstream_status output nearest distance
-
-  # Single jj call: walk from nearest bookmark ancestor up to @.
-  # Bookmark commit renders its name (with "*" suffix if ahead of remote);
-  # intermediate commits render "·" so we can count lines reliably.
-  # latest(..., 1) keeps it deterministic when multiple bookmarks sit at the
-  # same DAG level on parallel branches. Include remote_bookmarks so we land
-  # on an untracked remote tip (e.g. foo@origin) rather than walking past it
-  # to an older local bookmark; filter "@git" since it's just a mirror of the
-  # colocated repo's refs.
   output=$(jj log -r 'latest(::@ & (bookmarks() | remote_bookmarks()), 1)::@' \
       --no-graph --ignore-working-copy --reversed \
     -T 'coalesce(local_bookmarks, remote_bookmarks.filter(|b| b.remote() != "git"), "·") ++ "\n"' 2>/dev/null) || return
