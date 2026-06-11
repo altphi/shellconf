@@ -11,7 +11,6 @@ export MANPAGER="nvim +Man!"
 readonly SYSTYPE=$OSTYPE
 PATH="$HOME/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 CLASSPATH="${HOME}/bin/jars/algs4.jar:."
-AWS_PROFILE="CLT-Main"
 GITHUB_DEFAULT_ORG="classiclearning"
 PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 
