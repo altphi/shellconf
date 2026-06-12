@@ -23,7 +23,8 @@ _jl_template() {
 TEMPLATE
 }
 
-alias jd="jj desc"
+alias jd=" jj desc"
+alias jsh=" jj show"
 
 unalias j 2>/dev/null
 j() {
@@ -52,6 +53,7 @@ jbl() {
     )
   ' "$@" | awk 'NF'
 }
+
 alias jbl-untracking=" comm -23  <(jj bookmark list -T 'name ++ \"\n\"' | sort -u)  <(jj bookmark list --tracked -T 'name ++ \"\n\"' | sort -u)"
 alias js=" jj st"
 alias jl-unmerged=" jj log -r 'mine() & ~::trunk()'"
