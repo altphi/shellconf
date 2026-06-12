@@ -91,7 +91,7 @@ vim.keymap.set("n", "\\wb", function()
 end, { desc = "Create new timestamped file" })
 vim.keymap.set("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor line" })
 
-vim.o.laststatus = 0
+vim.o.laststatus = 1
 vim.keymap.set("n", "<leader>e", function()
   vim.o.laststatus = vim.o.laststatus == 0 and 2 or 0
 end, { desc = "Toggle status line" })
@@ -1157,7 +1157,7 @@ vim.api.nvim_create_autocmd("FileType", {
       for line in handle:lines() do
         local pid, cmdline = line:match("^(%d+)%s+(.*)$")
         local is_binary = pid and
-        (cmdline:find("target/debug/" .. name, 1, true) or cmdline:find("target/release/" .. name, 1, true))
+            (cmdline:find("target/debug/" .. name, 1, true) or cmdline:find("target/release/" .. name, 1, true))
         local is_cargo = pid and (cmdline:match("^cargo%s") or cmdline:find("/cargo ", 1, true))
         if is_binary or is_cargo then
           table.insert(entries, { pid = pid, cmdline = cmdline })

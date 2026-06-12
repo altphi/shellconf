@@ -147,6 +147,7 @@
             ripgrep
             rpi-imager
             rustlings
+            shfmt
             slack
             signal-desktop
             slurp
