@@ -13,7 +13,7 @@ _jl_template() {
           working_copies,
           if(conflict, label("conflict", "conflict")),
           if(empty, label("empty", "(empty)")),
-        ) ++ "\n" ++
+        ) ++ " " ++
         if(description,
           label("log_description", description.first_line()),
           label("description placeholder", "(no description set)")
@@ -28,11 +28,11 @@ alias jd="jj desc"
 unalias jl 2>/dev/null
 jl() {
   local revset='fork_point(@ | trunk())::@'
-  if [[ $# -gt 0 && "$1" != -* ]]; then
-    revset="$1"
-    shift
+  if [[ $# -eq 0 ]]; then
+    jj log -r "$revset" -T "$(_jl_template)"
+  else
+    jj log -T "$(_jl_template)" "$@"
   fi
-  jj log -r "$revset" -T "$(_jl_template)" "$@"
 }
 alias jlf=" jl --summary"
 unalias jll 2>/dev/null
