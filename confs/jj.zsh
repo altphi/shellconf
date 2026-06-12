@@ -25,24 +25,16 @@ TEMPLATE
 
 alias jd="jj desc"
 
-unalias jl 2>/dev/null
-jl() {
-  local revset='fork_point(@ | trunk())::@'
-  if [[ $# -eq 0 ]]; then
-    jj log -r "$revset" -T "$(_jl_template)"
-  else
-    jj log -T "$(_jl_template)" "$@"
-  fi
-}
-alias jlf=" jl --summary"
-unalias jll 2>/dev/null
-jll() {
+unalias j 2>/dev/null
+j() {
+  # local revset='fork_point(@ | trunk())::@'
+  # jj log -r "$revset" -T "$(_jl_template)" "$@"
   jj log -T "$(_jl_template)" "$@"
 }
-alias jllf=" jll --summary"
-alias jlll=" jl 'all()'"
-alias jlllf=" jlll --summary"
+compdef '_as_if jj log' j
+
 alias je=' jj edit'
+
 unalias jbl 2>/dev/null
 jbl() {
   jj --color=always bookmark list -a -T '
@@ -96,7 +88,7 @@ jj-abandon-unowned-orphan-revs() {
 jj-abandon-revs-for-untracking-bookmark() {
   local b="${1:?bookmark name required}"
 
-  if jj bookmark list --tracked | grep -q "$b" ; then
+  if jj bookmark list --tracked | grep -q "$b"; then
     echo "bookmark $b is tracked."
     return 1
   fi
@@ -233,9 +225,9 @@ ghpr-create() {
 
   local refs
   refs=$({
-      echo "$descriptions" \
-        | grep -oE '[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[0-9]+'
-      [[ -n "$issue_ref" ]] && echo "$issue_ref"
+    echo "$descriptions" |
+      grep -oE '[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#[0-9]+'
+    [[ -n "$issue_ref" ]] && echo "$issue_ref"
   } | sort -u)
 
   local tmpfile
@@ -254,11 +246,14 @@ ghpr-create() {
     echo "#"
     echo "# Commits in this branch:"
     jj log -r "$revset" --no-graph \
-      -T 'commit_id.shortest(8) ++ " " ++ description.first_line() ++ "\n"' 2>/dev/null \
-      | sed 's/^/# /'
-  } > "$tmpfile"
+      -T 'commit_id.shortest(8) ++ " " ++ description.first_line() ++ "\n"' 2>/dev/null |
+      sed 's/^/# /'
+  } >"$tmpfile"
 
-  "${EDITOR:-vi}" "$tmpfile" || { rm -f "$tmpfile"; return 1; }
+  "${EDITOR:-vi}" "$tmpfile" || {
+    rm -f "$tmpfile"
+    return 1
+  }
 
   local title body
   title=$(awk '!/^#/ && NF { print; exit }' "$tmpfile")
@@ -303,7 +298,7 @@ ghpr-merge() {
 
   local pr_info
   pr_info=$(gh pr list --state open --head "$bookmark" \
-      --json number,title,reviewDecision,mergeable,mergeStateStatus,isDraft \
+    --json number,title,reviewDecision,mergeable,mergeStateStatus,isDraft \
     --jq '.[0]') || return 1
 
   if [[ -z "$pr_info" || "$pr_info" == "null" ]]; then
@@ -338,20 +333,20 @@ ghpr-merge() {
     return 1
   fi
   case "$state" in
-    CLEAN|UNSTABLE|HAS_HOOKS) ;;
-    *)
-      echo "error: PR merge state is '$state' (need CLEAN/UNSTABLE/HAS_HOOKS)" >&2
-      return 1
-      ;;
+  CLEAN | UNSTABLE | HAS_HOOKS) ;;
+  *)
+    echo "error: PR merge state is '$state' (need CLEAN/UNSTABLE/HAS_HOOKS)" >&2
+    return 1
+    ;;
   esac
 
   case "$method" in
-    --squash|--merge)
-      gh pr merge "$number" "$method" --subject "$title" || return 1
-      ;;
-    *)
-      gh pr merge "$number" "$method" || return 1
-      ;;
+  --squash | --merge)
+    gh pr merge "$number" "$method" --subject "$title" || return 1
+    ;;
+  *)
+    gh pr merge "$number" "$method" || return 1
+    ;;
   esac
   gh api --silent -X DELETE "repos/{owner}/{repo}/git/refs/heads/$bookmark"
 }
@@ -383,7 +378,7 @@ ghpr-list() {
   local bookmarks prs
   bookmarks=$(jj bookmark list --tracked -T 'name ++ "\n"' 2>/dev/null | sort -u) || return 1
   prs=$(gh pr list --author @me --state open \
-      --json number,title,headRefName,baseRefName \
+    --json number,title,headRefName,baseRefName \
     --jq '.[] | [.headRefName, .number, .baseRefName, .title] | @tsv') || return 1
 
   echo "─ tracked bookmarks ─"
@@ -400,7 +395,7 @@ ghpr-list() {
     else
       printf '%s\t—\n' "$b"
     fi
-  done <<< "$bookmarks" | column -t -s$'\t'
+  done <<<"$bookmarks" | column -t -s$'\t'
 
   local orphans
   orphans=$(echo "$prs" | awk -F'\t' -v bm="$bookmarks" '
@@ -410,15 +405,15 @@ ghpr-list() {
   if [[ -n "$orphans" ]]; then
     echo
     echo "─ open PRs without a tracked bookmark ─"
-    echo "$orphans" | awk -F'\t' '{ printf "#%s\t%s\t→ %s\t%s\n", $2, $1, $3, $4 }' \
-      | column -t -s$'\t'
+    echo "$orphans" | awk -F'\t' '{ printf "#%s\t%s\t→ %s\t%s\n", $2, $1, $3, $4 }' |
+      column -t -s$'\t'
   fi
 }
 
 _jj_prompt() {
   local info upstream_status output nearest distance divergent_status
   output=$(jj log -r 'latest(::@ & (bookmarks() | remote_bookmarks()), 1)::@' \
-      --no-graph --ignore-working-copy --reversed \
+    --no-graph --ignore-working-copy --reversed \
     -T 'coalesce(local_bookmarks, remote_bookmarks.filter(|b| b.remote() != "git"), "·") ++ "\n"' 2>/dev/null) || return
 
   if [ -n "$output" ]; then
@@ -426,8 +421,11 @@ _jj_prompt() {
     distance=$((${#lines} - 1))
     nearest="${lines[1]}"
     case "$nearest" in
-      *\*) upstream_status=" ↑"; nearest="${nearest%\*}" ;;
-      *)   upstream_status="" ;;
+    *\*)
+      upstream_status=" ↑"
+      nearest="${nearest%\*}"
+      ;;
+    *) upstream_status="" ;;
     esac
     if [ "$distance" -eq 0 ]; then
       info="$nearest"
@@ -437,13 +435,13 @@ _jj_prompt() {
   else
     # No bookmark ancestor; show change_id + state indicators
     info=$(jj log -r @ --no-graph --ignore-working-copy \
-        -T 'change_id.shortest() ++ if(empty, " ∅") ++ if(conflict, " ⚠") ++ if(divergent, " ⑂")' \
+      -T 'change_id.shortest() ++ if(empty, " ∅") ++ if(conflict, " ⚠") ++ if(divergent, " ⑂")' \
       2>/dev/null) || return
     upstream_status=""
   fi
 
   if [[ -n "$(jj log -r 'divergent()' --no-graph --ignore-working-copy --limit 1 \
-      -T 'change_id.shortest()' 2>/dev/null)" ]]; then
+    -T 'change_id.shortest()' 2>/dev/null)" ]]; then
     divergent_status=" %F{red}divergent%f"
   else
     divergent_status=""
