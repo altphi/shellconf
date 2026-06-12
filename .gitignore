@@ -11,3 +11,5 @@ misc/backgrounds/
 pr-reviews/
 confs/nvim/lazy-lock.json
 .luarc.json
+nixos/home/result*
+nixos/sys/result*

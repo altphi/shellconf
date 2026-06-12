@@ -77,9 +77,6 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "InsertLeave" }, {
   end,
 })
 
-vim.api.nvim_create_user_command("DeleteFile", delete_current_file, {
-  desc = "Delete the file for the current buffer",
-})
 vim.keymap.set("n", "<leader>ll", toggle_line_numbers, { desc = "Toggle line numbers" })
 vim.keymap.set("n", "\\wb", function()
   local folder = vim.fn.expand("~/code/blog/posts")
@@ -91,7 +88,7 @@ vim.keymap.set("n", "\\wb", function()
 end, { desc = "Create new timestamped file" })
 vim.keymap.set("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor line" })
 
-vim.o.laststatus = 1
+vim.o.laststatus = 2
 vim.keymap.set("n", "<leader>e", function()
   vim.o.laststatus = vim.o.laststatus == 0 and 2 or 0
 end, { desc = "Toggle status line" })
@@ -231,8 +228,12 @@ vim.lsp.config("lua_ls", {
       runtime = { version = "LuaJIT" },
       diagnostics = { globals = { "vim" } },
       workspace = {
-        library = vim.api.nvim_get_runtime_file("", true),
         checkThirdParty = false,
+        ignoreDir = {
+          "result",
+          "nixos/home/result",
+          "nixos/sys/result",
+        },
       },
       telemetry = { enable = false },
     },
@@ -624,6 +625,10 @@ end, "Previous class end")
 
 vim.keymap.set({ "n", "x", "o" }, ";", ts_repeat_move.repeat_last_move_next)
 vim.keymap.set({ "n", "x", "o" }, ",", ts_repeat_move.repeat_last_move_previous)
+vim.keymap.set({ "n", "x", "o" }, "f", ts_repeat_move.builtin_f_expr, { expr = true })
+vim.keymap.set({ "n", "x", "o" }, "F", ts_repeat_move.builtin_F_expr, { expr = true })
+vim.keymap.set({ "n", "x", "o" }, "t", ts_repeat_move.builtin_t_expr, { expr = true })
+vim.keymap.set({ "n", "x", "o" }, "T", ts_repeat_move.builtin_T_expr, { expr = true })
 
 require("treesitter-context").setup({
   enable = true,
@@ -687,8 +692,6 @@ telescope.load_extension("ast_grep")
 vim.keymap.set("n", "<leader>ee", ":Telescope file_browser<CR>", { desc = "File browser with preview" })
 vim.keymap.set("n", "<leader>ef", ":Telescope file_browser path=%:p:h select_buffer=true<CR>",
   { desc = "File browser focusing current file" })
-vim.api.nvim_create_user_command("E", "Telescope file_browser path=%:p:h select_buffer=true", {})
-vim.api.nvim_create_user_command("Explore", "Telescope file_browser path=%:p:h select_buffer=true", {})
 
 local builtin = require("telescope.builtin")
 local make_entry = require("telescope.make_entry")
@@ -756,9 +759,10 @@ vim.keymap.set("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc =
 vim.keymap.set("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
 vim.keymap.set("n", "<leader>of", ":Telescope oldfiles only_cwd=true<CR>", { silent = true })
 vim.keymap.set("n", "<leader>dd", "<cmd>Telescope diagnostics<CR>", { desc = "Telescope: diagnostics" })
-vim.keymap.set("n", "<leader>rr", function()
+vim.keymap.set("n", "<leader>rf", function()
   builtin.lsp_references({ include_declaration = false, include_current_line = false })
 end, { desc = "Telescope: lsp_references (usages only)" })
+vim.keymap.set("n", "<leader>rr", builtin.registers, { desc = "Registers" })
 vim.keymap.set("n", "<leader>ic", builtin.lsp_incoming_calls, { desc = "Telescope: lsp_incoming_calls" })
 vim.keymap.set("n", "<leader>oc", builtin.lsp_outgoing_calls, { desc = "Telescope: lsp_outgoing_calls" })
 vim.keymap.set("n", "<leader>f", function()
@@ -1104,6 +1108,19 @@ require("gitsigns").setup({
 })
 
 require("grug-far").setup({})
+
+require("flash").setup({
+  event = "VeryLazy",
+  ---@type Flash.Config
+  opts = {},
+  keys = {
+    { "s",     mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "Flash" },
+    { "S",     mode = { "n", "x", "o" }, function() require("flash").treesitter() end,        desc = "Flash Treesitter" },
+    { "r",     mode = "o",               function() require("flash").remote() end,            desc = "Remote Flash" },
+    { "R",     mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+    { "<c-s>", mode = { "c" },           function() require("flash").toggle() end,            desc = "Toggle Flash Search" },
+  },
+})
 
 -- UI
 require("mini.surround").setup({
@@ -1456,7 +1473,40 @@ do
   end
 end
 
+-- from `:h registers` the Yank-ring: store yanked text in registers 1-9.
+vim.api.nvim_create_autocmd('TextYankPost', {
+  callback = function()
+    if vim.v.event.operator == 'y' then
+      for i = 9, 1, -1 do -- Shift all numbered registers.
+        vim.fn.setreg(tostring(i), vim.fn.getreg(tostring(i - 1)))
+      end
+    end
+  end,
+})
+
 -- misc keymaps (this whole file needs organizing)
 vim.keymap.set("n", "<leader>yf", function()
   vim.fn.setreg("+", vim.fn.expand("%:p"))
 end)
+vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
+vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
+vim.keymap.set("n", "J", "mzJ`z")
+vim.keymap.set("n", "n", "nzzzv")
+vim.keymap.set("n", "N", "Nzzzv")
+
+-- user commands
+vim.api.nvim_create_user_command("ClearRegisters", function()
+  local regs = [[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-"*+]]
+
+  for r in regs:gmatch(".") do
+    pcall(vim.fn.setreg, r, {})
+  end
+
+  vim.fn.setreg("/", "")
+  -- persist the cleared registers by calling wshada?
+  -- vim.cmd("wshada!");
+end, {})
+
+vim.api.nvim_create_user_command("DeleteFile", delete_current_file, {
+  desc = "Delete the file for the current buffer",
+})

@@ -76,12 +76,10 @@ zstyle ':completion:*' ignored-patterns \
   '*.swp' '*~'
 zstyle ':completion:*:users' users "$USER" root
 
-
 # complete SSH hosts
-if test -s "$HOME/.ssh/known_hosts"
-then
+if test -s "$HOME/.ssh/known_hosts"; then
   local _myhosts
-  _myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
+  _myhosts=(${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*})
   zstyle ':completion:*' hosts $_myhosts
 fi
 
@@ -102,7 +100,7 @@ alias l='ls -1'
 alias ll=' ls -lhGF'
 alias la=' ls -lahGF'
 # alias R='R --no-save'
-alias g=' ls -a | xargs grep --color=auto ';
+alias g=' ls -a | xargs grep --color=auto '
 alias ga=' git add'
 alias gc=' git checkout'
 alias gp=' git pull'
@@ -127,7 +125,7 @@ alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
 alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --load '
 alias c-niri='vi ~/.config/niri/config.kdl'
-alias c-nvim='cd ~/bin/nixos/home/ && vi'
+alias c-nvim='cd ~/bin/nixos/home/ && vi nixvim.lua'
 alias c-ghostty='vi ~/.config/ghostty/config'
 alias c-sys='vi ~/bin/nixos/sys/configuration.nix'
 alias c-home='vi ~/bin/nixos/home/flake.nix'
@@ -140,13 +138,12 @@ alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
 alias nr="npm run"
 alias ct="cargo test"
 
-
 v() {
   local file
   file=$(rg --files --hidden --glob '!.git' | fzf --exact --select-1 --query="${1:-}") || return
   [[ -n "$file" ]] && nvim "$file"
 }
-vg() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --exact --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}" }
+vg() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --exact --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}"; }
 
 symbols() {
   less $(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose
@@ -180,13 +177,13 @@ git_cleanup_branches() {
   echo "$gone_branches" | xargs git branch -D
 }
 
-docker-stop-rm-all () {
+docker-stop-rm-all() {
   docker rm -f $(docker ps -aq)
   docker network prune -f
   docker volume prune -f
 }
 
-docker-compose-rebuild-no-cache () {
+docker-compose-rebuild-no-cache() {
   if [ -z "$1" ]; then
     echo "Usage: docker-compose-rebuild-no-cache <all|service>"
     return 1
@@ -215,7 +212,7 @@ docker-compose-rebuild-no-cache () {
   fi
 }
 
-_ddc_brightness_bus () {
+_ddc_brightness_bus() {
   if [[ -n "$DDCUTIL_BRIGHTNESS_BUS" ]]; then
     echo "$DDCUTIL_BRIGHTNESS_BUS"
     return
@@ -232,7 +229,7 @@ _ddc_brightness_bus () {
   '
 }
 
-hdmi-brightness () {
+hdmi-brightness() {
   # arg 1 is a number between 1-100 for percent of full brightness
   local bus
   bus=$(_ddc_brightness_bus)
@@ -241,7 +238,7 @@ hdmi-brightness () {
   ddcutil --bus "$bus" setvcp 10 "$1"
 }
 
-brightness () {
+brightness() {
   if [[ -z "$1" ]]; then
     echo "Built-in: $(brightnessctl -m | awk -F, '{print $4}')"
     local bus
@@ -258,19 +255,19 @@ brightness () {
 }
 alias b=brightness
 
-jr () {
+jr() {
   javac *.java && java $@
 }
 
-rgrep () {
+rgrep() {
   grep -i --color=auto -r "$1" .
 }
 
-c () {
+c() {
   cd "$1" && ls
 }
 
-t () {
+t() {
   timer "$1" && notify-send -u critical "$2"
 }
 
@@ -319,7 +316,7 @@ bindkey "^G" send-break
 bindkey "^H" backward-delete-char
 bindkey "^I" expand-or-complete
 bindkey "^L" clear-screen
-_p_clear_scrollback() { print -n $'\e[3J' }
+_p_clear_scrollback() { print -n $'\e[3J'; }
 zle -N _p_clear_scrollback
 bindkey "^K" _p_clear_scrollback
 bindkey "^P" up-line-or-history
@@ -327,19 +324,20 @@ bindkey "^R" history-incremental-search-backward
 bindkey "^Y" yank
 bindkey "^[/" _history-complete-older
 
-autoload -Uz edit-command-line; zle -N edit-command-line
+autoload -Uz edit-command-line
+zle -N edit-command-line
 bindkey "^X^E" edit-command-line
 
-autoload -Uz run-help;
+autoload -Uz run-help
 bindkey '^[H' run-help
 
 # watch logins/logouts to system
-watch=( notme )
+watch=(notme)
 WATCHFMT="%S%n@%m %a %l at %T on %W%s"
 LOGCHECK=0
 
 # prompt
-if [[ "$TERM" == "dumb" ]] ; then
+if [[ "$TERM" == "dumb" ]]; then
   PS1=$'\n\n%n@%m:%/ %%'
 else
   setopt prompt_subst
@@ -362,11 +360,11 @@ else
 
   # last command duration (>2s); populated by precmd hook
   _p_duration=''
-  _p_preexec_timer() { _p_cmd_start=$EPOCHREALTIME }
-  _p_precmd_timer()  {
+  _p_preexec_timer() { _p_cmd_start=$EPOCHREALTIME; }
+  _p_precmd_timer() {
     if [[ -n $_p_cmd_start ]]; then
-      local elapsed=$(( EPOCHREALTIME - _p_cmd_start ))
-      if (( elapsed > 2 )); then
+      local elapsed=$((EPOCHREALTIME - _p_cmd_start))
+      if ((elapsed > 2)); then
         _p_duration="%F{8}$(printf '%.1f' $elapsed)s%f "
       else
         _p_duration=''
@@ -375,14 +373,17 @@ else
     fi
   }
   add-zsh-hook preexec _p_preexec_timer
-  add-zsh-hook precmd  _p_precmd_timer
+  add-zsh-hook precmd _p_precmd_timer
 
   # ring bell when a command finishes, so tmux flags the window
   _p_cmd_ran=0
-  _p_bell_preexec() { _p_cmd_ran=1 }
-  _p_bell_precmd()  { (( _p_cmd_ran )) && print -n '\a'; _p_cmd_ran=0 }
+  _p_bell_preexec() { _p_cmd_ran=1; }
+  _p_bell_precmd() {
+    ((_p_cmd_ran)) && print -n '\a'
+    _p_cmd_ran=0
+  }
   add-zsh-hook preexec _p_bell_preexec
-  add-zsh-hook precmd  _p_bell_precmd
+  add-zsh-hook precmd _p_bell_precmd
   _p_vimode=''
   _p_time='%F{8}%*%f'
   _p_topline() {
@@ -397,16 +398,19 @@ else
     right_v="${(%)right}"
     left_v="${left_v//$'\e['[0-9;]#[a-zA-Z]/}"
     right_v="${right_v//$'\e['[0-9;]#[a-zA-Z]/}"
-    pad=$(( COLUMNS - ${#left_v} - ${#right_v} ))
-    (( pad < 1 )) && pad=1
+    pad=$((COLUMNS - ${#left_v} - ${#right_v}))
+    ((pad < 1)) && pad=1
     printf '%s%*s%s' "$left" $pad '' "$right"
   }
 
   # leading blank line is empty on new shell or after ^L
   _p_lead=''
-  _p_set_lead() { _p_lead=$'\n' }
+  _p_set_lead() { _p_lead=$'\n'; }
   add-zsh-hook preexec _p_set_lead
-  _p_clear_screen() { _p_lead=''; zle clear-screen }
+  _p_clear_screen() {
+    _p_lead=''
+    zle clear-screen
+  }
   zle -N _p_clear_screen
   bindkey "^L" _p_clear_screen
 
@@ -425,7 +429,7 @@ fname() {
     --glob '!node_modules' \
     --glob '!renv' \
     --glob '!build' |
-  grep -iF -- "$*"
+    grep -iF -- "$*"
 }
 
 # timer script, e.g. `t minutes title`
@@ -449,9 +453,19 @@ ksh() {
   local debug=0 image="nicolaka/netshoot"
   while [[ "$1" == -* ]]; do
     case "$1" in
-      -d) debug=1; shift ;;
-      -i) shift; image="$1"; shift ;;
-      *) echo "Usage: ksh [-d] [-i image] [query] [cmd]"; return 1 ;;
+    -d)
+      debug=1
+      shift
+      ;;
+    -i)
+      shift
+      image="$1"
+      shift
+      ;;
+    *)
+      echo "Usage: ksh [-d] [-i image] [query] [cmd]"
+      return 1
+      ;;
     esac
   done
   local pod ns cmd
@@ -459,7 +473,7 @@ ksh() {
   [[ -z "$pod" ]] && return 0
   ns=${pod#* }
   pod=${pod%% *}
-  if (( debug )); then
+  if ((debug)); then
     kubectl debug -it -n "$ns" "$pod" --profile=general --image="$image" -- "${2:-sh}"
   else
     kubectl exec -it -n "$ns" "$pod" -- "${2:-/bin/sh}"
@@ -487,16 +501,17 @@ _zoxide_cache="$ZSH_CACHE_DIR/zoxide_init"
 _fzf_cache="$ZSH_CACHE_DIR/fzf_integration"
 
 _load_cached() {
-  local cache="$1"; shift
-  [[ -s $cache ]] || "$@" > $cache 2>/dev/null
+  local cache="$1"
+  shift
+  [[ -s $cache ]] || "$@" >$cache 2>/dev/null
   [[ -s $cache ]] && source $cache
 }
 
 _load_cached "$_kubectl_cache" kubectl completion zsh
-_load_cached "$_jj_cache"      env COMPLETE=zsh jj
-_load_cached "$_direnv_cache"  direnv hook zsh
-_load_cached "$_zoxide_cache"  zoxide init zsh
-_load_cached "$_fzf_cache"  fzf --zsh
+_load_cached "$_jj_cache" env COMPLETE=zsh jj
+_load_cached "$_direnv_cache" direnv hook zsh
+_load_cached "$_zoxide_cache" zoxide init zsh
+_load_cached "$_fzf_cache" fzf --zsh
 
 unset -f _load_cached
 
@@ -543,7 +558,7 @@ _self_completing() {
   local script="${words[1]}"
   [[ -f "$script" ]] || script="$(command -v "$script" 2>/dev/null)"
   [[ -f "$script" ]] || return
-  local -a cmds=( ${(z)$("$script" --completions 2>/dev/null)} )
+  local -a cmds=(${(z)$("$script" --completions 2>/dev/null)})
   compadd -a cmds
 }
 
@@ -551,12 +566,12 @@ compdef _self_completing airpods.sh
 
 # make sure ctrl-d from zsh kills a tmux pane (tmux will keep unexpected failure-panes open for inspection)
 if [[ -n $TMUX && -o interactive ]]; then
-  TRAPEXIT() { exit 0 }
+  TRAPEXIT() { exit 0; }
 fi
 
 perlisism() {
-  local -a e=( "${(@f)$(<~/bin/misc/perlis_epigrams)}" )
-  (( $#e )) && print -r -- "${e[RANDOM%$#e+1]}"
+  local -a e=("${(@f)$(<~/bin/misc/perlis_epigrams)}")
+  (($#e)) && print -r -- "${e[RANDOM % $#e + 1]}"
 }
 
 if [[ $(pwd) == "$HOME" ]]; then
@@ -566,7 +581,7 @@ fi
 y() {
   local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
   command yazi "$@" --cwd-file="$tmp"
-  IFS= read -r -d '' cwd < "$tmp"
+  IFS= read -r -d '' cwd <"$tmp"
   [ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
   command rm -f -- "$tmp"
 }

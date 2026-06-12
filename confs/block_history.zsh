@@ -2,14 +2,10 @@ typeset -ga HISTORY_BLOCK_COMMANDS_LIST=(
   cd
   pushd
   popd
-  z
   yazi
   airpods.sh
   "kubectl apply"
   exit
-  rg
-  v
-  vg
 )
 
 typeset -ga HISTORY_BLOCK_TOKENS_LIST=(
@@ -47,7 +43,7 @@ history_should_block() {
   local x
 
   words=(${(z)line})
-  (( $#words == 0 )) && return 1
+  (($#words == 0)) && return 1
 
   [[ -n ${HISTORY_BLOCK_COMMANDS[$words[1]]} ]] && return 0
 

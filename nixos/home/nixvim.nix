@@ -165,11 +165,6 @@ in
         action = ":m '<-2<CR>gv=gv";
         options.desc = "Move selection up";
       }
-      {
-        mode = "x";
-        key = "<leader>s";
-        action = ":s/\\%V";
-      }
     ];
 
     # Packages
@@ -201,6 +196,7 @@ in
       cmp-nvim-lsp
       cmp-path
       cmp_luasnip
+      flash-nvim
       gitlinker-nvim
       gitsigns-nvim
       grug-far-nvim
