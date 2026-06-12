@@ -176,13 +176,13 @@ in
     extraPackages = with pkgs; [
       akkuPackages.scheme-langserver
       ast-grep
-      beautysh
       fd
       gh
       git
       lazygit
       lua-language-server
       nixd
+      shfmt
       vtsls
       vscode-langservers-extracted
       nodejs_24

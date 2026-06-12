@@ -530,7 +530,14 @@ vim.api.nvim_create_autocmd("BufWritePre", {
       stdin = stdin .. "\n"
     end
 
-    local result = vim.system({ "beautysh", "--indent-size", "2", "-" }, { stdin = stdin, text = true }):wait()
+    local ok, result = pcall(function()
+      return vim.system({ "shfmt", "-ln", "zsh", "-i", "2", "-" }, { stdin = stdin, text = true }):wait()
+    end)
+    if not ok then
+      vim.notify_once(("shfmt failed to start: %s"):format(result), vim.log.levels.WARN, { title = "shfmt" })
+      return
+    end
+
     if result.code == 0 then
       local formatted = vim.split(result.stdout or "", "\n", { plain = true })
       if (result.stdout or ""):sub(-1) == "\n" then
@@ -541,11 +548,11 @@ vim.api.nvim_create_autocmd("BufWritePre", {
       local message = vim.trim(result.stderr or "")
       message = message:match("[^\n]+") or message
       if message == "" then
-        message = ("beautysh failed with exit code %s"):format(result.code)
+        message = ("shfmt failed with exit code %s"):format(result.code)
       elseif #message > 240 then
         message = message:sub(1, 240) .. "..."
       end
-      vim.notify(message, vim.log.levels.ERROR, { title = "beautysh" })
+      vim.notify_once(message, vim.log.levels.WARN, { title = "shfmt" })
     end
   end,
 })
