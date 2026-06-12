@@ -691,6 +691,53 @@ vim.api.nvim_create_user_command("E", "Telescope file_browser path=%:p:h select_
 vim.api.nvim_create_user_command("Explore", "Telescope file_browser path=%:p:h select_buffer=true", {})
 
 local builtin = require("telescope.builtin")
+local make_entry = require("telescope.make_entry")
+
+local function is_rust_test_attribute(line)
+  return line:match("^#%s*%[%s*test%s*%]")
+      or line:match("^#%s*%[%s*[%w_]+::test")
+      or line:match("^#%s*%[%s*rstest")
+end
+
+local function rust_symbol_has_test_attribute(bufnr, lnum)
+  if vim.bo[bufnr].filetype ~= "rust" then
+    return false
+  end
+
+  local lines = vim.api.nvim_buf_get_lines(bufnr, math.max(0, lnum - 8), lnum - 1, false)
+  for i = #lines, 1, -1 do
+    local line = vim.trim(lines[i])
+    if line == "" then
+      return false
+    end
+    if line:match("^#%s*%[") then
+      if is_rust_test_attribute(line) then
+        return true
+      end
+    else
+      return false
+    end
+  end
+
+  return false
+end
+
+local function treesitter_symbols()
+  local opts = { bufnr = vim.api.nvim_get_current_buf(), show_line = true }
+  local base_entry_maker = make_entry.gen_from_treesitter(opts)
+
+  opts.entry_maker = function(raw_entry)
+    local entry = base_entry_maker(raw_entry)
+    if entry and rust_symbol_has_test_attribute(opts.bufnr, entry.lnum) then
+      entry.text = "[test] " .. entry.text
+      entry.ordinal = "[test] " .. entry.ordinal
+    end
+    return entry
+  end
+
+  builtin.treesitter(opts)
+end
+
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function(data)
     if vim.fn.isdirectory(data.file) == 1 then
@@ -704,7 +751,7 @@ vim.keymap.set("n", "<leader>g", builtin.live_grep, { desc = "Telescope: Live gr
 vim.keymap.set("n", "<leader>b", builtin.buffers, { desc = "Telescope: Buffers" })
 vim.keymap.set("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
 vim.keymap.set("n", "<leader>j", builtin.jumplist, { desc = "Telescope: Jumps" })
-vim.keymap.set("n", "<leader>s", builtin.treesitter, { desc = "Search Tree-sitter symbols" })
+vim.keymap.set("n", "<leader>s", treesitter_symbols, { desc = "Search Tree-sitter symbols" })
 vim.keymap.set("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
 vim.keymap.set("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
 vim.keymap.set("n", "<leader>of", ":Telescope oldfiles only_cwd=true<CR>", { silent = true })
