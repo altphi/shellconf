@@ -3,261 +3,261 @@
 local width = 120
 
 local snippets = {
-    { name = "today's date (YYYY-MM-DD)", cmd = "date +%Y-%m-%d" },
-    { name = "bash if-then (double brackets)", text = 'if [[ condition ]]; then\n    command\nfi' },
+  { name = "today's date (YYYY-MM-DD)",      cmd = "date +%Y-%m-%d" },
+  { name = "bash if-then (double brackets)", text = 'if [[ condition ]]; then\n    command\nfi' },
 }
 
 local function trim(s)
-    return s:gsub("^%s+", ""):gsub("%s+$", "")
+  return s:gsub("^%s+", ""):gsub("%s+$", "")
 end
 
 local function shell_quote(s)
-    return "'" .. s:gsub("'", "'\\''") .. "'"
+  return "'" .. s:gsub("'", "'\\''") .. "'"
 end
 
 local function url_encode_query(s)
-    s = s:gsub("\n", " ")
-    s = s:gsub("([^%w%-_%.~ ])", function(c)
-        return string.format("%%%02X", string.byte(c))
-    end)
-    return s:gsub(" ", "+")
+  s = s:gsub("\n", " ")
+  s = s:gsub("([^%w%-_%.~ ])", function(c)
+    return string.format("%%%02X", string.byte(c))
+  end)
+  return s:gsub(" ", "+")
 end
 
 local function command_succeeded(ok)
-    return ok == true or ok == 0
+  return ok == true or ok == 0
 end
 
 local function truncate(s, max_len)
-    if #s <= max_len then return s end
-    return s:sub(1, max_len - 3) .. "..."
+  if #s <= max_len then return s end
+  return s:sub(1, max_len - 3) .. "..."
 end
 
 local function notify(title, body)
-    os.execute("notify-send " .. shell_quote(title) .. " " .. shell_quote(truncate(body, 900)))
+  os.execute("notify-send " .. shell_quote(title) .. " " .. shell_quote(truncate(body, 900)))
 end
 
 local interactive_commands = {
-    btop = true,
-    info = true,
-    less = true,
-    man = true,
-    more = true,
-    nvim = true,
-    vi = true,
-    vim = true,
-    ssh = true,
-    sudo = true,
-    tmux = true,
-    watch = true,
-    pulsemixer = true,
+  btop = true,
+  info = true,
+  less = true,
+  man = true,
+  more = true,
+  nvim = true,
+  vi = true,
+  vim = true,
+  ssh = true,
+  sudo = true,
+  tmux = true,
+  watch = true,
+  pulsemixer = true,
 }
 
 local function first_word(command)
-    local s = trim(command)
-    while true do
-        local word = s:match("^(%S+)")
-        if not word then return "" end
-        if word == "command" or word == "exec" or word == "noglob" then
-            s = trim(s:sub(#word + 1))
-        elseif word:match("^[%w_]+=") then
-            s = trim(s:sub(#word + 1))
-        else
-            return word
-        end
+  local s = trim(command)
+  while true do
+    local word = s:match("^(%S+)")
+    if not word then return "" end
+    if word == "command" or word == "exec" or word == "noglob" then
+      s = trim(s:sub(#word + 1))
+    elseif word:match("^[%w_]+=") then
+      s = trim(s:sub(#word + 1))
+    else
+      return word
     end
+  end
 end
 
 local function needs_terminal(command)
-    local word = first_word(command)
-    local cmd = word:gsub("^%$%{?", ""):gsub("}?$", "")
-    if cmd == "EDITOR" or cmd == "VISUAL" then
-        cmd = os.getenv(cmd) or cmd
-    end
-    cmd = cmd:gsub(".*/", "")
-    if interactive_commands[cmd] then return true end
-    if command:match("%f[%w_%-]%-it%f[^%w_%-]") then return true end
+  local word = first_word(command)
+  local cmd = word:gsub("^%$%{?", ""):gsub("}?$", "")
+  if cmd == "EDITOR" or cmd == "VISUAL" then
+    cmd = os.getenv(cmd) or cmd
+  end
+  cmd = cmd:gsub(".*/", "")
+  if interactive_commands[cmd] then return true end
+  if command:match("%f[%w_%-]%-it%f[^%w_%-]") then return true end
 
-    return false
+  return false
 end
 
 local history_path = os.getenv("HOME") .. "/.cache/launcher_history"
 local history_limit = 10
 
 local function load_history()
-    local f = io.open(history_path, "r")
-    if not f then return {} end
-    local items = {}
-    for line in f:lines() do
-        if line ~= "" then table.insert(items, line) end
-    end
-    f:close()
-    return items
+  local f = io.open(history_path, "r")
+  if not f then return {} end
+  local items = {}
+  for line in f:lines() do
+    if line ~= "" then table.insert(items, line) end
+  end
+  f:close()
+  return items
 end
 
 local function save_history(entry)
-    local existing = load_history()
-    local deduped = { entry }
-    for _, v in ipairs(existing) do
-        if v ~= entry and #deduped < history_limit then
-            table.insert(deduped, v)
-        end
+  local existing = load_history()
+  local deduped = { entry }
+  for _, v in ipairs(existing) do
+    if v ~= entry and #deduped < history_limit then
+      table.insert(deduped, v)
     end
-    local f = io.open(history_path, "w")
-    if not f then return end
-    for _, v in ipairs(deduped) do
-        f:write(v, "\n")
-    end
-    f:close()
+  end
+  local f = io.open(history_path, "w")
+  if not f then return end
+  for _, v in ipairs(deduped) do
+    f:write(v, "\n")
+  end
+  f:close()
 end
 
 local function truncate_path(full_path, home)
-    local relative = full_path:gsub("^" .. home .. "/", "~/")
-    if relative == full_path then
-        return full_path, full_path
-    end
+  local relative = full_path:gsub("^" .. home .. "/", "~/")
+  if relative == full_path then
+    return full_path, full_path
+  end
 
-    local components = {}
-    for part in relative:gmatch("[^/]+") do
-        table.insert(components, part)
-    end
+  local components = {}
+  for part in relative:gmatch("[^/]+") do
+    table.insert(components, part)
+  end
 
-    if #components <= 2 then
-        return relative, full_path
-    end
+  if #components <= 2 then
+    return relative, full_path
+  end
 
-    local truncatedPath = components[1] .. "/" .. components[2] -- Keep ~ and top-level directory
-    for i = 3, #components - 2 do
-        truncatedPath = truncatedPath .. "/~" .. components[i]:sub(1, 1)
-    end
-    if #components >= 3 then
-        truncatedPath = truncatedPath .. "/" .. components[#components - 1] .. "/" .. components[#components]
-    end
+  local truncatedPath = components[1] .. "/" .. components[2]   -- Keep ~ and top-level directory
+  for i = 3, #components - 2 do
+    truncatedPath = truncatedPath .. "/~" .. components[i]:sub(1, 1)
+  end
+  if #components >= 3 then
+    truncatedPath = truncatedPath .. "/" .. components[#components - 1] .. "/" .. components[#components]
+  end
 
-    return truncatedPath, full_path
+  return truncatedPath, full_path
 end
 
 local function load_snippet_files()
-    local dir = os.getenv("HOME") .. "/bin/snippets"
-    local h = io.popen('ls -1 "' .. dir .. '" 2>/dev/null')
-    if h == nil then return {} end
-    local listing = h:read("*a")
-    h:close()
-    local file_snippets = {}
-    for filename in listing:gmatch("[^\n]+") do
-        local filepath = dir .. "/" .. filename
-        local f = io.open(filepath, "r")
-        if f then
-            local content = f:read("*a")
-            f:close()
-            -- Strip trailing newline
-            content = content:gsub("\n$", "")
-            local name = filename:gsub("%.[^.]+$", ""):gsub("[-_]", " ")
-            table.insert(file_snippets, { name = name, text = content })
-        end
+  local dir = os.getenv("HOME") .. "/bin/snippets"
+  local h = io.popen('ls -1 "' .. dir .. '" 2>/dev/null')
+  if h == nil then return {} end
+  local listing = h:read("*a")
+  h:close()
+  local file_snippets = {}
+  for filename in listing:gmatch("[^\n]+") do
+    local filepath = dir .. "/" .. filename
+    local f = io.open(filepath, "r")
+    if f then
+      local content = f:read("*a")
+      f:close()
+      -- Strip trailing newline
+      content = content:gsub("\n$", "")
+      local name = filename:gsub("%.[^.]+$", ""):gsub("[-_]", " ")
+      table.insert(file_snippets, { name = name, text = content })
     end
-    return file_snippets
+  end
+  return file_snippets
 end
 
 local function handle_snip(query)
-    local names = {}
-    local snip_map = {}
-    for _, s in ipairs(snippets) do
-        table.insert(names, s.name)
-        snip_map[s.name] = s
+  local names = {}
+  local snip_map = {}
+  for _, s in ipairs(snippets) do
+    table.insert(names, s.name)
+    snip_map[s.name] = s
+  end
+  for _, s in ipairs(load_snippet_files()) do
+    table.insert(names, s.name)
+    snip_map[s.name] = s
+  end
+  local snip_input = table.concat(names, "\\n")
+  local h = io.popen('printf "' .. snip_input .. '\\n" | fuzzel -w ' .. width .. ' --dmenu --prompt="snippet> "')
+  if h == nil then os.exit(1) end
+  local selected = trim(h:read("*a"))
+  h:close()
+  if selected ~= "" and snip_map[selected] then
+    local entry = snip_map[selected]
+    local result
+    if entry.cmd then
+      local c = io.popen(entry.cmd)
+      result = trim(c:read("*a"))
+      c:close()
+    else
+      result = entry.text
     end
-    for _, s in ipairs(load_snippet_files()) do
-        table.insert(names, s.name)
-        snip_map[s.name] = s
-    end
-    local snip_input = table.concat(names, "\\n")
-    local h = io.popen('printf "' .. snip_input .. '\\n" | fuzzel -w ' .. width .. ' --dmenu --prompt="snippet> "')
-    if h == nil then os.exit(1) end
-    local selected = trim(h:read("*a"))
-    h:close()
-    if selected ~= "" and snip_map[selected] then
-        local entry = snip_map[selected]
-        local result
-        if entry.cmd then
-            local c = io.popen(entry.cmd)
-            result = trim(c:read("*a"))
-            c:close()
-        else
-            result = entry.text
-        end
-        local copy = io.popen("wl-copy -t text/plain", "w")
-        copy:write(result)
-        copy:close()
-    end
+    local copy = io.popen("wl-copy -t text/plain", "w")
+    copy:write(result)
+    copy:close()
+  end
 end
 
 local function handle_emoji(query)
-    local emoji_path = os.getenv("HOME") .. "/bin/emoji.txt"
-    local search_flag = ""
-    if query ~= "" then
-        search_flag = ' --search="' .. query:gsub('"', '\\"') .. '"'
+  local emoji_path = os.getenv("HOME") .. "/bin/emoji.txt"
+  local search_flag = ""
+  if query ~= "" then
+    search_flag = ' --search="' .. query:gsub('"', '\\"') .. '"'
+  end
+  local cmd = 'fuzzel -w ' .. width .. ' --dmenu --prompt="emoji> "' .. search_flag .. ' < "' .. emoji_path .. '"'
+  local h = io.popen(cmd)
+  if h == nil then os.exit(1) end
+  local selected = trim(h:read("*a"))
+  h:close()
+  if selected ~= "" then
+    local emoji = selected:match("^([^\t]+)")
+    if emoji then
+      local copy = io.popen("wl-copy -n -t text/plain", "w")
+      copy:write(emoji)
+      copy:close()
     end
-    local cmd = 'fuzzel -w ' .. width .. ' --dmenu --prompt="emoji> "' .. search_flag .. ' < "' .. emoji_path .. '"'
-    local h = io.popen(cmd)
-    if h == nil then os.exit(1) end
-    local selected = trim(h:read("*a"))
-    h:close()
-    if selected ~= "" then
-        local emoji = selected:match("^([^\t]+)")
-        if emoji then
-            local copy = io.popen("wl-copy -n -t text/plain", "w")
-            copy:write(emoji)
-            copy:close()
-        end
-    end
+  end
 end
 
 local function handle_pdf(query)
-    local home = os.getenv("HOME")
-    local db = home .. "/.locate.db"
-    local grep_pattern = (query == "") and "." or query
-    local cmd = 'plocate -d "' .. db .. '" -r \'\\.pdf$\' | grep -i "' .. grep_pattern .. '"'
-    local h = io.popen(cmd)
-    if h == nil then
-        os.execute('notify-send "No PDFs found" "Query: ' .. query .. '"')
-        os.exit(1)
-    end
-    local pdfs = h:read("*a")
-    h:close()
-    if pdfs == "" then
-        os.execute('notify-send "No PDFs found" "Query: ' .. query .. '"')
-        os.exit(1)
-    end
-    local pdf_list = {}
-    local path_map = {}
-    for line in pdfs:gmatch("[^\n]+") do
-        local truncated, full_path = truncate_path(line, home)
-        table.insert(pdf_list, truncated)
-        path_map[truncated] = full_path
-    end
-    local pdf_string = table.concat(pdf_list, "\\n")
-    local echo_cmd = 'printf "' .. pdf_string .. '\\n" | fuzzel -w ' .. width .. ' --dmenu --prompt="Select PDF: "'
-    local handle_select = io.popen(echo_cmd)
-    if handle_select == nil then
-        os.execute('notify-send "No PDFs found" "Query: ' .. query .. '"')
-        os.execute('notify-send "command was "' .. cmd .. '"')
-        os.exit(1)
-    end
+  local home = os.getenv("HOME")
+  local db = home .. "/.locate.db"
+  local grep_pattern = (query == "") and "." or query
+  local cmd = 'plocate -d "' .. db .. '" -r \'\\.pdf$\' | grep -i "' .. grep_pattern .. '"'
+  local h = io.popen(cmd)
+  if h == nil then
+    os.execute('notify-send "No PDFs found" "Query: ' .. query .. '"')
+    os.exit(1)
+  end
+  local pdfs = h:read("*a")
+  h:close()
+  if pdfs == "" then
+    os.execute('notify-send "No PDFs found" "Query: ' .. query .. '"')
+    os.exit(1)
+  end
+  local pdf_list = {}
+  local path_map = {}
+  for line in pdfs:gmatch("[^\n]+") do
+    local truncated, full_path = truncate_path(line, home)
+    table.insert(pdf_list, truncated)
+    path_map[truncated] = full_path
+  end
+  local pdf_string = table.concat(pdf_list, "\\n")
+  local echo_cmd = 'printf "' .. pdf_string .. '\\n" | fuzzel -w ' .. width .. ' --dmenu --prompt="Select PDF: "'
+  local handle_select = io.popen(echo_cmd)
+  if handle_select == nil then
+    os.execute('notify-send "No PDFs found" "Query: ' .. query .. '"')
+    os.execute('notify-send "command was "' .. cmd .. '"')
+    os.exit(1)
+  end
 
-    local selected = trim(handle_select:read("*a"))
-    handle_select:close()
-    if selected ~= "" then
-        local full_path = path_map[selected] or selected
-        os.execute('xdg-open "' .. full_path .. '" 2>/dev/null')
-    end
+  local selected = trim(handle_select:read("*a"))
+  handle_select:close()
+  if selected ~= "" then
+    local full_path = path_map[selected] or selected
+    os.execute('xdg-open "' .. full_path .. '" 2>/dev/null')
+  end
 end
 
 local function handle_pr(query)
-    local org = os.getenv("GITHUB_DEFAULT_ORG") or ""
-    if org == "" then
-        os.execute('notify-send "pr_find" "Set GITHUB_DEFAULT_ORG"')
-        os.exit(1)
-    end
-    local graphql = string.format([[
+  local org = os.getenv("GITHUB_DEFAULT_ORG") or ""
+  if org == "" then
+    os.execute('notify-send "pr_find" "Set GITHUB_DEFAULT_ORG"')
+    os.exit(1)
+  end
+  local graphql = string.format([[
 query {
   search(query: "org:%s type:pr state:open", type: ISSUE, first: 100) {
     nodes {
@@ -275,7 +275,7 @@ query {
     }
   }
 }]], org)
-    local jq_filter = [[.data.search.nodes[] | [
+  local jq_filter = [[.data.search.nodes[] | [
       (.updatedAt | split("T")[0]),
       (.repository.nameWithOwner | split("/")[1]),
       "#\(.number)",
@@ -285,137 +285,139 @@ query {
       .title,
       .url
     ] | @tsv]]
-    -- Write query to temp file to avoid shell escaping issues
-    local tmpfile = os.tmpname()
-    local f = io.open(tmpfile, "w")
-    f:write(graphql)
-    f:close()
-    local cmd = "gh api graphql -f query=\"$(cat " .. tmpfile .. ")\" --jq '" .. jq_filter .. "'"
-    local h = io.popen(cmd)
-    if h == nil then
-        os.remove(tmpfile)
-        os.execute('notify-send "pr_find" "Failed to fetch PRs"')
-        os.exit(1)
-    end
-    local raw = h:read("*a")
-    h:close()
+  -- Write query to temp file to avoid shell escaping issues
+  local tmpfile = os.tmpname()
+  local f = io.open(tmpfile, "w")
+  f:write(graphql)
+  f:close()
+  local cmd = "gh api graphql -f query=\"$(cat " .. tmpfile .. ")\" --jq '" .. jq_filter .. "'"
+  local h = io.popen(cmd)
+  if h == nil then
     os.remove(tmpfile)
-    if raw == nil or trim(raw) == "" then
-        os.execute('notify-send "pr_find" "No open PRs found for ' .. org .. '"')
-        os.exit(1)
+    os.execute('notify-send "pr_find" "Failed to fetch PRs"')
+    os.exit(1)
+  end
+  local raw = h:read("*a")
+  h:close()
+  os.remove(tmpfile)
+  if raw == nil or trim(raw) == "" then
+    os.execute('notify-send "pr_find" "No open PRs found for ' .. org .. '"')
+    os.exit(1)
+  end
+  -- Build display lines and url map
+  local display_lines = {}
+  local url_map = {}
+  for line in raw:gmatch("[^\n]+") do
+    local fields = {}
+    for field in line:gmatch("[^\t]+") do
+      table.insert(fields, field)
     end
-    -- Build display lines and url map
-    local display_lines = {}
-    local url_map = {}
-    for line in raw:gmatch("[^\n]+") do
-        local fields = {}
-        for field in line:gmatch("[^\t]+") do
-            table.insert(fields, field)
-        end
-        if #fields >= 8 then
-            local display = string.format("%-10s  %-14s  %-5s  %-14s  %-12s  %-30s  %s",
-                fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7])
-            table.insert(display_lines, display)
-            url_map[display] = fields[8]
-        end
+    if #fields >= 8 then
+      local display = string.format("%-10s  %-14s  %-5s  %-14s  %-12s  %-30s  %s",
+        fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7])
+      table.insert(display_lines, display)
+      url_map[display] = fields[8]
     end
-    -- Pre-filter by initial query
-    if query ~= "" then
-        local filtered = {}
-        local q = query:lower()
-        for _, d in ipairs(display_lines) do
-            if d:lower():find(q, 1, true) then
-                table.insert(filtered, d)
-            end
-        end
-        display_lines = filtered
+  end
+  -- Pre-filter by initial query
+  if query ~= "" then
+    local filtered = {}
+    local q = query:lower()
+    for _, d in ipairs(display_lines) do
+      if d:lower():find(q, 1, true) then
+        table.insert(filtered, d)
+      end
     end
-    if #display_lines == 0 then
-        os.execute('notify-send "pr_find" "No PRs matching: ' .. query .. '"')
-        os.exit(1)
+    display_lines = filtered
+  end
+  if #display_lines == 0 then
+    os.execute('notify-send "pr_find" "No PRs matching: ' .. query .. '"')
+    os.exit(1)
+  end
+  -- Pipe to fuzzel
+  local input_str = table.concat(display_lines, "\n")
+  local fh = io.popen('printf "%s" "' ..
+  input_str:gsub('"', '\\"') .. '" | fuzzel -w ' .. width .. ' --dmenu --prompt="PR> "')
+  if fh == nil then os.exit(1) end
+  local selected = trim(fh:read("*a"))
+  fh:close()
+  if selected ~= "" and url_map[selected] then
+    local url = url_map[selected]
+    if not os.getenv("PR_FIND_USE_SYSTEM_OPEN") and os.execute("command -v chromium >/dev/null 2>&1") then
+      os.execute('chromium --new-tab "' .. url .. '" 2>/dev/null')
+    else
+      os.execute('xdg-open "' .. url .. '" 2>/dev/null')
     end
-    -- Pipe to fuzzel
-    local input_str = table.concat(display_lines, "\n")
-    local fh = io.popen('printf "%s" "' .. input_str:gsub('"', '\\"') .. '" | fuzzel -w ' .. width .. ' --dmenu --prompt="PR> "')
-    if fh == nil then os.exit(1) end
-    local selected = trim(fh:read("*a"))
-    fh:close()
-    if selected ~= "" and url_map[selected] then
-        local url = url_map[selected]
-        if not os.getenv("PR_FIND_USE_SYSTEM_OPEN") and os.execute("command -v chromium >/dev/null 2>&1") then
-            os.execute('chromium --new-tab "' .. url .. '" 2>/dev/null')
-        else
-            os.execute('xdg-open "' .. url .. '" 2>/dev/null')
-        end
-    end
+  end
 end
 
 local function run_zsh_command(command, force_terminal)
-    if command == "" then return end
+  if command == "" then return end
 
-    if force_terminal or needs_terminal(command) then
-        local keep_open = command .. '; status=$?; print; print -r -- "[exit $status] press Enter to close"; read -r; exit $status'
-        os.execute("ghostty -e env TERM_PROGRAM=launcher zsh -ic " .. shell_quote(keep_open) .. " >/dev/null 2>&1 &")
-        return
+  if force_terminal or needs_terminal(command) then
+    local keep_open = command ..
+    '; status=$?; print; print -r -- "[exit $status] press Enter to close"; read -r; exit $status'
+    os.execute("ghostty -e env TERM_PROGRAM=launcher zsh -ic " .. shell_quote(keep_open) .. " >/dev/null 2>&1 &")
+    return
+  end
+
+  local h = io.popen("TERM_PROGRAM=launcher zsh -ic " .. shell_quote(command) .. " 2>&1")
+  if h == nil then
+    notify("launcher", "failed to start zsh")
+    return
+  end
+
+  local output = h:read("*a") or ""
+  local ok = h:close()
+  local display_output = output:gsub("%s+$", "")
+
+  if not command_succeeded(ok) then
+    local body = "zsh command failed: " .. command
+    if display_output ~= "" then
+      body = body .. "\n\n" .. display_output
     end
-
-    local h = io.popen("TERM_PROGRAM=launcher zsh -ic " .. shell_quote(command) .. " 2>&1")
-    if h == nil then
-        notify("launcher", "failed to start zsh")
-        return
-    end
-
-    local output = h:read("*a") or ""
-    local ok = h:close()
-    local display_output = output:gsub("%s+$", "")
-
-    if not command_succeeded(ok) then
-        local body = "zsh command failed: " .. command
-        if display_output ~= "" then
-            body = body .. "\n\n" .. display_output
-        end
-        notify("launcher", body)
-    elseif display_output ~= "" then
-        notify("launcher", display_output)
-    end
+    notify("launcher", body)
+  elseif display_output ~= "" then
+    notify("launcher", display_output)
+  end
 end
 
 local function handle_shell(query)
-    if query == "" then
-        local h = io.popen('fuzzel -w ' .. width .. ' --dmenu --prompt="zsh> "')
-        if h then
-            query = trim(h:read("*a"))
-            h:close()
-        end
+  if query == "" then
+    local h = io.popen('fuzzel -w ' .. width .. ' --dmenu --prompt="zsh> "')
+    if h then
+      query = trim(h:read("*a"))
+      h:close()
     end
-    if query:sub(1, 1) == "!" then
-        run_zsh_command(trim(query:sub(2)), true)
-    else
-        run_zsh_command(query)
-    end
+  end
+  if query:sub(1, 1) == "!" then
+    run_zsh_command(trim(query:sub(2)), true)
+  else
+    run_zsh_command(query)
+  end
 end
 
 local commands = {
-    { key = "%",     desc = "Run zsh command",    handler = handle_shell },
-    { key = "a",     desc = "Amazon search",     url = "https://www.amazon.com/s?k=" },
-    { key = "g",     desc = "Google search",      url = "https://www.google.com/search?q=" },
-    { key = "d",     desc = "DuckDuckGo search",  url = "https://duckduckgo.com/?q=" },
-    { key = "bwb",   desc = "Better World Books", url = "https://www.betterworldbooks.com/search/results?q=" },
-    { key = "i",     desc = "CL Issues",          url = "https://github.com/classiclearning/Issues/issues/" },
-    { key = "it",    desc = "Tigger Issues",      url = "https://github.com/classiclearning/tigger/issues/" },
-    { key = "rust",  desc = "Rust api docs",      url = "https://doc.rust-lang.org/stable/std/index.html?search=" },
-    { key = "ts",    desc = "TypeScript docs",    url = "https://www.google.com/search?q=site%3Atypescriptlang.org%2Fdocs%2Fhandbook+" },
-    { key = "sp",    desc = "Play/Pause",         exec = "playerctl -a play-pause" },
-    { key = "sn",    desc = "Next track",         exec = "playerctl -a next" },
-    { key = "sprev", desc = "Previous track",     exec = "playerctl -a previous" },
-    { key = "sf",    desc = "Seek +10s",          exec = "playerctl -a position +10" },
-    { key = "sff",   desc = "Seek +30s",          exec = "playerctl -a position +30" },
-    { key = "sb",    desc = "Seek -10s",          exec = "playerctl -a position -10" },
-    { key = "sbb",   desc = "Seek -30s",          exec = "playerctl -a position -30" },
-    { key = "snip",  desc = "Snippets",           handler = handle_snip },
-    { key = "e",     desc = "Emoji",              handler = handle_emoji },
-    { key = "p",     desc = "Open PDF",           handler = handle_pdf },
-    { key = "pr",    desc = "Find PR",            handler = handle_pr },
+  { key = "%",     desc = "Run zsh command",    handler = handle_shell },
+  { key = "a",     desc = "Amazon search",      url = "https://www.amazon.com/s?k=" },
+  { key = "g",     desc = "Google search",      url = "https://www.google.com/search?q=" },
+  { key = "d",     desc = "DuckDuckGo search",  url = "https://duckduckgo.com/?q=" },
+  { key = "bwb",   desc = "Better World Books", url = "https://www.betterworldbooks.com/search/results?q=" },
+  { key = "i",     desc = "CL Issues",          url = "https://github.com/classiclearning/Issues/issues/" },
+  { key = "it",    desc = "Tigger Issues",      url = "https://github.com/classiclearning/tigger/issues/" },
+  { key = "rust",  desc = "Rust api docs",      url = "https://doc.rust-lang.org/stable/std/index.html?search=" },
+  { key = "ts",    desc = "TypeScript docs",    url = "https://www.google.com/search?q=site%3Atypescriptlang.org%2Fdocs%2Fhandbook+" },
+  { key = "sp",    desc = "Play/Pause",         exec = "playerctl -a play-pause" },
+  { key = "sn",    desc = "Next track",         exec = "playerctl -a next" },
+  { key = "sprev", desc = "Previous track",     exec = "playerctl -a previous" },
+  { key = "sf",    desc = "Seek +10s",          exec = "playerctl -a position +10" },
+  { key = "sff",   desc = "Seek +30s",          exec = "playerctl -a position +30" },
+  { key = "sb",    desc = "Seek -10s",          exec = "playerctl -a position -10" },
+  { key = "sbb",   desc = "Seek -30s",          exec = "playerctl -a position -30" },
+  { key = "snip",  desc = "Snippets",           handler = handle_snip },
+  { key = "e",     desc = "Emoji",              handler = handle_emoji },
+  { key = "p",     desc = "Open PDF",           handler = handle_pdf },
+  { key = "pr",    desc = "Find PR",            handler = handle_pr },
 }
 
 -- Build lookup map and fuzzel completion lines, sorted by key length
@@ -423,54 +425,55 @@ local commands = {
 local cmd_map = {}
 local sorted_commands = {}
 for _, entry in ipairs(commands) do
-    cmd_map[entry.key] = entry
-    table.insert(sorted_commands, entry)
+  cmd_map[entry.key] = entry
+  table.insert(sorted_commands, entry)
 end
 table.sort(sorted_commands, function(a, b) return #a.key < #b.key end)
 local lines = {}
 local seen = {}
 for _, recent in ipairs(load_history()) do
-    local entry = cmd_map[recent]
-    if entry and not seen[recent] then
-        local padded = entry.key .. string.rep(" ", 8 - #entry.key)
-        table.insert(lines, padded .. entry.desc)
-        seen[recent] = true
-    end
+  local entry = cmd_map[recent]
+  if entry and not seen[recent] then
+    local padded = entry.key .. string.rep(" ", 8 - #entry.key)
+    table.insert(lines, padded .. entry.desc)
+    seen[recent] = true
+  end
 end
 for _, entry in ipairs(sorted_commands) do
-    if not seen[entry.key] then
-        local padded = entry.key .. string.rep(" ", 8 - #entry.key)
-        table.insert(lines, padded .. entry.desc)
-    end
+  if not seen[entry.key] then
+    local padded = entry.key .. string.rep(" ", 8 - #entry.key)
+    table.insert(lines, padded .. entry.desc)
+  end
 end
 local fuzzel_input = table.concat(lines, "\n")
 
-local handle = io.popen('printf "%s\n" ' .. shell_quote(fuzzel_input) .. ' | fuzzel -w ' .. width .. ' --dmenu --match-mode=exact --no-sort --prompt="launch> "')
+local handle = io.popen('printf "%s\n" ' ..
+shell_quote(fuzzel_input) .. ' | fuzzel -w ' .. width .. ' --dmenu --match-mode=exact --no-sort --prompt="launch> "')
 
 if handle == nil then
-    return 1
+  return 1
 end
 
 local input = trim(handle:read("*a"))
 handle:close()
 
 if input == "" then
-    os.exit(0)
+  os.exit(0)
 end
 
 if input:sub(1, 1) == "`" then
-    local shell_command = trim(input:sub(2))
-    if shell_command:sub(-1) == "`" then
-        shell_command = trim(shell_command:sub(1, -2))
-    end
-    run_zsh_command(shell_command)
-    os.exit(0)
+  local shell_command = trim(input:sub(2))
+  if shell_command:sub(-1) == "`" then
+    shell_command = trim(shell_command:sub(1, -2))
+  end
+  run_zsh_command(shell_command)
+  os.exit(0)
 end
 
 if input:sub(1, 2) == "%!" then
-    save_history("%")
-    run_zsh_command(trim(input:sub(3)), true)
-    os.exit(0)
+  save_history("%")
+  run_zsh_command(trim(input:sub(3)), true)
+  os.exit(0)
 end
 
 local shortcut = input:match("^%S+")
@@ -478,34 +481,34 @@ local query = trim(input:match("^%S+%s+(.*)") or "")
 
 local cmd = cmd_map[shortcut]
 if cmd then
-    save_history(cmd.key)
-    -- If user selected from the list, query will be the description — treat as empty
-    if query == cmd.desc then
-        query = ""
-    end
+  save_history(cmd.key)
+  -- If user selected from the list, query will be the description — treat as empty
+  if query == cmd.desc then
+    query = ""
+  end
 
-    if cmd.url then
-        if query == "" then
-            local h = io.popen('fuzzel -w ' .. width .. ' --dmenu --prompt="' .. cmd.desc .. '> "')
-            if h then
-                query = trim(h:read("*a"))
-                h:close()
-            end
-        end
-        if query ~= "" then
-            local encoded_query = url_encode_query(query)
-            os.execute('xdg-open "' .. cmd.url .. encoded_query .. '" 2>/dev/null')
-        end
-    elseif cmd.exec then
-        os.execute(cmd.exec)
-    elseif cmd.handler then
-        cmd.handler(query)
+  if cmd.url then
+    if query == "" then
+      local h = io.popen('fuzzel -w ' .. width .. ' --dmenu --prompt="' .. cmd.desc .. '> "')
+      if h then
+        query = trim(h:read("*a"))
+        h:close()
+      end
     end
+    if query ~= "" then
+      local encoded_query = url_encode_query(query)
+      os.execute('xdg-open "' .. cmd.url .. encoded_query .. '" 2>/dev/null')
+    end
+  elseif cmd.exec then
+    os.execute(cmd.exec)
+  elseif cmd.handler then
+    cmd.handler(query)
+  end
 elseif input:sub(1, 1) == "%" then
-    save_history("%")
-    run_zsh_command(trim(input:sub(2)))
+  save_history("%")
+  run_zsh_command(trim(input:sub(2)))
 elseif input:match("^http") then
-    os.execute('xdg-open "' .. input .. '" 2>/dev/null')
+  os.execute('xdg-open "' .. input .. '" 2>/dev/null')
 else
-    os.execute('fuzzel --no-run-if-empty "' .. input .. '"')
+  os.execute('fuzzel --no-run-if-empty "' .. input .. '"')
 end

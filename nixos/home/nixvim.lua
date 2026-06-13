@@ -88,7 +88,7 @@ vim.keymap.set("n", "\\wb", function()
 end, { desc = "Create new timestamped file" })
 vim.keymap.set("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor line" })
 
-vim.o.laststatus = 2
+vim.o.laststatus = 0
 vim.keymap.set("n", "<leader>e", function()
   vim.o.laststatus = vim.o.laststatus == 0 and 2 or 0
 end, { desc = "Toggle status line" })
@@ -133,7 +133,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 })
 
 -- LSP
-require("lazydev").setup({})
+require("fidget").setup({})
 
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLspConfig", {}),
@@ -226,19 +226,24 @@ vim.lsp.config("lua_ls", {
   settings = {
     Lua = {
       runtime = { version = "LuaJIT" },
-      diagnostics = { globals = { "vim" } },
       workspace = {
         checkThirdParty = false,
-        ignoreDir = {
-          "result",
-          "nixos/home/result",
-          "nixos/sys/result",
-        },
+        ignoreDir = { ".git", ".jj", ".direnv", "node_modules", "result", "nixos/home/result", "nixos/sys/result" },
+        ignoreSubmodules = true,
+        library = { vim.env.VIMRUNTIME .. "/lua" },
+        maxPreload = 300,
+        preloadFileSize = 100,
+        useGitIgnore = true,
+      },
+      completion = {
+        showWord = "Disable",
+        workspaceWord = false,
       },
       telemetry = { enable = false },
-    },
-  },
+    }
+  }
 })
+
 vim.lsp.config("nixd", {})
 vim.lsp.config("scheme_langserver", { filetypes = { "scheme" } })
 vim.lsp.enable({
@@ -249,6 +254,27 @@ vim.lsp.enable({
   "nixd",
   "scheme_langserver",
 })
+
+do
+  local lint = require("lint")
+  lint.linters_by_ft = vim.tbl_deep_extend("force", lint.linters_by_ft, {
+    lua = { "luacheck" },
+  })
+
+  local lint_group = vim.api.nvim_create_augroup("stephen_lint", { clear = true })
+  vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
+    group = lint_group,
+    callback = function(ev)
+      if vim.bo[ev.buf].filetype ~= "lua" then
+        return
+      end
+
+      local bufname = vim.api.nvim_buf_get_name(ev.buf)
+      local root = vim.fs.root(bufname ~= "" and bufname or vim.fn.getcwd(), { ".luacheckrc", ".git", ".jj" })
+      lint.try_lint(nil, { cwd = root or vim.fn.getcwd() })
+    end,
+  })
+end
 
 vim.lsp.config("ast_grep", {
   cmd = { "ast-grep", "lsp" },
@@ -586,42 +612,20 @@ local function map_move(lhs, rhs, desc)
   vim.keymap.set({ "n", "x", "o" }, lhs, rhs, { desc = desc })
 end
 
-map_move("]m", function()
-  ts_move.goto_next_start("@function.outer", "textobjects")
-end, "Next function start")
-map_move("]]", function()
-  ts_move.goto_next_start("@class.outer", "textobjects")
-end, "Next class start")
-map_move("]o", function()
-  ts_move.goto_next_start("@loop.outer", "textobjects")
-end, "Next loop start")
-map_move("]s", function()
-  ts_move.goto_next_start("@local.scope", "locals")
-end, "Next scope")
-map_move("]z", function()
-  ts_move.goto_next_start("@fold", "folds")
-end, "Next fold")
+map_move("]m", function() ts_move.goto_next_start("@function.outer", "textobjects") end, "Next function start")
+map_move("]]", function() ts_move.goto_next_start("@class.outer", "textobjects") end, "Next class start")
+map_move("]o", function() ts_move.goto_next_start("@loop.outer", "textobjects") end, "Next loop start")
+map_move("]s", function() ts_move.goto_next_start("@local.scope", "locals") end, "Next scope")
+map_move("]z", function() ts_move.goto_next_start("@fold", "folds") end, "Next fold")
 
-map_move("]M", function()
-  ts_move.goto_next_end("@function.outer", "textobjects")
-end, "Next function end")
-map_move("][", function()
-  ts_move.goto_next_end("@class.outer", "textobjects")
-end, "Next class end")
+map_move("]M", function() ts_move.goto_next_end("@function.outer", "textobjects") end, "Next function end")
+map_move("][", function() ts_move.goto_next_end("@class.outer", "textobjects") end, "Next class end")
 
-map_move("[m", function()
-  ts_move.goto_previous_start("@function.outer", "textobjects")
-end, "Previous function start")
-map_move("[[", function()
-  ts_move.goto_previous_start("@class.outer", "textobjects")
-end, "Previous class start")
+map_move("[m", function() ts_move.goto_previous_start("@function.outer", "textobjects") end, "Previous function start")
+map_move("[[", function() ts_move.goto_previous_start("@class.outer", "textobjects") end, "Previous class start")
 
-map_move("[M", function()
-  ts_move.goto_previous_end("@function.outer", "textobjects")
-end, "Previous function end")
-map_move("[]", function()
-  ts_move.goto_previous_end("@class.outer", "textobjects")
-end, "Previous class end")
+map_move("[M", function() ts_move.goto_previous_end("@function.outer", "textobjects") end, "Previous function end")
+map_move("[]", function() ts_move.goto_previous_end("@class.outer", "textobjects") end, "Previous class end")
 
 vim.keymap.set({ "n", "x", "o" }, ";", ts_repeat_move.repeat_last_move_next)
 vim.keymap.set({ "n", "x", "o" }, ",", ts_repeat_move.repeat_last_move_previous)
@@ -689,9 +693,17 @@ telescope.load_extension("fzf")
 telescope.load_extension("file_browser")
 telescope.load_extension("ast_grep")
 
-vim.keymap.set("n", "<leader>ee", ":Telescope file_browser<CR>", { desc = "File browser with preview" })
-vim.keymap.set("n", "<leader>ef", ":Telescope file_browser path=%:p:h select_buffer=true<CR>",
-  { desc = "File browser focusing current file" })
+vim.keymap.set("n", "<leader>y", function()
+  require("yazi").toggle()
+end, { desc = "Yazi" })
+
+vim.keymap.set("n", "<leader>z", "zMzv", {
+  desc = "Close all folds except current line",
+})
+
+vim.keymap.set("n", "<leader>Z", "zMzO", {
+  desc = "Close all folds except current fold",
+})
 
 local builtin = require("telescope.builtin")
 local make_entry = require("telescope.make_entry")
@@ -741,19 +753,14 @@ local function treesitter_symbols()
   builtin.treesitter(opts)
 end
 
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function(data)
-    if vim.fn.isdirectory(data.file) == 1 then
-      vim.cmd.cd(data.file)
-      require("telescope").extensions.file_browser.file_browser()
-    end
-  end,
-})
 vim.keymap.set("n", "<leader>c", builtin.git_status, { desc = "Telescope: Changed files" })
-vim.keymap.set("n", "<leader>g", builtin.live_grep, { desc = "Telescope: Live grep" })
+vim.keymap.set("n", "<leader>g", function()
+  builtin.live_grep({ grep_open_files = true })
+end, { desc = "Telescope: Live grep" })
+vim.keymap.set("n", "<leader>G", builtin.live_grep, { desc = "Telescope: Live grep" })
 vim.keymap.set("n", "<leader>b", builtin.buffers, { desc = "Telescope: Buffers" })
 vim.keymap.set("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
-vim.keymap.set("n", "<leader>j", builtin.jumplist, { desc = "Telescope: Jumps" })
+vim.keymap.set("n", "<leader>J", builtin.jumplist, { desc = "Telescope: Jumps" })
 vim.keymap.set("n", "<leader>s", treesitter_symbols, { desc = "Search Tree-sitter symbols" })
 vim.keymap.set("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
 vim.keymap.set("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
@@ -808,7 +815,6 @@ cmp.setup({
     end, { "i", "s" }),
   }),
   sources = {
-    { name = "lazydev", group_index = 0 },
     { name = "nvim_lsp" },
     { name = "luasnip" },
     { name = "path" },
@@ -817,6 +823,12 @@ cmp.setup({
 })
 cmp.setup.filetype("markdown", {
   completion = { autocomplete = false },
+})
+cmp.setup.filetype("lua", {
+  sources = {
+    { name = "nvim_lsp" },
+    { name = "luasnip" },
+  },
 })
 
 -- Obsidian
@@ -845,9 +857,7 @@ end
 
 require("obsidian").setup({
   legacy_commands = false,
-  ui = {
-    enable = true,
-  },
+  -- ui = { enable = true, },
   checkbox = {
     order = { " ", "~", "x" },
   },
@@ -861,7 +871,7 @@ require("obsidian").setup({
     default_tags = { "daily-notes" },
     template = "daily-mo",
   },
-  templates = { folder = "templates" },
+  -- templates = { folder = "templates" },
   completion = {
     nvim_cmp = true,
     min_chars = 2,
@@ -948,11 +958,6 @@ dap.adapters["pwa-node"] = {
   },
 }
 
-dap.adapters.php = {
-  type = "executable",
-  command = "node",
-  args = { vim.g.nixvim_php_debug_adapter },
-}
 
 local js_configurations = {
   {
@@ -972,30 +977,35 @@ dap.configurations.javascriptreact = js_configurations
 dap.configurations.typescript = js_configurations
 dap.configurations.typescriptreact = js_configurations
 
-dap.configurations.php = {
-  {
-    type = "php",
-    request = "launch",
-    name = "Listen for Xdebug",
-    port = 9003,
-    pathMappings = { ["/opt/abhe"] = "~/code/abhe" },
-  },
-}
-dap.adapters.r = {
-  type = "executable",
-  command = "R",
-  args = { "--no-save", "-e", "library(debugR);debugR::run()" },
-}
-dap.configurations.r = {
-  {
-    type = "r",
-    request = "launch",
-    name = "Debug R Script",
-    program = "${file}",
-    cwd = vim.fn.getcwd(),
-    console = "integratedTerminal",
-  },
-}
+-- dap.adapters.php = {
+--   type = "executable",
+--   command = "node",
+--   args = { vim.g.nixvim_php_debug_adapter },
+-- }
+-- dap.configurations.php = {
+--   {
+--     type = "php",
+--     request = "launch",
+--     name = "Listen for Xdebug",
+--     port = 9003,
+--     pathMappings = { ["/opt/abhe"] = "~/code/abhe" },
+--   },
+-- }
+-- dap.adapters.r = {
+--   type = "executable",
+--   command = "R",
+--   args = { "--no-save", "-e", "library(debugR);debugR::run()" },
+-- }
+-- dap.configurations.r = {
+--   {
+--     type = "r",
+--     request = "launch",
+--     name = "Debug R Script",
+--     program = "${file}",
+--     cwd = vim.fn.getcwd(),
+--     console = "integratedTerminal",
+--   },
+-- }
 
 -- Git and diagnostics
 vim.keymap.set("n", "<leader>Gy", function()
@@ -1110,27 +1120,38 @@ require("gitsigns").setup({
 require("grug-far").setup({})
 
 require("flash").setup({
-  event = "VeryLazy",
-  ---@type Flash.Config
-  opts = {},
-  keys = {
-    { "s",     mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "Flash" },
-    { "S",     mode = { "n", "x", "o" }, function() require("flash").treesitter() end,        desc = "Flash Treesitter" },
-    { "r",     mode = "o",               function() require("flash").remote() end,            desc = "Remote Flash" },
-    { "R",     mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
-    { "<c-s>", mode = { "c" },           function() require("flash").toggle() end,            desc = "Toggle Flash Search" },
+  modes = {
+    char = {
+      enabled = false,
+    },
+    -- search was broken the last time I tried... kept matching one less character than I'd typed and label presses didn't trigger.
+    search = {
+      enabled = false,
+    },
+  },
+  label = {
+    min_pattern_length = 0,
+    current = true,
+    distance = true,
+    before = false,
+    after = true,
+    style = "overlay",
+    rainbow = {
+      enabled = false
+    }
   },
 })
+vim.keymap.set("n", "<leader>j", function() require("flash").jump() end)
 
 -- UI
 require("mini.surround").setup({
   custom_surroundings = {
-    [")"] = { output = { left = "(", right = ")" } },
-    ["("] = { output = { left = "(", right = ")" } },
-    ["["] = { output = { left = "[", right = "]" } },
-    ["]"] = { output = { left = "[", right = "]" } },
-    ["{"] = { output = { left = "{", right = "}" } },
-    ["}"] = { output = { left = "{", right = "}" } },
+    -- [")"] = { output = { left = "(", right = ")" } },
+    -- ["("] = { output = { left = "(", right = ")" } },
+    -- ["["] = { output = { left = "[", right = "]" } },
+    -- ["]"] = { output = { left = "[", right = "]" } },
+    -- ["{"] = { output = { left = "{", right = "}" } },
+    -- ["}"] = { output = { left = "{", right = "}" } },
   },
   highlight_duration = 500,
   mappings = {
@@ -1439,6 +1460,104 @@ function _G.nvim_todo_diagnostic_statusline()
   return diagnostic_status:gsub("%%##$", "") .. " " .. todo_status .. " "
 end
 
+local nvim_tmux_status_timer = nil
+local nvim_tmux_last_status = nil
+
+local nvim_tmux_diagnostic_colors = {
+  [vim.diagnostic.severity.ERROR] = "colour9",
+  [vim.diagnostic.severity.WARN] = "colour11",
+  [vim.diagnostic.severity.INFO] = "colour14",
+  [vim.diagnostic.severity.HINT] = "colour12",
+}
+
+local function nvim_tmux_status_part(color, label, count, style)
+  if not count or count == 0 then
+    return nil
+  end
+
+  local attrs = style and "," .. style or ""
+  return string.format("#[fg=%s%s]%s:%d#[default]", color, attrs, label, count)
+end
+
+local function nvim_tmux_diagnostic_status()
+  local parts = {}
+  local counts = package.loaded["vim.diagnostic"] and vim.diagnostic.count() or {}
+
+  for _, item in ipairs({
+    { severity = vim.diagnostic.severity.ERROR, label = "E" },
+    { severity = vim.diagnostic.severity.WARN,  label = "W" },
+    { severity = vim.diagnostic.severity.INFO,  label = "I" },
+    { severity = vim.diagnostic.severity.HINT,  label = "H" },
+  }) do
+    local part = nvim_tmux_status_part(nvim_tmux_diagnostic_colors[item.severity], item.label, counts[item.severity])
+    if part then
+      table.insert(parts, part)
+    end
+  end
+
+  local todo_part = nvim_tmux_status_part("colour14", "T", count_buffer_todos(vim.api.nvim_get_current_buf()), "bold")
+  if todo_part then
+    table.insert(parts, todo_part)
+  end
+
+  return table.concat(parts, " ")
+end
+
+local function nvim_tmux_set_status(value)
+  if not vim.env.TMUX then
+    return
+  end
+
+  if value == nvim_tmux_last_status then
+    return
+  end
+
+  local command
+  if value == "" then
+    command = { "tmux", "set-option", "-q", "-u", "@nvim_diagnostic_status" }
+  else
+    command = { "tmux", "set-option", "-q", "@nvim_diagnostic_status", value }
+  end
+
+  vim.fn.system(command)
+  vim.fn.system({ "tmux", "refresh-client", "-S" })
+  nvim_tmux_last_status = value
+end
+
+local function nvim_tmux_publish_status()
+  nvim_tmux_set_status(nvim_tmux_diagnostic_status())
+end
+
+local function nvim_tmux_schedule_status()
+  if nvim_tmux_status_timer then
+    nvim_tmux_status_timer:stop()
+  end
+
+  nvim_tmux_status_timer = vim.defer_fn(function()
+    nvim_tmux_status_timer = nil
+    nvim_tmux_publish_status()
+  end, 50)
+end
+
+vim.api.nvim_create_autocmd({
+  "BufEnter",
+  "BufWritePost",
+  "DiagnosticChanged",
+  "FocusGained",
+  "TextChanged",
+  "TextChangedI",
+}, {
+  group = vim.api.nvim_create_augroup("NvimTmuxDiagnosticStatus", { clear = true }),
+  callback = nvim_tmux_schedule_status,
+})
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  group = vim.api.nvim_create_augroup("NvimTmuxDiagnosticStatusClear", { clear = true }),
+  callback = function()
+    nvim_tmux_set_status("")
+  end,
+})
+
 do
   local todo_status = "%{%v:lua.nvim_todo_statusline()%}"
   local combined_status = "%{%v:lua.nvim_todo_diagnostic_statusline()%}"
@@ -1485,9 +1604,9 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 -- misc keymaps (this whole file needs organizing)
-vim.keymap.set("n", "<leader>yf", function()
-  vim.fn.setreg("+", vim.fn.expand("%:p"))
-end)
+-- vim.keymap.set("n", "<leader>yf", function()
+--   vim.fn.setreg("+", vim.fn.expand("%:p"))
+-- end)
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
 vim.keymap.set("n", "J", "mzJ`z")
@@ -1510,3 +1629,5 @@ end, {})
 vim.api.nvim_create_user_command("DeleteFile", delete_current_file, {
   desc = "Delete the file for the current buffer",
 })
+
+vim.keymap.set("n", "gd", "gdzt");

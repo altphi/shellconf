@@ -143,6 +143,7 @@ v() {
   file=$(rg --files --hidden --glob '!.git' | fzf --exact --select-1 --query="${1:-}") || return
   [[ -n "$file" ]] && nvim "$file"
 }
+
 vg() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --exact --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}"; }
 
 symbols() {

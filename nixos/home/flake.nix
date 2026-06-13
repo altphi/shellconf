@@ -43,6 +43,7 @@
       "firefox-bin-unwrapped"
       "slack"
       "spotify"
+      "sublime-merge"
       "todoist-electron"
       "vscode-extension-vadimcn-vscode-lldb"
     ];
@@ -151,6 +152,7 @@
             slack
             signal-desktop
             slurp
+            sublime-merge
             swaybg
             swayidle
             swayimg

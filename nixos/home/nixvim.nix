@@ -165,6 +165,16 @@ in
         action = ":m '<-2<CR>gv=gv";
         options.desc = "Move selection up";
       }
+      # flash, TODO
+      {
+        mode = "o";
+        key = "r";
+        action = "<cmd>lua require('flash').remote()<CR>";
+        options = {
+          desc = "Flash remote";
+          silent = true;
+        };
+      }
     ];
 
     # Packages
@@ -176,6 +186,7 @@ in
       git
       lazygit
       lua-language-server
+      luaPackages.luacheck
       nixd
       shfmt
       vtsls
@@ -196,11 +207,11 @@ in
       cmp-nvim-lsp
       cmp-path
       cmp_luasnip
+      fidget-nvim
       flash-nvim
       gitlinker-nvim
       gitsigns-nvim
       grug-far-nvim
-      lazydev-nvim
       lazygit-nvim
       luasnip
       mini-surround
@@ -208,6 +219,7 @@ in
       nvim-dap
       nvim-dap-ui
       nvim-dap-virtual-text
+      nvim-lint
       nvim-lspconfig
       nvim-nio
       nvim-treesitter-context
@@ -216,14 +228,17 @@ in
       obsidian-nvim
       plenary-nvim
       rustaceanvim
+      tabout-nvim
       telescope-file-browser-nvim
       telescope-fzf-native-nvim
       telescope-nvim
       telescope-sg
       telescope-frecency-nvim
       treesitter
+      # treesj
       trouble-nvim
       vim-tmux-navigator
+      yazi-nvim
     ];
 
     # Syntax highlighting
