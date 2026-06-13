@@ -150,12 +150,10 @@ symbols() {
 }
 
 switch-sys() {
-  nix flake update --flake ~/bin/nixos/sys
   sudo nixos-rebuild switch --flake ~/bin/nixos/sys\#euclid
   notify-send "switch-sys finished, exit code: $?"
 }
 switch-home() {
-  nix flake update --flake ~/bin/nixos/home
   home-manager switch -b backup --flake ~/bin/nixos/home
 }
 
