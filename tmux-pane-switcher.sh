@@ -54,7 +54,7 @@ selected="$(
       --cycle \
       --bind='tab:down,btab:up' \
       --preview='tmux capture-pane -p -t {1}' \
-      --preview-window='right:70%,wrap,follow'
+      --preview-window='right:70%,nowrap,follow'
 )" || exit 0
 
 pane_id="$(awk -F '\t' '{print $1}' <<< "$selected")"
