@@ -17,6 +17,7 @@ esac
 
 pane_scope=-s
 #pane_label='#{window_index}.#{pane_index}'
+pane_format=$'#{?#{@pane_mru},#{@pane_mru},0}\t#{pane_id}\t#{window_id}\t#{session_name}\t#{pane_current_command}\t#{s|^#{HOME}$|~|;s|^#{HOME}/|~/|:pane_current_path}'
 
 if ((all_sessions)); then
   pane_scope=-a
@@ -24,12 +25,30 @@ if ((all_sessions)); then
 fi
 
 selected="$(
-  tmux list-panes "$pane_scope" -F '#{?#{@pane_mru},#{@pane_mru},0} #{pane_id} #{window_id}  #{session_name}  #{pane_current_command}  #{pane_current_path}' |
-    sort -k1,1rn |
-    awk '{$1 = ""; sub(/^  */, ""); print}' |
+  tmux list-panes "$pane_scope" -F "$pane_format" |
+    sort -t $'\t' -k1,1rn |
+    awk -F '\t' '
+      {
+        rows[NR] = $0
+        session_width = length($4) > session_width ? length($4) : session_width
+        command_width = length($5) > command_width ? length($5) : command_width
+        path_width = length($6) > path_width ? length($6) : path_width
+      }
+      END {
+        for (i = 1; i <= NR; i++) {
+          split(rows[i], fields, FS)
+          printf "%s\t%s\t%-*s  %-*s  %*s\n",
+            fields[2], fields[3],
+            session_width, fields[4],
+            command_width, fields[5],
+            path_width, fields[6]
+        }
+      }
+    ' |
     fzf \
       -e \
-      --with-nth 3.. \
+      --delimiter=$'\t' \
+      --with-nth 3 \
       --no-sort \
       --reverse \
       --cycle \
@@ -38,8 +57,8 @@ selected="$(
       --preview-window='right:70%,wrap,follow'
 )" || exit 0
 
-pane_id="$(awk '{print $1}' <<< "$selected")"
-window_id="$(awk '{print $2}' <<< "$selected")"
+pane_id="$(awk -F '\t' '{print $1}' <<< "$selected")"
+window_id="$(awk -F '\t' '{print $2}' <<< "$selected")"
 
 if ((all_sessions)); then
   tmux switch-client -t "$pane_id"
