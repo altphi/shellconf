@@ -765,10 +765,13 @@ local function treesitter_symbols()
 end
 
 vim.keymap.set("n", "<leader>c", builtin.git_status, { desc = "Telescope: Changed files" })
-vim.keymap.set("n", "<leader>g", function()
-  builtin.live_grep({ grep_open_files = true })
-end, { desc = "Telescope: Live grep" })
-vim.keymap.set("n", "<leader>G", builtin.live_grep, { desc = "Telescope: Live grep" })
+vim.keymap.set("n", "<leader>g",
+  function() builtin.live_grep({ grep_open_files = true, prompt_title = "Telescope: Grep Open Files" }) end,
+  { desc = "Telescope: Live grep" })
+vim.keymap.set("n", "<leader>G", function()
+    builtin.live_grep({ prompt_title = "Telescope: Grep Project" })
+  end,
+  { desc = "Telescope: Live grep" })
 vim.keymap.set("n", "<leader>b", builtin.buffers, { desc = "Telescope: Buffers" })
 vim.keymap.set("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
 vim.keymap.set("n", "<leader>J", builtin.jumplist, { desc = "Telescope: Jumps" })
@@ -788,9 +791,9 @@ vim.keymap.set("n", "<leader>f", function()
 end, { desc = "Telescope: Frecent files" })
 
 -- Completion
-local cmp = require("cmp")
 local luasnip = require("luasnip")
 luasnip.config.setup({})
+local cmp = require("cmp")
 cmp.setup({
   snippet = {
     expand = function(args)
@@ -1019,18 +1022,19 @@ dap.configurations.typescriptreact = js_configurations
 -- }
 
 -- Git and diagnostics
-vim.keymap.set("n", "<leader>Gy", function()
-  require("gitlinker").get_buf_range_url("n")
-end, { desc = "Copy GitHub link" })
-vim.keymap.set("v", "<leader>Gy", function()
-  require("gitlinker").get_buf_range_url("v")
-end, { desc = "Copy GitHub link (selection)" })
-vim.keymap.set("n", "<leader>Go", function()
-  require("gitlinker").get_buf_range_url("n", { action_callback = require("gitlinker.actions").open_in_browser })
-end, { desc = "Open GitHub link" })
-vim.keymap.set("v", "<leader>Go", function()
-  require("gitlinker").get_buf_range_url("v", { action_callback = require("gitlinker.actions").open_in_browser })
-end, { desc = "Open GitHub link (selection)" })
+-- TODO turn these into commands and not keybindings
+--vim.keymap.set("n", "<leader>Gy", function()
+--  require("gitlinker").get_buf_range_url("n")
+--end, { desc = "Copy GitHub link" })
+--vim.keymap.set("v", "<leader>Gy", function()
+--  require("gitlinker").get_buf_range_url("v")
+--end, { desc = "Copy GitHub link (selection)" })
+--vim.keymap.set("n", "<leader>Go", function()
+--  require("gitlinker").get_buf_range_url("n", { action_callback = require("gitlinker.actions").open_in_browser })
+--end, { desc = "Open GitHub link" })
+--vim.keymap.set("v", "<leader>Go", function()
+--  require("gitlinker").get_buf_range_url("v", { action_callback = require("gitlinker.actions").open_in_browser })
+--end, { desc = "Open GitHub link (selection)" })
 
 require("trouble").setup({
   position = "bottom",
