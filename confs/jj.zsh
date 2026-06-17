@@ -1,36 +1,11 @@
-_jl_template() {
-  local default_email
-  default_email=$(jj config get user.email 2>/dev/null)
-  cat <<TEMPLATE
-    if(root,
-      format_root_commit(self),
-      label(if(current_working_copy, "working_copy"),
-        separate(" ",
-          pad_end(3, change_id.shortest()),
-          if(author.email() != "$default_email", format_short_signature(author)),
-          bookmarks,
-          tags,
-          working_copies,
-          if(conflict, label("conflict", "conflict")),
-          if(empty, label("empty", "(empty)")),
-        ) ++ " " ++
-        if(description,
-          label("log_description", description.first_line()),
-          label("description placeholder", "(no description set)")
-        ) ++ "\n"
-      )
-    )
-TEMPLATE
-}
-
 alias jd=" jj desc"
 alias jsh=" jj show"
 
 unalias j 2>/dev/null
 j() {
   # local revset='fork_point(@ | trunk())::@'
-  # jj log -r "$revset" -T "$(_jl_template)" "$@"
-  jj log -T "$(_jl_template)" "$@"
+  # jj log -r "$revset" -T jl "$@"
+  jj log -T jl "$@"
 }
 compdef '_as_if jj log' j
 
