@@ -221,6 +221,7 @@ in
       nvim-dap-virtual-text
       nvim-lint
       nvim-lspconfig
+      nvim-navic
       nvim-nio
       nvim-treesitter-context
       nvim-treesitter-textobjects

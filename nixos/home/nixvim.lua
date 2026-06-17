@@ -135,6 +135,17 @@ vim.api.nvim_create_autocmd("LspAttach", {
 -- LSP
 require("fidget").setup({})
 
+require("nvim-navic").setup({
+  icons = {
+    enabled = false,
+  },
+  separator = " > ",
+  lsp = {
+    auto_attach = true,
+  },
+})
+--vim.o.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
+
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("UserLspConfig", {}),
   callback = function(args)
@@ -1427,8 +1438,17 @@ vim.api.nvim_create_autocmd("BufWipeout", {
   end,
 })
 
-function _G.nvim_todo_statusline()
-  local bufnr = vim.api.nvim_get_current_buf()
+local function statusline_bufnr()
+  local winid = tonumber(vim.g.statusline_winid)
+  if winid and vim.api.nvim_win_is_valid(winid) then
+    return vim.api.nvim_win_get_buf(winid)
+  end
+
+  return vim.api.nvim_get_current_buf()
+end
+
+function _G.nvim_todo_statusline(bufnr)
+  bufnr = bufnr or statusline_bufnr()
   local count = count_buffer_todos(bufnr)
 
   if count == 0 then
@@ -1438,26 +1458,51 @@ function _G.nvim_todo_statusline()
   return "%#TodoStatusLine#T:" .. count .. "%##"
 end
 
-function _G.nvim_todo_diagnostic_statusline()
-  local diagnostic_status = ""
-  if package.loaded["vim.diagnostic"] and next(vim.diagnostic.count()) then
-    diagnostic_status = vim.diagnostic.status()
+local nvim_statusline_diagnostic_highlights = {
+  [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
+  [vim.diagnostic.severity.WARN] = "DiagnosticSignWarn",
+  [vim.diagnostic.severity.INFO] = "DiagnosticSignInfo",
+  [vim.diagnostic.severity.HINT] = "DiagnosticSignHint",
+}
+
+local function nvim_diagnostic_statusline(bufnr)
+  local parts = {}
+  local counts = vim.diagnostic.count(bufnr)
+
+  for _, item in ipairs({
+    { severity = vim.diagnostic.severity.ERROR, label = "E" },
+    { severity = vim.diagnostic.severity.WARN,  label = "W" },
+    { severity = vim.diagnostic.severity.INFO,  label = "I" },
+    { severity = vim.diagnostic.severity.HINT,  label = "H" },
+  }) do
+    local count = counts[item.severity]
+    if count and count > 0 then
+      local highlight = nvim_statusline_diagnostic_highlights[item.severity]
+      table.insert(parts, ("%%#%s#%s:%d%%##"):format(highlight, item.label, count))
+    end
   end
 
-  local todo_status = _G.nvim_todo_statusline()
-  if diagnostic_status == "" and todo_status == "" then
+  return table.concat(parts, " ")
+end
+
+function _G.nvim_todo_diagnostic_statusline()
+  local bufnr = statusline_bufnr()
+  local diagnostic_status = nvim_diagnostic_statusline()
+  local todo_status = _G.nvim_todo_statusline(bufnr)
+  local parts = {}
+
+  if diagnostic_status ~= "" then
+    table.insert(parts, diagnostic_status)
+  end
+  if todo_status ~= "" then
+    table.insert(parts, todo_status)
+  end
+
+  if #parts == 0 then
     return ""
   end
 
-  if diagnostic_status == "" then
-    return todo_status .. " "
-  end
-
-  if todo_status == "" then
-    return diagnostic_status .. " "
-  end
-
-  return diagnostic_status:gsub("%%##$", "") .. " " .. todo_status .. " "
+  return table.concat(parts, " ") .. " "
 end
 
 local nvim_tmux_status_timer = nil
@@ -1558,39 +1603,29 @@ vim.api.nvim_create_autocmd("VimLeavePre", {
   end,
 })
 
-do
-  local todo_status = "%{%v:lua.nvim_todo_statusline()%}"
-  local combined_status = "%{%v:lua.nvim_todo_diagnostic_statusline()%}"
-  local diagnostic_expr =
-  "luaeval('(package.loaded[''vim.diagnostic''] and next(vim.diagnostic.count()) and vim.diagnostic.status() .. '' '') or '''' ')"
-  local diagnostic_status = "%{% " .. diagnostic_expr .. " %}"
-  local broken_diagnostic_status = "{ " .. diagnostic_expr .. " }"
-  local broken_todo_status = "{ v:lua.nvim_todo_statusline() }"
+-- local statusline_file = "%<%f %h%w%m%r"
+local statusline_diagnostics = "%{%v:lua.nvim_todo_diagnostic_statusline()%}"
+local statusline_position = "%l:%c %P"
+local navic_breadcrumbs = "%{%v:lua.require'nvim-navic'.get_location()%}"
 
-  vim.o.statusline = vim.o.statusline:gsub(vim.pesc(broken_diagnostic_status), function()
-    return diagnostic_status
-  end, 1)
-  vim.o.statusline = vim.o.statusline:gsub(vim.pesc(broken_todo_status), "", 1)
+vim.o.statusline = table.concat({
+  navic_breadcrumbs,
+  "%=",
+  statusline_diagnostics,
+  statusline_position,
+})
+vim.cmd.redrawstatus()
 
-  if not vim.o.statusline:find("nvim_todo_diagnostic_statusline", 1, true) then
-    local diagnostic_and_todo = diagnostic_status .. todo_status
-    if vim.o.statusline:find(diagnostic_and_todo, 1, true) then
-      vim.o.statusline = vim.o.statusline:gsub(vim.pesc(diagnostic_and_todo), function()
-        return combined_status
-      end, 1)
-    elseif vim.o.statusline:find(diagnostic_status, 1, true) then
-      vim.o.statusline = vim.o.statusline:gsub(vim.pesc(diagnostic_status), function()
-        return combined_status
-      end, 1)
-    elseif vim.o.statusline:find(todo_status, 1, true) then
-      vim.o.statusline = vim.o.statusline:gsub(vim.pesc(todo_status), function()
-        return combined_status
-      end, 1)
-    else
-      vim.o.statusline = vim.o.statusline .. combined_status
-    end
-  end
-end
+vim.api.nvim_create_autocmd({
+  "DiagnosticChanged",
+  "TextChanged",
+  "InsertLeave",
+}, {
+  group = vim.api.nvim_create_augroup("NvimStatusline", { clear = true }),
+  callback = function()
+    vim.cmd.redrawstatus()
+  end,
+})
 
 -- from `:h registers` the Yank-ring: store yanked text in registers 1-9.
 vim.api.nvim_create_autocmd('TextYankPost', {
