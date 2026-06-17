@@ -14,8 +14,8 @@ CLASSPATH="${HOME}/bin/jars/algs4.jar:."
 GITHUB_DEFAULT_ORG="classiclearning"
 PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 
-EDITOR=vim
-GIT_EDITOR=vim
+export EDITOR=vim
+export GIT_EDITOR=vim
 GDK_BACKEND=wayland
 R_PROFILE_USER="$HOME/.Rprofile"
 
