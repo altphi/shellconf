@@ -1201,7 +1201,8 @@ end
 
 local function apply_cursor_line_highlight()
   vim.api.nvim_set_hl(0, "CursorLine", {
-    ctermbg = get_system_appearance() == "light" and 15 or 234,
+    -- weaker to stronger contrast for light -> 255..250 and for dark -> 232..241
+    ctermbg = get_system_appearance() == "light" and 252 or 237,
   })
 end
 
@@ -1330,9 +1331,6 @@ vim.keymap.set("n", "<M-l>", "<cmd>TmuxNavigateRight<CR>")
 -- TODOs
 local tags = { "TODO", "WIP", "FIXME", "HACK", "XXX" }
 local rg_pattern = "\\b(" .. table.concat(tags, "|") .. ")\\b"
-local count_cache = {}
-
-vim.api.nvim_set_hl(0, "TodoStatusLine", { fg = "#5fd7d7", ctermfg = 14, bold = true })
 
 local function todo_col(text)
   for _, tag in ipairs(tags) do
@@ -1341,25 +1339,6 @@ local function todo_col(text)
       return col
     end
   end
-end
-
-local function count_buffer_todos(bufnr)
-  local changedtick = vim.api.nvim_buf_get_changedtick(bufnr)
-  local cached = count_cache[bufnr]
-
-  if cached and cached.changedtick == changedtick then
-    return cached.count
-  end
-
-  local count = 0
-  for _, text in ipairs(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)) do
-    if todo_col(text) then
-      count = count + 1
-    end
-  end
-
-  count_cache[bufnr] = { changedtick = changedtick, count = count }
-  return count
 end
 
 local function project_root()
@@ -1436,12 +1415,6 @@ vim.keymap.set("n", "[q", "<cmd>cprevious<CR>", { desc = "Previous quickfix item
 vim.keymap.set("n", "]l", "<cmd>lnext<CR>", { desc = "Next location-list item", silent = true })
 vim.keymap.set("n", "[l", "<cmd>lprevious<CR>", { desc = "Previous location-list item", silent = true })
 
-vim.api.nvim_create_autocmd("BufWipeout", {
-  callback = function(args)
-    count_cache[args.buf] = nil
-  end,
-})
-
 local function statusline_bufnr()
   local winid = tonumber(vim.g.statusline_winid)
   if winid and vim.api.nvim_win_is_valid(winid) then
@@ -1451,17 +1424,6 @@ local function statusline_bufnr()
   return vim.api.nvim_get_current_buf()
 end
 
-function _G.nvim_todo_statusline(bufnr)
-  bufnr = bufnr or statusline_bufnr()
-  local count = count_buffer_todos(bufnr)
-
-  if count == 0 then
-    return ""
-  end
-
-  return "%#TodoStatusLine#T:" .. count .. "%##"
-end
-
 local nvim_statusline_diagnostic_highlights = {
   [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
   [vim.diagnostic.severity.WARN] = "DiagnosticSignWarn",
@@ -1469,7 +1431,8 @@ local nvim_statusline_diagnostic_highlights = {
   [vim.diagnostic.severity.HINT] = "DiagnosticSignHint",
 }
 
-local function nvim_diagnostic_statusline(bufnr)
+function _G.nvim_diagnostic_statusline(bufnr)
+  bufnr = bufnr or statusline_bufnr()
   local parts = {}
   local counts = vim.diagnostic.count(bufnr)
 
@@ -1489,126 +1452,8 @@ local function nvim_diagnostic_statusline(bufnr)
   return table.concat(parts, " ")
 end
 
-function _G.nvim_todo_diagnostic_statusline()
-  local bufnr = statusline_bufnr()
-  local diagnostic_status = nvim_diagnostic_statusline()
-  local todo_status = _G.nvim_todo_statusline(bufnr)
-  local parts = {}
-
-  if diagnostic_status ~= "" then
-    table.insert(parts, diagnostic_status)
-  end
-  if todo_status ~= "" then
-    table.insert(parts, todo_status)
-  end
-
-  if #parts == 0 then
-    return ""
-  end
-
-  return table.concat(parts, " ") .. " "
-end
-
-local nvim_tmux_status_timer = nil
-local nvim_tmux_last_status = nil
-
-local nvim_tmux_diagnostic_colors = {
-  [vim.diagnostic.severity.ERROR] = "colour9",
-  [vim.diagnostic.severity.WARN] = "colour11",
-  [vim.diagnostic.severity.INFO] = "colour14",
-  [vim.diagnostic.severity.HINT] = "colour12",
-}
-
-local function nvim_tmux_status_part(color, label, count, style)
-  if not count or count == 0 then
-    return nil
-  end
-
-  local attrs = style and "," .. style or ""
-  return string.format("#[fg=%s%s]%s:%d#[default]", color, attrs, label, count)
-end
-
-local function nvim_tmux_diagnostic_status()
-  local parts = {}
-  local counts = package.loaded["vim.diagnostic"] and vim.diagnostic.count() or {}
-
-  for _, item in ipairs({
-    { severity = vim.diagnostic.severity.ERROR, label = "E" },
-    { severity = vim.diagnostic.severity.WARN,  label = "W" },
-    { severity = vim.diagnostic.severity.INFO,  label = "I" },
-    { severity = vim.diagnostic.severity.HINT,  label = "H" },
-  }) do
-    local part = nvim_tmux_status_part(nvim_tmux_diagnostic_colors[item.severity], item.label, counts[item.severity])
-    if part then
-      table.insert(parts, part)
-    end
-  end
-
-  local todo_part = nvim_tmux_status_part("colour14", "T", count_buffer_todos(vim.api.nvim_get_current_buf()), "bold")
-  if todo_part then
-    table.insert(parts, todo_part)
-  end
-
-  return table.concat(parts, " ")
-end
-
-local function nvim_tmux_set_status(value)
-  if not vim.env.TMUX then
-    return
-  end
-
-  if value == nvim_tmux_last_status then
-    return
-  end
-
-  local command
-  if value == "" then
-    command = { "tmux", "set-option", "-q", "-u", "@nvim_diagnostic_status" }
-  else
-    command = { "tmux", "set-option", "-q", "@nvim_diagnostic_status", value }
-  end
-
-  vim.fn.system(command)
-  vim.fn.system({ "tmux", "refresh-client", "-S" })
-  nvim_tmux_last_status = value
-end
-
-local function nvim_tmux_publish_status()
-  nvim_tmux_set_status(nvim_tmux_diagnostic_status())
-end
-
-local function nvim_tmux_schedule_status()
-  if nvim_tmux_status_timer then
-    nvim_tmux_status_timer:stop()
-  end
-
-  nvim_tmux_status_timer = vim.defer_fn(function()
-    nvim_tmux_status_timer = nil
-    nvim_tmux_publish_status()
-  end, 50)
-end
-
-vim.api.nvim_create_autocmd({
-  "BufEnter",
-  "BufWritePost",
-  "DiagnosticChanged",
-  "FocusGained",
-  "TextChanged",
-  "TextChangedI",
-}, {
-  group = vim.api.nvim_create_augroup("NvimTmuxDiagnosticStatus", { clear = true }),
-  callback = nvim_tmux_schedule_status,
-})
-
-vim.api.nvim_create_autocmd("VimLeavePre", {
-  group = vim.api.nvim_create_augroup("NvimTmuxDiagnosticStatusClear", { clear = true }),
-  callback = function()
-    nvim_tmux_set_status("")
-  end,
-})
-
 -- local statusline_file = "%<%f %h%w%m%r"
-local statusline_diagnostics = "%{%v:lua.nvim_todo_diagnostic_statusline()%}"
+local statusline_diagnostics = "%{%v:lua.nvim_diagnostic_statusline()%}"
 local statusline_position = "%l:%c %P"
 local navic_breadcrumbs = "%{%v:lua.require'nvim-navic'.get_location()%}"
 
@@ -1616,19 +1461,8 @@ vim.o.statusline = table.concat({
   navic_breadcrumbs,
   "%=",
   statusline_diagnostics,
+  " ",
   statusline_position,
-})
-vim.cmd.redrawstatus()
-
-vim.api.nvim_create_autocmd({
-  "DiagnosticChanged",
-  "TextChanged",
-  "InsertLeave",
-}, {
-  group = vim.api.nvim_create_augroup("NvimStatusline", { clear = true }),
-  callback = function()
-    vim.cmd.redrawstatus()
-  end,
 })
 
 -- from `:h registers` the Yank-ring: store yanked text in registers 1-9.
