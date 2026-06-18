@@ -16,12 +16,10 @@ case "${1:-}" in
 esac
 
 pane_scope=-s
-#pane_label='#{window_index}.#{pane_index}'
 pane_format=$'#{?#{@pane_mru},#{@pane_mru},0}\t#{pane_id}\t#{window_id}\t#{session_name}\t#{pane_current_command}\t#{s|^#{HOME}$|~|;s|^#{HOME}/|~/|:pane_current_path}'
 
 if ((all_sessions)); then
   pane_scope=-a
-#  pane_label='#S:#{window_index}.#{pane_index}'
 fi
 
 selected="$(
