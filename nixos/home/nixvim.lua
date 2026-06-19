@@ -71,9 +71,15 @@ require("gitsigns").setup({
     end
 
     map("n", "<leader>hq", function()
-      gs.setqflist(0, { use_location_list = true, open = false }, function()
-        trouble.close("qflist")
-        trouble.open({ mode = "loclist", focus = true, win = { position = "bottom", size = 0.15 } })
+      gs.setqflist(0, { use_location_list = true, open = false }, function(err)
+        if err then
+          vim.notify(err, vim.log.levels.ERROR)
+          return
+        end
+
+        require("telescope.builtin").loclist({
+          prompt_title = "Git hunks in buffer",
+        })
       end)
     end, { desc = "Git hunks in buffer" })
 
@@ -81,6 +87,9 @@ require("gitsigns").setup({
       gs.setqflist("all", { open = false }, function()
         trouble.close("loclist")
         trouble.open({ mode = "qflist", focus = true, win = { position = "bottom", size = 0.15 } })
+        require("telescope.builtin").loclist({
+          prompt_title = "Git hunks in repo",
+        })
       end)
     end, { desc = "Git hunks in repo" })
 
@@ -274,20 +283,23 @@ local function treesitter_symbols()
 end
 vim.keymap.set("n", "<leader>s", treesitter_symbols, { desc = "Search Tree-sitter symbols" })
 
+vim.keymap.set("n", "<leader>q:", builtin.command_history, { desc = "nvim command history" })
+
 vim.keymap.set("n", "<leader>c", builtin.git_status, { desc = "Telescope: Changed files" })
 vim.keymap.set("n", "<leader>g",
   function() builtin.live_grep({ grep_open_files = true, prompt_title = "Telescope: Grep Open Files" }) end,
   { desc = "Telescope: Live grep" })
 vim.keymap.set("n", "<leader>G", function() builtin.live_grep({ prompt_title = "Telescope: Grep Project" }) end,
   { desc = "Telescope: Live grep" })
-vim.keymap.set("n", "<leader>b", builtin.buffers, { desc = "Telescope: Buffers" })
+vim.keymap.set("n", "<leader>b", function() builtin.buffers({ sort_mru = true, sort_lastused = true }) end,
+  { desc = "Telescope: Buffers" })
 vim.keymap.set("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
 vim.keymap.set("n", "<leader>J", builtin.jumplist, { desc = "Telescope: Jumps" })
 vim.keymap.set("n", "<leader>s", treesitter_symbols, { desc = "Search Tree-sitter symbols" })
 vim.keymap.set("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
 vim.keymap.set("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
 vim.keymap.set("n", "<leader>of", ":Telescope oldfiles only_cwd=true<CR>", { silent = true })
-vim.keymap.set("n", "<leader>dd", "<cmd>Telescope diagnostics<CR>", { desc = "Telescope: diagnostics" })
+vim.keymap.set("n", "<leader>d", "<cmd>Telescope diagnostics<CR>", { desc = "Telescope: diagnostics" })
 vim.keymap.set("n", "<leader>rf", function()
   builtin.lsp_references({ include_declaration = false, include_current_line = false })
 end, { desc = "Telescope: lsp_references (usages only)" })
@@ -477,6 +489,35 @@ function _G.nvim_diagnostic_statusline(bufnr)
   return table.concat(parts, " ")
 end
 
+_G.statusline = _G.statusline or {}
+
+_G.statusline.count_todos_in_open_buffers = function()
+  local count = 0
+
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].buflisted then
+      for _, line in ipairs(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)) do
+        count = count + select(2, line:gsub("TODO", ""))
+        count = count + select(2, line:gsub("FIXME", ""))
+      end
+    end
+  end
+
+  return count
+end
+
+_G.statusline.todo_count = function()
+  local count = _G.statusline.count_todos_in_open_buffers()
+
+  if count == 0 then
+    return ""
+  end
+
+  return ("%%#DiagnosticSignHint#T:%d%%##"):format(count)
+end
+
+
+local statusline_todo_count = "%{%v:lua.statusline.todo_count()%}"
 local statusline_diagnostics = "%{%v:lua.nvim_diagnostic_statusline()%}"
 local statusline_position = "%l:%c %P"
 local navic_breadcrumbs = "%{%v:lua.require'nvim-navic'.get_location()%}"
@@ -486,9 +527,10 @@ vim.o.statusline = table.concat({
   "%=",
   statusline_diagnostics,
   " ",
+  statusline_todo_count,
+  " ",
   statusline_position,
 })
-
 
 -----------------------
 ---LSP
@@ -559,9 +601,7 @@ vim.lsp.enable({
 })
 
 -- LSP diagnostics
-vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float)
 vim.diagnostic.config({ virtual_text = true, })
-
 
 -- Rustacean
 local extension_path = vim.env.HOME .. "/.nix-profile/share/vscode/extensions/vadimcn.vscode-lldb/"
