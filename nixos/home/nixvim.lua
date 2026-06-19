@@ -19,6 +19,15 @@ vim.api.nvim_create_autocmd("LspAttach", {
 vim.opt.undodir = vim.fn.stdpath("data") .. "/.nvim-undo//"
 vim.fn.mkdir(vim.fn.stdpath("cache"), "p")
 
+-- disable comment continuation in normal mode
+vim.opt.formatoptions:remove("o")
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("DisableNormalModeCommentContinuation", { clear = true }),
+  callback = function()
+    vim.opt_local.formatoptions:remove("o")
+  end,
+})
+
 -- treesitter
 vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 
@@ -601,7 +610,7 @@ vim.lsp.enable({
 })
 
 -- LSP diagnostics
-vim.diagnostic.config({ virtual_text = true, })
+vim.diagnostic.config({ virtual_text = false, })
 
 -- Rustacean
 local extension_path = vim.env.HOME .. "/.nix-profile/share/vscode/extensions/vadimcn.vscode-lldb/"
