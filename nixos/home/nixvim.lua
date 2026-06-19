@@ -307,14 +307,12 @@ vim.keymap.set("n", "<leader>J", builtin.jumplist, { desc = "Telescope: Jumps" }
 vim.keymap.set("n", "<leader>s", treesitter_symbols, { desc = "Search Tree-sitter symbols" })
 vim.keymap.set("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
 vim.keymap.set("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
-vim.keymap.set("n", "<leader>of", ":Telescope oldfiles only_cwd=true<CR>", { silent = true })
 vim.keymap.set("n", "<leader>d", "<cmd>Telescope diagnostics<CR>", { desc = "Telescope: diagnostics" })
 vim.keymap.set("n", "<leader>rf", function()
   builtin.lsp_references({ include_declaration = false, include_current_line = false })
 end, { desc = "Telescope: lsp_references (usages only)" })
 vim.keymap.set("n", "<leader>rr", builtin.registers, { desc = "Registers" })
 vim.keymap.set("n", "<leader>ic", builtin.lsp_incoming_calls, { desc = "Telescope: lsp_incoming_calls" })
-vim.keymap.set("n", "<leader>oc", builtin.lsp_outgoing_calls, { desc = "Telescope: lsp_outgoing_calls" })
 vim.keymap.set("n", "<leader>f", function()
   require("telescope").extensions.frecency.frecency({ workspace = "CWD" })
 end, { desc = "Telescope: Frecent files" })
@@ -323,6 +321,7 @@ end, { desc = "Telescope: Frecent files" })
 -- Completion
 local luasnip = require("luasnip")
 luasnip.config.setup({})
+
 local cmp = require("cmp")
 cmp.setup({
   snippet = {
@@ -330,7 +329,7 @@ cmp.setup({
       luasnip.lsp_expand(args.body)
     end,
   },
-  completion = { completeopt = "menu,menuone,noinsert" },
+  completion = { completeopt = "menu,menuone,noinsert", autocomplete = false },
   window = {
     completion = cmp.config.window.bordered({ border = "rounded" }),
     documentation = cmp.config.window.bordered({ border = "rounded" }),
@@ -787,8 +786,9 @@ vim.keymap.set("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor li
 --------------------------------------------------
 -- Keymaps that aren't paired with functions above
 --------------------------------------------------
+local map = vim.keymap.set
 
-vim.keymap.set("n", "\\wb", function()
+map("n", "\\wb", function()
   local folder = vim.fn.expand("~/code/blog/posts")
   local date = os.date("%Y-%m-%d")
   local seconds = os.time()
@@ -799,28 +799,76 @@ end, { desc = "Create new timestamped file" })
 
 -- tmux navigator
 vim.g.tmux_navigator_no_mappings = 1
-vim.keymap.set("n", "<M-h>", "<cmd>TmuxNavigateLeft<CR>")
-vim.keymap.set("n", "<M-j>", "<cmd>TmuxNavigateDown<CR>")
-vim.keymap.set("n", "<M-k>", "<cmd>TmuxNavigateUp<CR>")
-vim.keymap.set("n", "<M-l>", "<cmd>TmuxNavigateRight<CR>")
+map("n", "<M-h>", "<cmd>TmuxNavigateLeft<CR>")
+map("n", "<M-j>", "<cmd>TmuxNavigateDown<CR>")
+map("n", "<M-k>", "<cmd>TmuxNavigateUp<CR>")
+map("n", "<M-l>", "<cmd>TmuxNavigateRight<CR>")
 
 -- quickfix nav
-vim.keymap.set("n", "]q", "<cmd>cnext<CR>", { desc = "Next quickfix item", silent = true })
-vim.keymap.set("n", "[q", "<cmd>cprevious<CR>", { desc = "Previous quickfix item", silent = true })
-vim.keymap.set("n", "]l", "<cmd>lnext<CR>", { desc = "Next location-list item", silent = true })
-vim.keymap.set("n", "[l", "<cmd>lprevious<CR>", { desc = "Previous location-list item", silent = true })
+map("n", "]q", "<cmd>cnext<CR>zz", { desc = "Next quickfix item", silent = true })
+map("n", "[q", "<cmd>cprev<CR>zz", { desc = "Previous quickfix item", silent = true })
+map("n", "]Q", "<cmd>clast<CR>zz", { desc = "Last quickfix item", silent = true })
+map("n", "[Q", "<cmd>cfirst<CR>zz", { desc = "First quickfix item", silent = true })
 
--- via the primagen
-vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
-vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
-vim.keymap.set("n", "J", "mzJ`z")
-vim.keymap.set("n", "n", "nzzzv")
-vim.keymap.set("n", "N", "Nzzzv")
+-- loclist nav
+map("n", "]l", "<cmd>lnext<CR>zz", { desc = "Next location-list item", silent = true })
+map("n", "[l", "<cmd>lprev<CR>zz", { desc = "Previous location-list item", silent = true })
+map("n", "]L", "<cmd>llast<CR>zz", { desc = "Last location-list item", silent = true })
+map("n", "[L", "<cmd>lfirst<CR>zz", { desc = "First location-list item", silent = true })
 
-vim.keymap.set("n", "<leader>y", function() require("yazi").toggle() end, { desc = "Yazi" })
-vim.keymap.set("n", "<leader>z", "zMzv", { desc = "Close all folds except current line", })
-vim.keymap.set("n", "<leader>Z", "zMzO", { desc = "Close all folds except current fold", })
+map("n", "<leader>q", "<cmd>copen<CR>")
+map("n", "<leader>Q", "<cmd>cclose<CR>")
+map("n", "<leader>l", "<cmd>lopen<CR>")
+map("n", "<leader>L", "<cmd>lclose<CR>")
 
+-- via the primeagen
+-- move visual blocks up and down
+map("v", "J", ":m '>+1<CR>gv=gv")
+map("v", "K", ":m '<-2<CR>gv=gv")
+-- cursor remains in place post J line join
+map("n", "J", "mzJ`z")
+-- keep various motions centered on page
+map("n", "n", "nzzzv")
+map("n", "N", "Nzzzv")
+map("n", "<C-d>", "<C-d>zz")
+map("n", "<C-u>", "<C-u>zz")
+map("n", "<C-f>", "<C-f>zz")
+map("n", "<C-b>", "<C-b>zz")
+map("n", "}", "}zz")
+map("n", "{", "{zz")
+map("n", "*", "*zzzv")
+map("n", "#", "#zzzv")
+map("n", "g*", "g*zzzv")
+map("n", "g#", "g#zzzv")
+map("n", "<C-o>", "<C-o>zz")
+map("n", "<C-i>", "<C-i>zz")
+
+-- avoid overwriting the yank register
+map("x", "<leader>p", [["_dP]])
+--map({ "n", "v" }, "<leader>d", [["_d]])
+--map({ "n", "v" }, "<leader>c", [["_c]])
+
+-- keep visual selection selected after indents
+map("v", "<", "<gv")
+map("v", ">", ">gv")
+
+-- reselect the most recently pasted region
+map("n", "gp", "`[v`]")
+
+map("n", "<leader>y", function() require("yazi").toggle() end, { desc = "Yazi" })
+map("n", "<leader>z", "zMzv", { desc = "Close all folds except current line", })
+map("n", "<leader>Z", "zMzO", { desc = "Close all folds except current fold", })
+
+-- delete without yanking
+map("n", "x", [["_x]])
+map("n", "X", [["_X]])
+
+-- jump to recent buffer
+map("n", "<leader><leader>", "<C-^>")
+
+-- convenient marks
+map("n", "mm", "mM")
+map("n", "gm", "`M")
 
 -- jj/git hunks (and lsp format on save the hunks stuff)
 local function git_hunk_ranges(bufnr)

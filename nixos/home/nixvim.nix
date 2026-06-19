@@ -108,6 +108,7 @@ in
       RemoveTrailingWhitespace.command = "%s/\\s\\+$//e";
       BlameToggle.command = "Gitsigns blame";
       DiffUnsaved.command = "w !diff -u % -";
+      YankFilename.command = "let @+=expand('%:p')";
     };
 
     keymaps = [
