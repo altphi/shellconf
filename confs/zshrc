@@ -151,11 +151,15 @@ symbols() {
 }
 
 switch-sys() {
-  sudo nixos-rebuild switch --flake ~/bin/nixos/sys\#euclid
+  local flake_path="$HOME/bin/nixos/sys#euclid"
+  sudo nixos-rebuild switch --flake "$flake_path"
+  home-manager expire-generations "-7 days" --flake "$flake_path"
   notify-send "switch-sys finished, exit code: $?"
 }
 switch-home() {
-  home-manager switch -b backup --flake ~/bin/nixos/home
+  local flake_path="$HOME/bin/nixos/home"
+  home-manager switch -b backup --flake "$flake_path"
+  home-manager expire-generations "-7 days" --flake "$flake_path"
 }
 
 find_symbol() {

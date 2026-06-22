@@ -292,7 +292,7 @@ local function treesitter_symbols()
 end
 vim.keymap.set("n", "<leader>s", treesitter_symbols, { desc = "Search Tree-sitter symbols" })
 
-vim.keymap.set("n", "<leader>q:", builtin.command_history, { desc = "nvim command history" })
+vim.keymap.set("n", "<leader>:", builtin.command_history, { desc = "nvim command history" })
 
 vim.keymap.set("n", "<leader>c", builtin.git_status, { desc = "Telescope: Changed files" })
 vim.keymap.set("n", "<leader>g",
@@ -788,6 +788,8 @@ vim.keymap.set("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor li
 --------------------------------------------------
 local map = vim.keymap.set
 
+map("n", "'", "`") -- make ' jump straight to mark's column
+
 map("n", "\\wb", function()
   local folder = vim.fn.expand("~/code/blog/posts")
   local date = os.date("%Y-%m-%d")
@@ -828,20 +830,21 @@ map("v", "K", ":m '<-2<CR>gv=gv")
 -- cursor remains in place post J line join
 map("n", "J", "mzJ`z")
 -- keep various motions centered on page
-map("n", "n", "nzzzv")
-map("n", "N", "Nzzzv")
-map("n", "<C-d>", "<C-d>zz")
-map("n", "<C-u>", "<C-u>zz")
-map("n", "<C-f>", "<C-f>zz")
-map("n", "<C-b>", "<C-b>zz")
-map("n", "}", "}zz")
-map("n", "{", "{zz")
-map("n", "*", "*zzzv")
-map("n", "#", "#zzzv")
-map("n", "g*", "g*zzzv")
-map("n", "g#", "g#zzzv")
-map("n", "<C-o>", "<C-o>zz")
-map("n", "<C-i>", "<C-i>zz")
+-- not sure I like this... tbd
+-- map("n", "n", "nzzzv")
+-- map("n", "N", "Nzzzv")
+-- map("n", "<C-d>", "<C-d>zz")
+-- map("n", "<C-u>", "<C-u>zz")
+-- map("n", "<C-f>", "<C-f>zz")
+-- map("n", "<C-b>", "<C-b>zz")
+-- map("n", "}", "}zz")
+-- map("n", "{", "{zz")
+-- map("n", "*", "*zzzv")
+-- map("n", "#", "#zzzv")
+-- map("n", "g*", "g*zzzv")
+-- map("n", "g#", "g#zzzv")
+-- map("n", "<C-o>", "<C-o>zz")
+-- map("n", "<C-i>", "<C-i>zz")
 
 -- avoid overwriting the yank register
 map("x", "<leader>p", [["_dP]])
@@ -865,10 +868,6 @@ map("n", "X", [["_X]])
 
 -- jump to recent buffer
 map("n", "<leader><leader>", "<C-^>")
-
--- convenient marks
-map("n", "mm", "mM")
-map("n", "gm", "`M")
 
 -- jj/git hunks (and lsp format on save the hunks stuff)
 local function git_hunk_ranges(bufnr)
@@ -1233,7 +1232,7 @@ require("obsidian").setup({
   end,
   callbacks = {
     enter_note = function()
-      vim.keymap.set("n", "<leader>q", ":Obsidian quick_switch<CR>", {
+      vim.keymap.set("n", "<leader>o", ":Obsidian quick_switch<CR>", {
         buf = 0,
         desc = "Obsidian: Quick Switch",
       })

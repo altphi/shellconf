@@ -15,7 +15,9 @@ else
   # exec footclient --app-id ${NAME} zsh
   if tmux has-session 2>/dev/null; then
     exec ghostty --class=${NAME} -e tmux attach
+    # exec footclient --app-id ${NAME} --title=${NAME} tmux attach
   else
     exec ghostty --class=${NAME} -e zsh
+    # exec footclient --app-id ${NAME} --title=${NAME} zsh
   fi
 fi
