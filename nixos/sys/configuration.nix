@@ -201,7 +201,16 @@
     };
   };
 
-  services.xserver.enable = false;
+  services.xserver = {
+    enable = false;
+    # despite xserver being off, we still use this to bind capslock to ctrl for gettys
+    xkb = {
+      layout = "us";
+      options = "ctrl:nocaps";
+    };
+  };
+  console.useXkbConfig = true;
+
   services.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;

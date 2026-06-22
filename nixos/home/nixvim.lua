@@ -330,20 +330,54 @@ cmp.setup({
     end,
   },
   completion = { completeopt = "menu,menuone,noinsert", autocomplete = false },
+  view = {
+    docs = {
+      auto_open = false,
+    },
+  },
   window = {
     completion = cmp.config.window.bordered({ border = "rounded" }),
     documentation = cmp.config.window.bordered({ border = "rounded" }),
   },
   mapping = cmp.mapping.preset.insert({
-    ["<C-n>"] = cmp.mapping.select_next_item(),
+    ["<C-n>"] = cmp.mapping(function()
+      if cmp.visible() then
+        cmp.select_next_item()
+      else
+        cmp.complete({
+          config = {
+            sources = {
+              { name = "buffer" },
+            },
+          },
+        })
+      end
+    end),
     ["<C-p>"] = cmp.mapping.select_prev_item(),
     ["<C-b>"] = cmp.mapping.scroll_docs(-4),
     ["<C-f>"] = cmp.mapping.scroll_docs(4),
+    ["<C-g>"] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        if cmp.visible_docs() then
+          cmp.close_docs()
+        else
+          cmp.open_docs()
+        end
+      else
+        fallback()
+      end
+    end),
     ["<C-y>"] = cmp.mapping.confirm({ select = true }),
     ["<CR>"] = cmp.mapping.confirm({ select = true }),
     ["<Tab>"] = cmp.mapping.select_next_item(),
     ["<S-Tab>"] = cmp.mapping.select_prev_item(),
-    ["<C-Space>"] = cmp.mapping.complete({}),
+    ["<C-Space>"] = cmp.mapping.complete({
+      config = {
+        sources = {
+          { name = "nvim_lsp" },
+        },
+      },
+    }),
     ["<C-l>"] = cmp.mapping(function()
       if luasnip.expand_or_locally_jumpable() then
         luasnip.expand_or_jump()
