@@ -107,7 +107,7 @@
             evtest
             firefox-bin-unwrapped
             fd
-            fractal
+            # fractal
             geoclue2
             ghostty
             git-filter-repo
