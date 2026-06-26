@@ -1,3 +1,13 @@
+-------------------
+---- debugging ----
+-------------------
+vim.o.verbosefile = vim.fn.stdpath("state") .. "/nvim-debug.log"
+
+local function dlog(x)
+  vim.cmd("silent verbose echomsg " .. vim.fn.string(vim.inspect(x)))
+end
+dlog('loading nixvim.lua');
+
 ------------------------------
 -- Disable syntax highlighting
 ------------------------------
@@ -53,9 +63,6 @@ require("trouble").setup({
   use_diagnostic_signs = true,
 })
 vim.keymap.set("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Trouble: Workspace Diagnostics" })
-vim.keymap.set("n", "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>",
-  { desc = "Trouble: Buffer Diagnostics" })
-vim.keymap.set("n", "<leader>xs", "<cmd>Trouble symbols toggle focus=false<CR>", { desc = "Trouble: Symbols (LSP)" })
 vim.keymap.set("n", "<leader>xl", "<cmd>Trouble lsp toggle focus=false win.position=right<CR>",
   { desc = "Trouble: LSP Definitions / References" })
 vim.keymap.set("n", "<leader>xq", "<cmd>Trouble qflist toggle<CR>", { desc = "Trouble: Quickfix List" })
@@ -143,30 +150,38 @@ require("gitsigns").setup({
 
 require("grug-far").setup({})
 
-require("flash").setup({
-  modes = {
-    char = {
-      enabled = false,
-    },
-    -- search was broken the last time I tried... kept matching one less character than I'd typed and label presses didn't trigger.
-    search = {
-      enabled = false,
-    },
-  },
-  label = {
-    min_pattern_length = 0,
-    current = true,
-    distance = true,
-    before = false,
-    after = true,
-    style = "overlay",
-    rainbow = {
-      enabled = false
+vim.api.nvim_create_autocmd("CmdlineLeave", {
+  group = vim.api.nvim_create_augroup("LeapOnSearch", { clear = true }),
+  callback = function()
+    local cmdtypes = {
+      ["/"] = true,
+      ["?"] = true,
     }
-  },
-})
-vim.keymap.set("n", "<leader>j", function() require("flash").jump() end)
 
+    local ev = vim.v.event
+    local cmdtype = ev.cmdtype
+    if not cmdtypes[cmdtype] or ev.abort then
+      return
+    end
+
+    vim.schedule(function()
+      -- CmdlineLeave fires before the search command has fully settled.
+      vim.schedule(function()
+        if vim.fn.searchcount().total <= 1 then
+          return
+        end
+
+        local labels = require("leap").opts.safe_labels:gsub("[nN]", "")
+        local vim_opts = { ["wo.conceallevel"] = vim.wo.conceallevel }
+        require("leap").leap({
+          pattern = vim.fn.getreg("/"),
+          windows = { vim.fn.win_getid() },
+          opts = { safe_labels = "", labels = labels, vim_opts = vim_opts },
+        })
+      end)
+    end)
+  end,
+})
 
 require("mini.surround").setup({
   custom_surroundings = {
@@ -290,15 +305,14 @@ local function treesitter_symbols()
 
   builtin.treesitter(opts)
 end
+
 vim.keymap.set("n", "<leader>s", treesitter_symbols, { desc = "Search Tree-sitter symbols" })
-
 vim.keymap.set("n", "<leader>:", builtin.command_history, { desc = "nvim command history" })
-
 vim.keymap.set("n", "<leader>c", builtin.git_status, { desc = "Telescope: Changed files" })
-vim.keymap.set("n", "<leader>g",
+vim.keymap.set("n", "<leader>G",
   function() builtin.live_grep({ grep_open_files = true, prompt_title = "Telescope: Grep Open Files" }) end,
   { desc = "Telescope: Live grep" })
-vim.keymap.set("n", "<leader>G", function() builtin.live_grep({ prompt_title = "Telescope: Grep Project" }) end,
+vim.keymap.set("n", "<leader>g", function() builtin.live_grep({ prompt_title = "Telescope: Grep Project" }) end,
   { desc = "Telescope: Live grep" })
 vim.keymap.set("n", "<leader>b", function() builtin.buffers({ sort_mru = true, sort_lastused = true }) end,
   { desc = "Telescope: Buffers" })
@@ -316,7 +330,6 @@ vim.keymap.set("n", "<leader>ic", builtin.lsp_incoming_calls, { desc = "Telescop
 vim.keymap.set("n", "<leader>f", function()
   require("telescope").extensions.frecency.frecency({ workspace = "CWD" })
 end, { desc = "Telescope: Frecent files" })
-
 
 -- Completion
 local luasnip = require("luasnip")
@@ -1061,7 +1074,6 @@ local function lsp_format_local_hunks(bufnr)
 
     return lsp_format_jj_hunks(bufnr, jj_root)
   end
-  print("lsp_format_local_hunks: no jj root found. ");
 end
 
 local function lsp_format_buffer(bufnr)
@@ -1139,14 +1151,12 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
-
 vim.api.nvim_create_autocmd("BufWritePost", {
   group = lsp_format_on_save_group,
   pattern = "*",
   callback = function(ev)
     local jj_root = vim.b[ev.buf].lsp_format_jj_hunks_after_save
     if not jj_root then
-      print("lsp_format_on_save:  No jj root found.");
       return
     end
     vim.b[ev.buf].lsp_format_jj_hunks_after_save = nil

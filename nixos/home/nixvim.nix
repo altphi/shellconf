@@ -214,6 +214,7 @@ in
       gitsigns-nvim
       grug-far-nvim
       lazygit-nvim
+      leap-nvim
       luasnip
       mini-surround
       nvim-cmp
