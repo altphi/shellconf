@@ -920,28 +920,7 @@ map("n", "X", [["_X]])
 -- jump to recent buffer
 map("n", "<leader><leader>", "<C-^>")
 
--- jj/git hunks (and lsp format on save the hunks stuff)
-local function git_hunk_ranges(bufnr)
-  local ok, gitsigns = pcall(require, "gitsigns")
-  if not ok or not gitsigns.get_hunks then
-    vim.notify_once("[LSP] gitsigns hunks are not available; skipping changed-hunk format", vim.log.levels.WARN)
-    return nil
-  end
-
-  local ranges = {}
-  local hunks = gitsigns.get_hunks(bufnr) or {}
-  for _, hunk in ipairs(hunks) do
-    if hunk.added.count > 0 then
-      ranges[#ranges + 1] = {
-        start = hunk.added.start,
-        ["end"] = hunk.added.start + hunk.added.count - 1,
-      }
-    end
-  end
-
-  return ranges
-end
-
+-- jj hunks (and lsp format on save the hunks stuff)
 local function jj_root_for_buf(bufnr)
   local bufname = vim.api.nvim_buf_get_name(bufnr)
   if bufname == "" then
@@ -1068,11 +1047,6 @@ local function lsp_format_line_ranges(bufnr, ranges)
   return true
 end
 
-
-local function lsp_format_git_hunks(bufnr)
-  return lsp_format_line_ranges(bufnr, git_hunk_ranges(bufnr) or {})
-end
-
 local function lsp_format_jj_hunks(bufnr, root)
   return lsp_format_line_ranges(bufnr, jj_hunk_ranges(bufnr, root) or {})
 end
@@ -1087,8 +1061,7 @@ local function lsp_format_local_hunks(bufnr)
 
     return lsp_format_jj_hunks(bufnr, jj_root)
   end
-
-  return lsp_format_git_hunks(bufnr)
+  print("lsp_format_local_hunks: no jj root found. ");
 end
 
 local function lsp_format_buffer(bufnr)
@@ -1134,6 +1107,7 @@ local lsp_format_on_save_filetypes = {
   scheme = "file",
   typescript = "hunks",
   typescriptreact = "hunks",
+  c = "hunks",
 }
 
 local lsp_format_on_save_group = vim.api.nvim_create_augroup("LspFormatOnSave", { clear = true })
@@ -1154,7 +1128,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
       if jj_root then
         vim.b[ev.buf].lsp_format_jj_hunks_after_save = jj_root
       else
-        lsp_format_git_hunks(ev.buf)
+        lsp_format_jj_hunks(ev.buf)
       end
     else
       vim.notify_once(
@@ -1172,6 +1146,7 @@ vim.api.nvim_create_autocmd("BufWritePost", {
   callback = function(ev)
     local jj_root = vim.b[ev.buf].lsp_format_jj_hunks_after_save
     if not jj_root then
+      print("lsp_format_on_save:  No jj root found.");
       return
     end
     vim.b[ev.buf].lsp_format_jj_hunks_after_save = nil
