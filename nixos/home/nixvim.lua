@@ -640,6 +640,19 @@ vim.lsp.enable({
   "lua_ls",
   "nixd",
   "scheme_langserver",
+  "clangd",
+})
+
+vim.lsp.config('clangd', {
+  cmd = { 'clangd' },
+  filetypes = { 'c', 'cpp', 'objc', 'objcpp' },
+  root_markers = {
+    '.clangd',
+    'compile_commands.json',
+    'compile_flags.txt',
+    '.git',
+    '.jj',
+  },
 })
 
 -- LSP diagnostics

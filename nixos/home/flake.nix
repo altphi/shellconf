@@ -85,6 +85,7 @@
             bat
             #bzflag
             chez
+            clang-tools
             cliphist
             vscode-extensions.vadimcn.vscode-lldb
             cmatrix
@@ -108,6 +109,7 @@
             firefox-bin-unwrapped
             fd
             # fractal
+            gdb
             geoclue2
             ghostty
             git-filter-repo
