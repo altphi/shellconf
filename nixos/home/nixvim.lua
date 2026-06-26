@@ -741,6 +741,10 @@ local function apply_cursor_line_highlight()
     -- weaker to stronger contrast for light -> 255..250 and for dark -> 232..241
     ctermbg = get_system_appearance() == "light" and 252 or 237,
   })
+
+  local search_bg_color = get_system_appearance() == "light" and 230 or 101;
+  vim.api.nvim_set_hl(0, "Search", { ctermbg = search_bg_color, })
+  vim.api.nvim_set_hl(0, "CurSearch", { ctermbg = search_bg_color, })
 end
 
 apply_cursor_line_highlight()
