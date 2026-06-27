@@ -1,3 +1,5 @@
+local map = vim.keymap.set
+
 local function configure_debugging()
   vim.o.verbosefile = vim.fn.stdpath("state") .. "/nvim-debug.log"
 
@@ -32,9 +34,6 @@ local function configure_general_options()
       vim.opt_local.formatoptions:remove("o")
     end,
   })
-
-  -- move to configure_folding function
-  vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 end
 
 local function configure_plugins()
@@ -74,13 +73,13 @@ local function configure_plugins()
       local gs = package.loaded.gitsigns
       local trouble = require("trouble")
 
-      local function map(mode, lhs, rhs, opts)
+      local function gs_map(mode, lhs, rhs, opts)
         opts = opts or {}
         opts.buf = bufnr
         vim.keymap.set(mode, lhs, rhs, opts)
       end
 
-      map("n", "<leader>hq", function()
+      gs_map("n", "<leader>hq", function()
         gs.setqflist(0, { use_location_list = true, open = false }, function(err)
           if err then
             vim.notify(err, vim.log.levels.ERROR)
@@ -93,7 +92,7 @@ local function configure_plugins()
         end)
       end, { desc = "Git hunks in buffer" })
 
-      map("n", "<leader>hQ", function()
+      gs_map("n", "<leader>hQ", function()
         gs.setqflist("all", { open = false }, function()
           trouble.close("loclist")
           trouble.open({ mode = "qflist", focus = true, win = { position = "bottom", size = 0.15 } })
@@ -103,7 +102,7 @@ local function configure_plugins()
         end)
       end, { desc = "Git hunks in repo" })
 
-      map("n", "]c", function()
+      gs_map("n", "]c", function()
         if vim.wo.diff then
           return "]c"
         end
@@ -113,7 +112,7 @@ local function configure_plugins()
         return "<Ignore>"
       end, { expr = true, desc = "Next Git hunk" })
 
-      map("n", "[c", function()
+      gs_map("n", "[c", function()
         if vim.wo.diff then
           return "[c"
         end
@@ -123,13 +122,13 @@ local function configure_plugins()
         return "<Ignore>"
       end, { expr = true, desc = "Previous Git hunk" })
 
-      map("n", "<leader>hn", gs.next_hunk, { desc = "Next Git hunk" })
-      map("n", "<leader>hp", gs.prev_hunk, { desc = "Previous Git hunk" })
-      map("n", "<leader>hl", gs.preview_hunk, { desc = "Preview Git hunk" })
-      map("n", "<leader>hb", function()
+      gs_map("n", "<leader>hn", gs.next_hunk, { desc = "Next Git hunk" })
+      gs_map("n", "<leader>hp", gs.prev_hunk, { desc = "Previous Git hunk" })
+      gs_map("n", "<leader>hl", gs.preview_hunk, { desc = "Preview Git hunk" })
+      gs_map("n", "<leader>hb", function()
         gs.blame_line({ full = true })
       end, { desc = "Git blame line" })
-      map("n", "<leader>hr", function()
+      gs_map("n", "<leader>hr", function()
         vim.ui.input({ prompt = "Are you sure? (y/n): " }, function(input)
           if input and (input:lower() == "y" or input:lower() == "yes") then
             gs.reset_hunk()
@@ -178,14 +177,6 @@ local function configure_plugins()
   })
 
   require("mini.surround").setup({
-    custom_surroundings = {
-      -- [")"] = { output = { left = "(", right = ")" } },
-      -- ["("] = { output = { left = "(", right = ")" } },
-      -- ["["] = { output = { left = "[", right = "]" } },
-      -- ["]"] = { output = { left = "[", right = "]" } },
-      -- ["{"] = { output = { left = "{", right = "}" } },
-      -- ["}"] = { output = { left = "{", right = "}" } },
-    },
     highlight_duration = 500,
     mappings = {
       add = "sa",
@@ -205,7 +196,6 @@ local function configure_plugins()
 end
 
 local function configure_treesitter()
-  -- Treesitter
   require("nvim-treesitter").setup({
     install_dir = vim.fn.stdpath("data") .. "/site",
     highlight = { enable = false },
@@ -314,6 +304,7 @@ local function configure_telescope_symbol_search()
     objc = lsp_document_symbols,
     objcpp = lsp_document_symbols,
     rust = treesitter_symbols,
+    lua = lsp_document_symbols,
   }
 
   local function buffer_symbols()
@@ -336,7 +327,7 @@ local function configure_telescope_symbol_search()
   vim.keymap.set("n", "<leader>b", function() builtin.buffers({ sort_mru = true, sort_lastused = true }) end,
     { desc = "Telescope: Buffers" })
   vim.keymap.set("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
-  vim.keymap.set("n", "<leader>J", builtin.jumplist, { desc = "Telescope: Jumps" })
+  vim.keymap.set("n", "<leader>j", builtin.jumplist, { desc = "Telescope: Jumps" })
   vim.keymap.set("n", "<leader>s", buffer_symbols, { desc = "Search buffer symbols" })
   vim.keymap.set("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
   vim.keymap.set("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
@@ -711,28 +702,6 @@ local function c()
       '.jj',
     },
   })
-
-  -- vim.api.nvim_create_autocmd('FileType', {
-  --   pattern = { 'c', 'cpp', 'objc', 'objcpp' },
-  --   callback = function()
-  --     vim.wo.foldmethod = 'expr'
-  --     vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-  --     vim.wo.foldlevel = 99
-  --     vim.wo.foldenable = true
-  --   end,
-  -- })
-  --
-  vim.api.nvim_create_autocmd('LspAttach', {
-    callback = function(ev)
-      local client = vim.lsp.get_client_by_id(ev.data.client_id)
-      if client and client:supports_method('textDocument/foldingRange') then
-        vim.wo.foldmethod = 'expr'
-        vim.wo.foldexpr = 'v:lua.vim.lsp.foldexpr()'
-        vim.wo.foldlevel = 99
-        vim.wo.foldenable = true
-      end
-    end,
-  })
 end
 
 local function configure_misc_autocommands()
@@ -885,11 +854,6 @@ local function configure_handy_commands()
 end
 
 local function configure_keymaps()
-  --------------------------------------------------
-  -- Keymaps that aren't paired with functions above
-  --------------------------------------------------
-  local map = vim.keymap.set
-
   map("n", "'", "`") -- make ' jump straight to mark's column
 
   map("n", "\\wb", function()
@@ -945,8 +909,6 @@ local function configure_keymaps()
   map("n", "gp", "`[v`]")
 
   map("n", "<leader>y", function() require("yazi").toggle() end, { desc = "Yazi" })
-  map("n", "<leader>z", "zMzv", { desc = "Close all folds except current line", })
-  map("n", "<leader>Z", "zMzO", { desc = "Close all folds except current fold", })
 
   -- delete without yanking
   map("n", "x", [["_x]])
@@ -1354,6 +1316,39 @@ local function configure_final_keymaps()
   --end, { desc = "Open GitHub link (selection)" })
 end
 
+local function configure_folding()
+  local lsp_fold_filetypes = {
+    c = true,
+    cpp = true,
+    objc = true,
+    objcpp = true,
+  }
+  vim.o.foldmethod = 'expr'
+  vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+  vim.o.foldlevel = 99
+
+  vim.api.nvim_create_autocmd('LspAttach', {
+    callback = function(ev)
+      if not lsp_fold_filetypes[vim.bo[ev.buf].filetype] then
+        return
+      end
+
+      local client = vim.lsp.get_client_by_id(ev.data.client_id)
+      if client and client:supports_method('textDocument/foldingRange') then
+        for _, win in ipairs(vim.fn.win_findbuf(ev.buf)) do
+          vim.wo[win][0].foldmethod = 'expr'
+          vim.wo[win][0].foldexpr = 'v:lua.vim.lsp.foldexpr()'
+          vim.wo[win][0].foldlevel = 99
+          vim.wo[win][0].foldenable = true
+        end
+      end
+    end,
+  })
+
+  map("n", "<leader>z", "zMzv", { desc = "Close all folds except current line", })
+  map("n", "<leader>Z", "zMzO", { desc = "Close all folds except current fold", })
+end
+
 configure_debugging()
 configure_syntax_highlighting()
 configure_general_options()
@@ -1372,3 +1367,4 @@ configure_keymaps()
 configure_lsp_formatting()
 configure_obsidian()
 configure_final_keymaps()
+configure_folding()
