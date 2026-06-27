@@ -304,7 +304,28 @@ local function configure_telescope_symbol_search()
     builtin.treesitter(opts)
   end
 
-  vim.keymap.set("n", "<leader>s", treesitter_symbols, { desc = "Search Tree-sitter symbols" })
+  local function lsp_document_symbols()
+    builtin.lsp_document_symbols({ bufnr = vim.api.nvim_get_current_buf(), show_line = true })
+  end
+
+  local symbol_picker_by_filetype = {
+    c = lsp_document_symbols,
+    cpp = lsp_document_symbols,
+    objc = lsp_document_symbols,
+    objcpp = lsp_document_symbols,
+    rust = treesitter_symbols,
+  }
+
+  local function buffer_symbols()
+    local ft = vim.bo.filetype
+    local picker = symbol_picker_by_filetype[ft]
+    if picker then
+      picker()
+    else
+      vim.notify(("No symbol picker configured for filetype %q"):format(ft), vim.log.levels.WARN)
+    end
+  end
+
   vim.keymap.set("n", "<leader>:", builtin.command_history, { desc = "nvim command history" })
   vim.keymap.set("n", "<leader>c", builtin.git_status, { desc = "Telescope: Changed files" })
   vim.keymap.set("n", "<leader>G",
@@ -316,7 +337,7 @@ local function configure_telescope_symbol_search()
     { desc = "Telescope: Buffers" })
   vim.keymap.set("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
   vim.keymap.set("n", "<leader>J", builtin.jumplist, { desc = "Telescope: Jumps" })
-  vim.keymap.set("n", "<leader>s", treesitter_symbols, { desc = "Search Tree-sitter symbols" })
+  vim.keymap.set("n", "<leader>s", buffer_symbols, { desc = "Search buffer symbols" })
   vim.keymap.set("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
   vim.keymap.set("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
   vim.keymap.set("n", "<leader>d", "<cmd>Telescope diagnostics<CR>", { desc = "Telescope: diagnostics" })
