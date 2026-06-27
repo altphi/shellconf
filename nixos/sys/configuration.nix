@@ -267,7 +267,7 @@
   };
 
   security.polkit.extraConfig = ''
-    polkit.addRule((action, subject) => {
+    polkit.addRule(function(action, subject) {
       if (action.id == "net.reactivated.fprint.device.enroll" && subject.isInGroup("wheel")) {
         return polkit.Result.YES;
       }
