@@ -55,11 +55,11 @@ local function configure_plugins()
     },
     use_diagnostic_signs = true,
   })
-  vim.keymap.set("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Trouble: Workspace Diagnostics" })
-  vim.keymap.set("n", "<leader>xl", "<cmd>Trouble lsp toggle focus=false win.position=right<CR>",
+  map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Trouble: Workspace Diagnostics" })
+  map("n", "<leader>xl", "<cmd>Trouble lsp toggle focus=false win.position=right<CR>",
     { desc = "Trouble: LSP Definitions / References" })
-  vim.keymap.set("n", "<leader>xq", "<cmd>Trouble qflist toggle<CR>", { desc = "Trouble: Quickfix List" })
-  vim.keymap.set("n", "<leader>xL", "<cmd>Trouble loclist toggle<CR>", { desc = "Trouble: Location List" })
+  map("n", "<leader>xq", "<cmd>Trouble qflist toggle<CR>", { desc = "Trouble: Quickfix List" })
+  map("n", "<leader>xL", "<cmd>Trouble loclist toggle<CR>", { desc = "Trouble: Location List" })
 
   require("gitsigns").setup({
     signs = {
@@ -76,7 +76,7 @@ local function configure_plugins()
       local function gs_map(mode, lhs, rhs, opts)
         opts = opts or {}
         opts.buf = bufnr
-        vim.keymap.set(mode, lhs, rhs, opts)
+        map(mode, lhs, rhs, opts)
       end
 
       gs_map("n", "<leader>hq", function()
@@ -220,7 +220,7 @@ local function configure_treesitter()
   local ts_repeat_move = require("nvim-treesitter-textobjects.repeatable_move")
 
   local function map_move(lhs, rhs, desc)
-    vim.keymap.set({ "n", "x", "o" }, lhs, rhs, { desc = desc })
+    map({ "n", "x", "o" }, lhs, rhs, { desc = desc })
   end
 
   map_move("]m", function() ts_move.goto_next_start("@function.outer", "textobjects") end, "Next function start")
@@ -238,12 +238,12 @@ local function configure_treesitter()
   map_move("[M", function() ts_move.goto_previous_end("@function.outer", "textobjects") end, "Previous function end")
   map_move("[]", function() ts_move.goto_previous_end("@class.outer", "textobjects") end, "Previous class end")
 
-  vim.keymap.set({ "n", "x", "o" }, ";", ts_repeat_move.repeat_last_move_next)
-  vim.keymap.set({ "n", "x", "o" }, ",", ts_repeat_move.repeat_last_move_previous)
-  vim.keymap.set({ "n", "x", "o" }, "f", ts_repeat_move.builtin_f_expr, { expr = true })
-  vim.keymap.set({ "n", "x", "o" }, "F", ts_repeat_move.builtin_F_expr, { expr = true })
-  vim.keymap.set({ "n", "x", "o" }, "t", ts_repeat_move.builtin_t_expr, { expr = true })
-  vim.keymap.set({ "n", "x", "o" }, "T", ts_repeat_move.builtin_T_expr, { expr = true })
+  map({ "n", "x", "o" }, ";", ts_repeat_move.repeat_last_move_next)
+  map({ "n", "x", "o" }, ",", ts_repeat_move.repeat_last_move_previous)
+  map({ "n", "x", "o" }, "f", ts_repeat_move.builtin_f_expr, { expr = true })
+  map({ "n", "x", "o" }, "F", ts_repeat_move.builtin_F_expr, { expr = true })
+  map({ "n", "x", "o" }, "t", ts_repeat_move.builtin_t_expr, { expr = true })
+  map({ "n", "x", "o" }, "T", ts_repeat_move.builtin_T_expr, { expr = true })
 end
 
 local function configure_telescope_symbol_search()
@@ -317,27 +317,27 @@ local function configure_telescope_symbol_search()
     end
   end
 
-  vim.keymap.set("n", "<leader>:", builtin.command_history, { desc = "nvim command history" })
-  vim.keymap.set("n", "<leader>c", builtin.git_status, { desc = "Telescope: Changed files" })
-  vim.keymap.set("n", "<leader>G",
+  map("n", "<leader>:", builtin.command_history, { desc = "nvim command history" })
+  map("n", "<leader>c", builtin.git_status, { desc = "Telescope: Changed files" })
+  map("n", "<leader>G",
     function() builtin.live_grep({ grep_open_files = true, prompt_title = "Telescope: Grep Open Files" }) end,
     { desc = "Telescope: Live grep" })
-  vim.keymap.set("n", "<leader>g", function() builtin.live_grep({ prompt_title = "Telescope: Grep Project" }) end,
+  map("n", "<leader>g", function() builtin.live_grep({ prompt_title = "Telescope: Grep Project" }) end,
     { desc = "Telescope: Live grep" })
-  vim.keymap.set("n", "<leader>b", function() builtin.buffers({ sort_mru = true, sort_lastused = true }) end,
+  map("n", "<leader>b", function() builtin.buffers({ sort_mru = true, sort_lastused = true }) end,
     { desc = "Telescope: Buffers" })
-  vim.keymap.set("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
-  vim.keymap.set("n", "<leader>j", builtin.jumplist, { desc = "Telescope: Jumps" })
-  vim.keymap.set("n", "<leader>s", buffer_symbols, { desc = "Search buffer symbols" })
-  vim.keymap.set("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
-  vim.keymap.set("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
-  vim.keymap.set("n", "<leader>d", "<cmd>Telescope diagnostics<CR>", { desc = "Telescope: diagnostics" })
-  vim.keymap.set("n", "<leader>rf", function()
+  map("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
+  map("n", "<leader>j", builtin.jumplist, { desc = "Telescope: Jumps" })
+  map("n", "<leader>s", buffer_symbols, { desc = "Search buffer symbols" })
+  map("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
+  map("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
+  map("n", "<leader>d", "<cmd>Telescope diagnostics<CR>", { desc = "Telescope: diagnostics" })
+  map("n", "<leader>rf", function()
     builtin.lsp_references({ include_declaration = false, include_current_line = false })
   end, { desc = "Telescope: lsp_references (usages only)" })
-  vim.keymap.set("n", "<leader>rr", builtin.registers, { desc = "Registers" })
-  vim.keymap.set("n", "<leader>ic", builtin.lsp_incoming_calls, { desc = "Telescope: lsp_incoming_calls" })
-  vim.keymap.set("n", "<leader>f", function()
+  map("n", "<leader>rr", builtin.registers, { desc = "Registers" })
+  map("n", "<leader>ic", builtin.lsp_incoming_calls, { desc = "Telescope: lsp_incoming_calls" })
+  map("n", "<leader>f", function()
     require("telescope").extensions.frecency.frecency({ workspace = "CWD" })
   end, { desc = "Telescope: Frecent files" })
 end
@@ -517,7 +517,7 @@ local function configure_statusline()
   -- statusline
   -------------
   vim.o.laststatus = 0
-  vim.keymap.set("n", "<leader>e", function()
+  map("n", "<leader>e", function()
     vim.o.laststatus = vim.o.laststatus == 0 and 2 or 0
   end, { desc = "Toggle status line" })
 
@@ -606,12 +606,12 @@ local function configure_lsp()
     callback = function(args)
       local opts = { buffer = args.buf }
 
-      vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-      vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-      vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
-      vim.keymap.set("n", "grr", vim.lsp.buf.references, opts)
-      vim.keymap.set("n", "grn", vim.lsp.buf.rename, opts)
-      vim.keymap.set("n", "gca", vim.lsp.buf.code_action, opts)
+      map("n", "K", vim.lsp.buf.hover, opts)
+      map("n", "gd", vim.lsp.buf.definition, opts)
+      map("n", "gD", vim.lsp.buf.declaration, opts)
+      map("n", "grr", vim.lsp.buf.references, opts)
+      map("n", "grn", vim.lsp.buf.rename, opts)
+      map("n", "gca", vim.lsp.buf.code_action, opts)
 
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if not client or not client:supports_method("textDocument/formatting") then
@@ -837,7 +837,7 @@ local function configure_handy_commands()
     vim.wo.relativenumber = enabled
   end
 
-  vim.keymap.set("n", "<leader>ll", toggle_line_numbers, { desc = "Toggle line numbers" })
+  map("n", "<leader>ll", toggle_line_numbers, { desc = "Toggle line numbers" })
 
   --
 
@@ -850,7 +850,7 @@ local function configure_handy_commands()
       toggle_cursor_line()
     end,
   })
-  vim.keymap.set("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor line" })
+  map("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor line" })
 end
 
 local function configure_keymaps()
@@ -1082,13 +1082,13 @@ local function configure_lsp_formatting()
     group = vim.api.nvim_create_augroup("UserLspFormatting", { clear = true }),
     callback = function(ev)
       local opts = { buf = ev.buf, silent = true }
-      vim.keymap.set("n", "<leader>lf", function()
+      map("n", "<leader>lf", function()
         lsp_format_buffer(ev.buf)
       end, vim.tbl_extend("force", opts, { desc = "Format buffer" }))
-      vim.keymap.set("x", "<leader>lf", function()
+      map("x", "<leader>lf", function()
         lsp_format_visual_selection(ev.buf)
       end, vim.tbl_extend("force", opts, { desc = "Format selection" }))
-      vim.keymap.set("n", "<leader>lF", function()
+      map("n", "<leader>lF", function()
         lsp_format_local_hunks(ev.buf)
       end, vim.tbl_extend("force", opts, { desc = "Format changed hunks" }))
     end,
@@ -1255,15 +1255,15 @@ local function configure_obsidian()
     end,
     callbacks = {
       enter_note = function()
-        vim.keymap.set("n", "<leader>o", ":Obsidian quick_switch<CR>", {
+        map("n", "<leader>o", ":Obsidian quick_switch<CR>", {
           buf = 0,
           desc = "Obsidian: Quick Switch",
         })
-        vim.keymap.set("n", "<C-Space>", ":Obsidian toggle_checkbox<CR>", {
+        map("n", "<C-Space>", ":Obsidian toggle_checkbox<CR>", {
           buf = 0,
           desc = "Obsidian: Toggle Checkbox",
         })
-        vim.keymap.set("n", "<CR>", ":Obsidian follow_link<CR>", {
+        map("n", "<CR>", ":Obsidian follow_link<CR>", {
           buf = 0,
           desc = "Obsidian: Follow Link",
         })
@@ -1276,23 +1276,23 @@ local function configure_obsidian()
   local function load_personal_workspace()
     vim.cmd("Obsidian workspace personal")
   end
-  vim.keymap.set("n", "\\ws", function()
+  map("n", "\\ws", function()
     load_personal_workspace()
     vim.cmd("edit " .. vim.fn.expand("~/vaults/sdb/inbox.md"))
   end, { desc = "Load obsidian personal inbox" })
-  vim.keymap.set("n", "\\ww", function()
+  map("n", "\\ww", function()
     load_clt_workspace()
     vim.cmd("edit " .. vim.fn.expand("~/vaults/clt/inbox.md"))
   end, { desc = "Load obsidian work inbox" })
-  vim.keymap.set("n", "\\wt", function()
+  map("n", "\\wt", function()
     load_personal_workspace()
     open_vault_file("todo.md")
   end, { desc = "Open Personal todo.md" })
-  vim.keymap.set("n", "\\wT", function()
+  map("n", "\\wT", function()
     load_clt_workspace()
     open_vault_file("todo.md")
   end, { desc = "Open CLT todo.md" })
-  vim.keymap.set("n", "\\wd", function()
+  map("n", "\\wd", function()
     load_personal_workspace()
     vim.cmd("Obsidian today")
   end, { desc = "Open Personal daily" })
@@ -1302,16 +1302,16 @@ local function configure_final_keymaps()
   --- Github link copying
   -- Git and diagnostics
   -- TODO turn these into commands and not keybindings
-  --vim.keymap.set("n", "<leader>Gy", function()
+  --map("n", "<leader>Gy", function()
   --  require("gitlinker").get_buf_range_url("n")
   --end, { desc = "Copy GitHub link" })
-  --vim.keymap.set("v", "<leader>Gy", function()
+  --map("v", "<leader>Gy", function()
   --  require("gitlinker").get_buf_range_url("v")
   --end, { desc = "Copy GitHub link (selection)" })
-  --vim.keymap.set("n", "<leader>Go", function()
+  --map("n", "<leader>Go", function()
   --  require("gitlinker").get_buf_range_url("n", { action_callback = require("gitlinker.actions").open_in_browser })
   --end, { desc = "Open GitHub link" })
-  --vim.keymap.set("v", "<leader>Go", function()
+  --map("v", "<leader>Go", function()
   --  require("gitlinker").get_buf_range_url("v", { action_callback = require("gitlinker.actions").open_in_browser })
   --end, { desc = "Open GitHub link (selection)" })
 end
