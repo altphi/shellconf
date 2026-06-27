@@ -85,7 +85,6 @@
             bat
             #bzflag
             chez
-            clang-tools
             cliphist
             vscode-extensions.vadimcn.vscode-lldb
             cmatrix
@@ -102,22 +101,20 @@
             emmylua-ls
             etlegacy
             etlegacy-assets
-            eww
+            # eww
             exercism
             exiftool
-            evtest
+            # evtest
             firefox-bin-unwrapped
             fd
             # fractal
             gdb
-            geoclue2
+            # geoclue2
             ghostty
             git-filter-repo
             git-open
             gnuplot_qt
             grim
-            hyprland
-            hyprlauncher
             hyprlock
             imagemagick
             iw
@@ -129,7 +126,6 @@
             kube-linter
             kubectl-graph
             lazygit
-            lf
             libnotify
             libqalculate
             librespot
@@ -142,7 +138,6 @@
             nmap
             nodejs_24
             openssl
-            peaclock
             playerctl
             psmisc
             pdf4qt
@@ -154,7 +149,6 @@
             slack
             signal-desktop
             slurp
-            sublime-merge
             swaybg
             swayidle
             swayimg
@@ -163,6 +157,7 @@
             telegram-desktop
             timer
             tree-sitter
+            # TODO move to flake
             # (texlive.combine {
             # inherit (texlive) scheme-medium
             #   collection-langenglish
@@ -183,7 +178,7 @@
             zoxide
             (import ./custom_derivations/tableplus.nix { inherit pkgs; })
             awscli2
-            # libreoffice   move me to a separate nix flake in a directory to avoid heavy updates
+            # libreoffice  TODO move me to a separate nix flake in a directory to avoid heavy updates
           ] ++ [
             pkgs-unstable.fastmail-desktop
             pkgs-unstable.claude-code
