@@ -50,7 +50,7 @@ in
       clipboard = "unnamedplus";
       conceallevel = 2;
       cursorline = true;
-      cursorlineopt = "line";
+      cursorlineopt = "both";
       expandtab = true;
       foldlevel = 99;
       foldlevelstart = 99;
