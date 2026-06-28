@@ -182,6 +182,7 @@ in
     extraPackages = with pkgs; [
       akkuPackages.scheme-langserver
       ast-grep
+      clang-tools
       fd
       gh
       git
@@ -202,14 +203,14 @@ in
 
     extraPlugins = with pkgs.vimPlugins; [
       aerial-nvim
-      # barbar-nvim
       bullets-vim
       cmp-buffer
       cmp-nvim-lsp
       cmp-path
       cmp_luasnip
+      cmp-ctags
       fidget-nvim
-      flash-nvim
+      friendly-snippets
       gitlinker-nvim
       gitsigns-nvim
       grug-far-nvim
@@ -223,7 +224,6 @@ in
       nvim-dap-virtual-text
       nvim-lint
       nvim-lspconfig
-      nvim-navic
       nvim-nio
       nvim-treesitter-context
       nvim-treesitter-textobjects
@@ -238,7 +238,6 @@ in
       telescope-sg
       telescope-frecency-nvim
       treesitter
-      # treesj
       trouble-nvim
       vim-tmux-navigator
       yazi-nvim

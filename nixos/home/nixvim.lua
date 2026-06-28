@@ -346,15 +346,33 @@ local function configure_completion()
   -- Completion
   local luasnip = require("luasnip")
   luasnip.config.setup({})
+  require("luasnip.loaders.from_vscode").lazy_load()
 
   local cmp = require("cmp")
+  local source_labels = {
+    buffer = "[Buf]",
+    luasnip = "[Snip]",
+    nvim_lsp = "[LSP]",
+    path = "[Path]",
+  }
+
   cmp.setup({
+    preselect = cmp.PreselectMode.None,
     snippet = {
       expand = function(args)
         luasnip.lsp_expand(args.body)
       end,
     },
-    completion = { completeopt = "menu,menuone,noinsert", autocomplete = false },
+    completion = {
+      completeopt = "menu,menuone,noinsert,noselect",
+      autocomplete = { cmp.TriggerEvent.TextChanged },
+    },
+    formatting = {
+      format = function(entry, vim_item)
+        vim_item.menu = source_labels[entry.source.name] or ("[" .. entry.source.name .. "]")
+        return vim_item
+      end,
+    },
     view = {
       docs = {
         auto_open = false,
@@ -365,19 +383,21 @@ local function configure_completion()
       documentation = cmp.config.window.bordered({ border = "rounded" }),
     },
     mapping = cmp.mapping.preset.insert({
-      ["<C-n>"] = cmp.mapping(function()
-        if cmp.visible() then
-          cmp.select_next_item()
-        else
-          cmp.complete({
-            config = {
-              sources = {
-                { name = "buffer" },
-              },
-            },
-          })
-        end
-      end),
+
+      -- ["<C-N>"] = cmp.mapping(function()
+      --   if cmp.visible() then
+      --     cmp.select_next_item()
+      --   else
+      --     cmp.complete({
+      --       config = {
+      --         sources = {
+      --           { name = "buffer" },
+      --         },
+      --       },
+      --     })
+      --   end
+      -- end),
+
       ["<C-p>"] = cmp.mapping.select_prev_item(),
       ["<C-b>"] = cmp.mapping.scroll_docs(-4),
       ["<C-f>"] = cmp.mapping.scroll_docs(4),
@@ -393,16 +413,25 @@ local function configure_completion()
         end
       end),
       ["<C-y>"] = cmp.mapping.confirm({ select = true }),
-      ["<CR>"] = cmp.mapping.confirm({ select = true }),
+      ["<CR>"] = cmp.mapping.confirm({ select = false }),
       ["<Tab>"] = cmp.mapping.select_next_item(),
       ["<S-Tab>"] = cmp.mapping.select_prev_item(),
-      ["<C-Space>"] = cmp.mapping.complete({
-        config = {
-          sources = {
-            { name = "nvim_lsp" },
-          },
-        },
-      }),
+      ["<C-n>"] = cmp.mapping(function()
+        if cmp.visible() then
+          cmp.select_next_item()
+        else
+          cmp.complete({
+            config = {
+              sources = cmp.config.sources({
+                { name = "luasnip" },
+                { name = "nvim_lsp" },
+              }, {
+                { name = "buffer" },
+              }),
+            },
+          })
+        end
+      end),
       ["<C-l>"] = cmp.mapping(function()
         if luasnip.expand_or_locally_jumpable() then
           luasnip.expand_or_jump()
@@ -417,10 +446,9 @@ local function configure_completion()
       end, { "i", "s" }),
     }),
     sources = {
-      { name = "nvim_lsp" },
       { name = "luasnip" },
+      { name = "nvim_lsp" },
       { name = "path" },
-      { name = "buffer" },
     },
   })
   cmp.setup.filetype("markdown", {
@@ -428,8 +456,8 @@ local function configure_completion()
   })
   cmp.setup.filetype("lua", {
     sources = {
-      { name = "nvim_lsp" },
       { name = "luasnip" },
+      { name = "nvim_lsp" },
     },
   })
 end
@@ -501,21 +529,6 @@ local function configure_telescope()
 end
 
 local function configure_statusline()
-  -- TODO keep or no?
-  --require("nvim-navic").setup({
-  --  icons = {
-  --    enabled = false,
-  --  },
-  --  separator = " > ",
-  --  lsp = {
-  --    auto_attach = true,
-  --  },
-  --})
-  ----vim.o.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
-
-  -------------
-  -- statusline
-  -------------
   vim.o.laststatus = 0
   map("n", "<leader>e", function()
     vim.o.laststatus = vim.o.laststatus == 0 and 2 or 0
@@ -588,11 +601,8 @@ local function configure_statusline()
   local statusline_todo_count = "%{%v:lua.statusline.todo_count()%}"
   local statusline_diagnostics = "%{%v:lua.nvim_diagnostic_statusline()%}"
   local statusline_position = "%l:%c %P"
-  local navic_breadcrumbs = "%{%v:lua.require'nvim-navic'.get_location()%}"
 
   vim.o.statusline = table.concat({
-    navic_breadcrumbs,
-    "%=",
     statusline_diagnostics,
     " ",
     statusline_todo_count,
@@ -690,9 +700,45 @@ local function configure_lsp()
 end
 
 local function c()
-  vim.lsp.enable('clangd')
+  local function c_man_or_lsp_hover()
+    local word = vim.fn.expand("<cword>")
+    if word == "" then
+      vim.lsp.buf.hover()
+      return
+    end
+
+    local result = vim.system({ "man", "-w", "3", word }, { text = true }):wait()
+    if result.code == 0 then
+      vim.cmd("Man 3 " .. vim.fn.fnameescape(word))
+    else
+      vim.lsp.buf.hover()
+    end
+  end
+
+  local c_filetypes = {
+    c = true,
+    cpp = true,
+    objc = true,
+    objcpp = true,
+  }
+
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("CManHover", { clear = true }),
+    callback = function(args)
+      if not c_filetypes[vim.bo[args.buf].filetype] then
+        return
+      end
+
+      map("n", "K", c_man_or_lsp_hover, {
+        buffer = args.buf,
+        desc = "Open C man page or LSP hover",
+      })
+    end,
+  })
+
   vim.lsp.config('clangd', {
     cmd = { 'clangd' },
+    capabilities = require('cmp_nvim_lsp').default_capabilities(),
     filetypes = { 'c', 'cpp', 'objc', 'objcpp' },
     root_markers = {
       '.clangd',
@@ -702,6 +748,7 @@ local function c()
       '.jj',
     },
   })
+  vim.lsp.enable('clangd')
 end
 
 local function configure_misc_autocommands()
@@ -1105,7 +1152,6 @@ local function configure_lsp_formatting()
     scheme = "file",
     typescript = "hunks",
     typescriptreact = "hunks",
-    c = "hunks",
   }
 
   local lsp_format_on_save_group = vim.api.nvim_create_augroup("LspFormatOnSave", { clear = true })

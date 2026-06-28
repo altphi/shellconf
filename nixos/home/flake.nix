@@ -133,6 +133,8 @@
             lsof
             lua
             lua-language-server
+            man-pages
+            man-pages-posix
             mako
             nixd
             nmap
