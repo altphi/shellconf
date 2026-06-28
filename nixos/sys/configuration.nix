@@ -32,7 +32,7 @@
   };
 
   boot.loader.systemd-boot.enable = false;
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.linuxPackages_7_0;
   boot.kernelModules = [ "i2c-dev" ];
   boot.kernelParams = [ "console=tty3" "resume=UUID=9c6645d4-4d56-444b-8f32-36890a1c8dae" "video=eDP-1:1920x1080@60" "video=DP-7:1920x1080@60" ];
   boot.loader.efi.canTouchEfiVariables = true;

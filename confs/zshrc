@@ -160,6 +160,7 @@ switch-home() {
   local flake_path="$HOME/bin/nixos/home"
   home-manager switch -b backup --flake "$flake_path"
   home-manager expire-generations "-7 days" --flake "$flake_path"
+  cd -
 }
 
 find_symbol() {
