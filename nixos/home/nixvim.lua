@@ -329,7 +329,7 @@ local function configure_telescope_symbol_search()
   map("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
   map("n", "<leader>j", builtin.jumplist, { desc = "Telescope: Jumps" })
   map("n", "<leader>s", buffer_symbols, { desc = "Search buffer symbols" })
-  map("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
+  --  map("n", "<leader>S", builtin.lsp_dynamic_workspace_symbols, { desc = "Search workspace symbols" })
   map("n", "<leader>?", ":Telescope keymaps<CR>", { silent = true })
   map("n", "<leader>d", "<cmd>Telescope diagnostics<CR>", { desc = "Telescope: diagnostics" })
   map("n", "<leader>rf", function()
@@ -1395,6 +1395,186 @@ local function configure_folding()
   map("n", "<leader>Z", "zMzO", { desc = "Close all folds except current fold", })
 end
 
+local function configure_telescope_snippets()
+  local function search_luasnip_snippets()
+    local ls = require("luasnip")
+    local pickers = require("telescope.pickers")
+    local finders = require("telescope.finders")
+    local conf = require("telescope.config").values
+    local actions = require("telescope.actions")
+    local action_state = require("telescope.actions.state")
+    local previewers = require("telescope.previewers")
+
+    local snippets = {}
+
+    -- available() = snippets available for current file / current position
+    for ft, snips in pairs(ls.available(function(snip)
+      return snip
+    end)) do
+      for _, snip in ipairs(snips) do
+        table.insert(snippets, {
+          ft = ft,
+          snip = snip,
+        })
+      end
+    end
+
+
+    local sorters = require("telescope.sorters")
+
+    local function snippet_sorter(opts)
+      opts = opts or {}
+
+      -- Use Telescope's normal fuzzy sorter as the base.
+      local base_sorter = conf.generic_sorter(opts)
+
+      return sorters.Sorter:new({
+        init = function()
+          if base_sorter._init then
+            base_sorter:_init()
+          elseif base_sorter.init then
+            base_sorter:init()
+          end
+        end,
+
+        start = function(_, prompt)
+          if base_sorter._start then
+            base_sorter:_start(prompt)
+          elseif base_sorter.start then
+            base_sorter:start(prompt)
+          end
+        end,
+
+        finish = function(_, prompt)
+          if base_sorter._finish then
+            base_sorter:_finish(prompt)
+          elseif base_sorter.finish then
+            base_sorter:finish(prompt)
+          end
+        end,
+
+        destroy = function()
+          if base_sorter._destroy then
+            base_sorter:_destroy()
+          elseif base_sorter.destroy then
+            base_sorter:destroy()
+          end
+        end,
+
+        discard = base_sorter.discard,
+
+        scoring_function = function(_, prompt, line, entry, cb_add, cb_filter)
+          prompt = prompt or ""
+
+          local score = base_sorter:scoring_function(prompt, line, entry, cb_add, cb_filter)
+
+          -- Keep Telescope's normal "filtered out" behavior.
+          if score < 0 then
+            return score
+          end
+
+          local value = entry.value
+          local snip = value.snip
+          local ft = value.ft
+          local trigger = snip.trigger or ""
+
+          local prompt_lower = prompt:lower()
+          local ft_lower = ft:lower()
+          local trigger_lower = trigger:lower()
+          local ft_trigger_lower = ft_lower .. " " .. trigger_lower
+
+          -- Smaller is better. These buckets make trigger/filetype matches
+          -- dominate fzf's fuzzy score instead of merely nudging it.
+          local match_rank = 3
+          if prompt_lower == "" then
+            match_rank = 3
+          elseif trigger_lower == prompt_lower or ft_trigger_lower == prompt_lower then
+            match_rank = 0
+          elseif vim.startswith(trigger_lower, prompt_lower) or vim.startswith(ft_trigger_lower, prompt_lower) then
+            match_rank = 1
+          elseif trigger_lower:find(prompt_lower, 1, true) or ft_trigger_lower:find(prompt_lower, 1, true) then
+            match_rank = 2
+          end
+
+          local ft_rank = 2
+          if ft == vim.bo.filetype then
+            ft_rank = 0
+          elseif ft == "all" then
+            ft_rank = 1
+          end
+
+          return (match_rank * 100) + (ft_rank * 10) + (score / (1 + score))
+        end,
+
+        highlighter = function(_, prompt, display)
+          if base_sorter.highlighter then
+            return base_sorter:highlighter(prompt or "", display)
+          end
+        end,
+      })
+    end
+
+    pickers.new({}, {
+      prompt_title = "LuaSnip snippets: " .. vim.bo.filetype,
+
+      finder = finders.new_table({
+        results = snippets,
+
+        entry_maker = function(entry)
+          local snip = entry.snip
+          local trigger = snip.trigger or ""
+          local name = snip.name or trigger
+          local desc = snip.description or snip.dscr or ""
+
+          if type(desc) == "table" then
+            desc = table.concat(desc, " ")
+          end
+
+          return {
+            value = entry,
+            display = string.format("%-10s %-20s %s", entry.ft, trigger, name),
+            ordinal = table.concat({ entry.ft, trigger, name, desc }, " "),
+          }
+        end,
+      }),
+
+      sorter = snippet_sorter({}),
+
+      previewer = previewers.new_buffer_previewer({
+        define_preview = function(self, entry)
+          local snip = entry.value.snip
+          local doc = snip:get_docstring()
+
+          if type(doc) == "string" then
+            doc = vim.split(doc, "\n")
+          end
+
+          vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, doc or {})
+          vim.bo[self.state.bufnr].filetype = entry.value.ft
+        end,
+      }),
+
+      attach_mappings = function(prompt_bufnr)
+        actions.select_default:replace(function()
+          local entry = action_state.get_selected_entry()
+          actions.close(prompt_bufnr)
+
+          vim.cmd("startinsert!")
+          vim.defer_fn(function()
+            ls.snip_expand(entry.value.snip)
+          end, 50)
+        end)
+
+        return true
+      end,
+    }):find()
+  end
+
+  vim.keymap.set("n", "<leader>S", search_luasnip_snippets, {
+    desc = "Search LuaSnip snippets",
+  })
+end
+
 configure_debugging()
 configure_syntax_highlighting()
 configure_general_options()
@@ -1414,3 +1594,4 @@ configure_lsp_formatting()
 configure_obsidian()
 configure_final_keymaps()
 configure_folding()
+configure_telescope_snippets()
