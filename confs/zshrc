@@ -90,16 +90,15 @@ done
 alias vpn="~/code/clt-vpn-scripts"
 alias leet="~/code/rusty/leetbox/src/problems"
 
-alias ta='tmux attach'
-alias reaper-hidpi="GDK_SCALE=2 GDK_DPI_SCALE=1 reaper"
+alias ta=' tmux attach'
+alias reaper-hidpi=" GDK_SCALE=2 GDK_DPI_SCALE=1 reaper"
 
-alias vim='nvim'
-alias vi='nvim'
+alias vim=' nvim'
+alias vi=' nvim'
 alias ls=' ls -GF'
-alias l='ls -1'
+alias l=' ls -1'
 alias ll=' ls -lhGF'
 alias la=' ls -lahGF'
-# alias R='R --no-save'
 alias g=' ls -a | xargs grep --color=auto '
 alias ga=' git add'
 alias gc=' git checkout'
@@ -123,7 +122,7 @@ alias rm=' rm -i'
 alias find-swp-rm='find . -name ".*swp" -exec rm -v {} \;'
 alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
-alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --load '
+alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --load'
 alias c-niri='vi ~/.config/niri/config.kdl'
 alias c-nvim='cd ~/bin/nixos/home/ && vi nixvim.lua'
 alias c-ghostty='vi ~/.config/ghostty/config'
@@ -133,9 +132,9 @@ alias c-tmux='vi ~/.tmux.conf'
 alias c-nixos='cd ~/bin/nixos/ && vi'
 alias c-styles='vi ~/bin/nixos/home/styles.nix'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
-alias open="xdg-open"
-alias ff="fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
-alias nr="npm run"
+alias open=" xdg-open"
+alias ff=" fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
+alias nr=" npm run"
 alias ct="cargo test"
 
 v() {
@@ -257,7 +256,7 @@ brightness() {
   hdmi-brightness "$1"
   brightnessctl set "${1}%"
 }
-alias b=brightness
+alias b=` brightness`
 
 jr() {
   javac *.java && java $@
@@ -637,4 +636,20 @@ _fzf_compgen_dir() {
 
 kill-by-fzf() {
   kill $(ps -u "$USER" -o pid,comm | fzf | awk '{print $1}')
+}
+
+edit-zsh-history() {
+  local hist=${HISTFILE:-~/.zsh_history}
+  local edit=${hist}.edit_me
+  local backup=${hist}.bak.$(date +%Y%m%d-%H%M%S)
+
+  fc -W "$hist" || return
+  cp -p "$hist" "$edit" || return
+  ${EDITOR:-nvim} "$edit" || return
+
+  cp -p "$hist" "$backup" || return
+  cp "$edit" "$hist" || return
+
+  fc -p "$hist" "$HISTSIZE" "$SAVEHIST"
+  print "Reloaded edited history. Backup: $backup"
 }

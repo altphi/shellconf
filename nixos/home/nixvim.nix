@@ -9,6 +9,10 @@ let
     pcall(vim.treesitter.stop)
     vim.bo.syntax = "OFF"
   '';
+  luaAfterFtplugin = ''
+    pcall(vim.treesitter.stop)
+    vim.bo.syntax = "lua"
+  '';
   treesitter = pkgs.vimPlugins.nvim-treesitter.withPlugins (p: with p; [
     bash
     # zsh DO NOT USE because big memory leak
@@ -62,6 +66,7 @@ in
       ];
       hlsearch = true;
       ignorecase = true;
+      smartcase = true;
       linebreak = true;
       linespace = 2;
       modeline = false;
@@ -248,7 +253,7 @@ in
     # Syntax highlighting
     extraFiles = {
       "after/ftplugin/help.lua".text = disableSyntaxAfterFtplugin;
-      "after/ftplugin/lua.lua".text = disableSyntaxAfterFtplugin;
+      "after/ftplugin/lua.lua".text = luaAfterFtplugin;
       "after/ftplugin/markdown.lua".text = disableSyntaxAfterFtplugin;
       "after/ftplugin/query.lua".text = disableSyntaxAfterFtplugin;
       "after/indent/lua.lua".text = ''

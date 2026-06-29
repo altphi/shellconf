@@ -104,12 +104,9 @@
             # eww
             exercism
             exiftool
-            # evtest
             firefox-bin-unwrapped
             fd
-            # fractal
             gdb
-            # geoclue2
             ghostty
             git-filter-repo
             git-open
@@ -136,6 +133,7 @@
             man-pages
             man-pages-posix
             mako
+            ncdu
             nixd
             nmap
             nodejs_24

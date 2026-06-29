@@ -504,8 +504,6 @@ local function configure_telescope()
     extensions = {
       fzf = {
         fuzzy = true,
-        override_generic_sorter = true,
-        override_file_sorter = true,
         case_mode = "ignore_case",
         hidden = true,
       },
@@ -603,6 +601,7 @@ local function configure_statusline()
   local statusline_position = "%l:%c %P"
 
   vim.o.statusline = table.concat({
+    "%=",
     statusline_diagnostics,
     " ",
     statusline_todo_count,
@@ -739,16 +738,6 @@ end
 
 local function bash()
   vim.lsp.enable('bashls')
-  -- using this instead of lsp for formatting because the lsp shfmt makes actual code changes on save and it's hard to disable that
-  vim.api.nvim_create_autocmd("BufWritePre", {
-    group = vim.api.nvim_create_augroup("ShellIndentOnSave", { clear = true }),
-    pattern = { "*.sh", "*.bash", "*.zsh" },
-    callback = function()
-      local view = vim.fn.winsaveview()
-      vim.cmd("silent normal! gg=G")
-      vim.fn.winrestview(view)
-    end,
-  })
 end
 
 local function configure_misc_autocommands()
@@ -875,6 +864,17 @@ local function configure_handy_commands()
   vim.api.nvim_create_user_command("DeleteFile", delete_current_file, {
     desc = "Delete the file for the current buffer",
   })
+
+  -- close all buffers except current
+  vim.api.nvim_create_user_command("BOnly", function()
+    local current = vim.api.nvim_get_current_buf()
+
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      if buf ~= current and vim.api.nvim_buf_is_loaded(buf) then
+        vim.api.nvim_buf_delete(buf, {})
+      end
+    end
+  end, {})
 
   --
 
@@ -1152,6 +1152,7 @@ local function configure_lsp_formatting()
     scheme = "file",
     typescript = "hunks",
     typescriptreact = "hunks",
+    -- sh, has no range formatter and too many others
   }
 
   local lsp_format_on_save_group = vim.api.nvim_create_augroup("LspFormatOnSave", { clear = true })
@@ -1324,6 +1325,16 @@ local function configure_folding()
   vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
   vim.o.foldlevel = 99
 
+  vim.opt.foldtext = "v:lua.custom_foldtext()"
+  vim.opt.foldcolumn = "0"
+  vim.opt.fillchars:append({ fold = " " })
+
+  function _G.custom_foldtext()
+    local line = vim.fn.getline(vim.v.foldstart)
+    -- local count = vim.v.foldend - vim.v.foldstart + 1
+    return "≻  " .. line .. "  ≺"
+  end
+
   vim.api.nvim_create_autocmd('LspAttach', {
     callback = function(ev)
       if not lsp_fold_filetypes[vim.bo[ev.buf].filetype] then
@@ -1351,7 +1362,6 @@ local function configure_telescope_snippets()
     local ls = require("luasnip")
     local pickers = require("telescope.pickers")
     local finders = require("telescope.finders")
-    local conf = require("telescope.config").values
     local actions = require("telescope.actions")
     local action_state = require("telescope.actions.state")
     local previewers = require("telescope.previewers")
@@ -1370,100 +1380,7 @@ local function configure_telescope_snippets()
       end
     end
 
-
     local sorters = require("telescope.sorters")
-
-    local function snippet_sorter(opts)
-      opts = opts or {}
-
-      -- Use Telescope's normal fuzzy sorter as the base.
-      local base_sorter = conf.generic_sorter(opts)
-
-      return sorters.Sorter:new({
-        init = function()
-          if base_sorter._init then
-            base_sorter:_init()
-          elseif base_sorter.init then
-            base_sorter:init()
-          end
-        end,
-
-        start = function(_, prompt)
-          if base_sorter._start then
-            base_sorter:_start(prompt)
-          elseif base_sorter.start then
-            base_sorter:start(prompt)
-          end
-        end,
-
-        finish = function(_, prompt)
-          if base_sorter._finish then
-            base_sorter:_finish(prompt)
-          elseif base_sorter.finish then
-            base_sorter:finish(prompt)
-          end
-        end,
-
-        destroy = function()
-          if base_sorter._destroy then
-            base_sorter:_destroy()
-          elseif base_sorter.destroy then
-            base_sorter:destroy()
-          end
-        end,
-
-        discard = base_sorter.discard,
-
-        scoring_function = function(_, prompt, line, entry, cb_add, cb_filter)
-          prompt = prompt or ""
-
-          local score = base_sorter:scoring_function(prompt, line, entry, cb_add, cb_filter)
-
-          -- Keep Telescope's normal "filtered out" behavior.
-          if score < 0 then
-            return score
-          end
-
-          local value = entry.value
-          local snip = value.snip
-          local ft = value.ft
-          local trigger = snip.trigger or ""
-
-          local prompt_lower = prompt:lower()
-          local ft_lower = ft:lower()
-          local trigger_lower = trigger:lower()
-          local ft_trigger_lower = ft_lower .. " " .. trigger_lower
-
-          -- Smaller is better. These buckets make trigger/filetype matches
-          -- dominate fzf's fuzzy score instead of merely nudging it.
-          local match_rank = 3
-          if prompt_lower == "" then
-            match_rank = 3
-          elseif trigger_lower == prompt_lower or ft_trigger_lower == prompt_lower then
-            match_rank = 0
-          elseif vim.startswith(trigger_lower, prompt_lower) or vim.startswith(ft_trigger_lower, prompt_lower) then
-            match_rank = 1
-          elseif trigger_lower:find(prompt_lower, 1, true) or ft_trigger_lower:find(prompt_lower, 1, true) then
-            match_rank = 2
-          end
-
-          local ft_rank = 2
-          if ft == vim.bo.filetype then
-            ft_rank = 0
-          elseif ft == "all" then
-            ft_rank = 1
-          end
-
-          return (match_rank * 100) + (ft_rank * 10) + (score / (1 + score))
-        end,
-
-        highlighter = function(_, prompt, display)
-          if base_sorter.highlighter then
-            return base_sorter:highlighter(prompt or "", display)
-          end
-        end,
-      })
-    end
 
     pickers.new({}, {
       prompt_title = "LuaSnip snippets: " .. vim.bo.filetype,
@@ -1489,7 +1406,7 @@ local function configure_telescope_snippets()
         end,
       }),
 
-      sorter = snippet_sorter({}),
+      sorter = sorters.get_fuzzy_file({}),
 
       previewer = previewers.new_buffer_previewer({
         define_preview = function(self, entry)
