@@ -181,6 +181,7 @@ in
     # Packages
     extraPackages = with pkgs; [
       akkuPackages.scheme-langserver
+      bash-language-server
       ast-grep
       clang-tools
       fd
@@ -190,6 +191,7 @@ in
       lua-language-server
       luaPackages.luacheck
       nixd
+      shellcheck
       shfmt
       vtsls
       vscode-langservers-extracted

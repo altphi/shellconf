@@ -668,6 +668,7 @@ local function configure_lsp()
   })
 
   vim.lsp.enable({
+    "bashls",
     "eslint",
     "phpactor",
     "vtsls",
