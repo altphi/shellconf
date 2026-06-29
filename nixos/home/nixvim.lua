@@ -622,20 +622,6 @@ local function configure_lsp()
       map("n", "grr", vim.lsp.buf.references, opts)
       map("n", "grn", vim.lsp.buf.rename, opts)
       map("n", "gca", vim.lsp.buf.code_action, opts)
-
-      local client = vim.lsp.get_client_by_id(args.data.client_id)
-      if not client or not client:supports_method("textDocument/formatting") then
-        return
-      end
-      vim.api.nvim_create_autocmd("BufWritePre", {
-        buffer = opts.buffer,
-        callback = function()
-          vim.lsp.buf.format({
-            bufnr = opts.buffer,
-            async = false,
-          })
-        end,
-      })
     end,
   })
 
@@ -668,7 +654,6 @@ local function configure_lsp()
   })
 
   vim.lsp.enable({
-    "bashls",
     "eslint",
     "phpactor",
     "vtsls",
@@ -750,6 +735,20 @@ local function c()
     },
   })
   vim.lsp.enable('clangd')
+end
+
+local function bash()
+  vim.lsp.enable('bashls')
+  -- using this instead of lsp for formatting because the lsp shfmt makes actual code changes on save and it's hard to disable that
+  vim.api.nvim_create_autocmd("BufWritePre", {
+    group = vim.api.nvim_create_augroup("ShellIndentOnSave", { clear = true }),
+    pattern = { "*.sh", "*.bash", "*.zsh" },
+    callback = function()
+      local view = vim.fn.winsaveview()
+      vim.cmd("silent normal! gg=G")
+      vim.fn.winrestview(view)
+    end,
+  })
 end
 
 local function configure_misc_autocommands()
@@ -1201,54 +1200,9 @@ local function configure_lsp_formatting()
       end
     end,
   })
-
-  vim.api.nvim_create_autocmd("BufWritePre", {
-    group = vim.api.nvim_create_augroup("ZshFormatOnSave", { clear = true }),
-    pattern = "*",
-    callback = function(ev)
-      if vim.bo[ev.buf].filetype ~= "zsh" then
-        return
-      end
-
-      local lines = vim.api.nvim_buf_get_lines(ev.buf, 0, -1, false)
-      local stdin = table.concat(lines, "\n")
-      if vim.bo[ev.buf].endofline then
-        stdin = stdin .. "\n"
-      end
-
-      local ok, result = pcall(function()
-        return vim.system({ "shfmt", "-ln", "zsh", "-i", "2", "-" }, { stdin = stdin, text = true }):wait()
-      end)
-      if not ok then
-        vim.notify_once(("shfmt failed to start: %s"):format(result), vim.log.levels.WARN, { title = "shfmt" })
-        return
-      end
-
-      if result.code == 0 then
-        local formatted = vim.split(result.stdout or "", "\n", { plain = true })
-        if (result.stdout or ""):sub(-1) == "\n" then
-          table.remove(formatted)
-        end
-        vim.api.nvim_buf_set_lines(ev.buf, 0, -1, false, formatted)
-      else
-        local message = vim.trim(result.stderr or "")
-        message = message:match("[^\n]+") or message
-        if message == "" then
-          message = ("shfmt failed with exit code %s"):format(result.code)
-        elseif #message > 240 then
-          message = message:sub(1, 240) .. "..."
-        end
-        vim.notify_once(message, vim.log.levels.WARN, { title = "shfmt" })
-      end
-    end,
-  })
 end
 
 local function configure_obsidian()
-  -- Obsidian
-  -- ----------
-
-  -- Obsidian
   vim.g.bullets_enabled_file_types = { "markdown" }
   vim.g.bullets_enable = 1
   vim.g.bullets_checkbox_markers = " ~x"
@@ -1274,7 +1228,6 @@ local function configure_obsidian()
 
   require("obsidian").setup({
     legacy_commands = false,
-    -- ui = { enable = true, },
     checkbox = {
       order = { " ", "~", "x" },
     },
@@ -1288,7 +1241,6 @@ local function configure_obsidian()
       default_tags = { "daily-notes" },
       template = "daily-mo",
     },
-    -- templates = { folder = "templates" },
     completion = {
       nvim_cmp = true,
       min_chars = 2,
@@ -1345,9 +1297,7 @@ local function configure_obsidian()
   end, { desc = "Open Personal daily" })
 end
 
-local function configure_final_keymaps()
-  --- Github link copying
-  -- Git and diagnostics
+local function configure_github_link_keymaps()
   -- TODO turn these into commands and not keybindings
   --map("n", "<leader>Gy", function()
   --  require("gitlinker").get_buf_range_url("n")
@@ -1588,11 +1538,12 @@ configure_telescope()
 configure_statusline()
 configure_lsp()
 c()
+bash()
 configure_misc_autocommands()
 configure_handy_commands()
 configure_keymaps()
 configure_lsp_formatting()
 configure_obsidian()
-configure_final_keymaps()
+configure_github_link_keymaps()
 configure_folding()
 configure_telescope_snippets()
