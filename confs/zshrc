@@ -656,3 +656,19 @@ edit-zsh-history() {
   fc -p "$hist" "$HISTSIZE" "$SAVEHIST"
   print "Reloaded edited history. Backup: $backup"
 }
+_diceware() {
+	for i in {1..5}; do
+		shuf -i 1-6 -n 1 --random-source=/dev/urandom
+	done | tr -d '\n'
+	echo
+}
+
+diceware() {
+  p=""
+	for i in {1..7}; do
+    n=$(_diceware)
+    p="${p} $(grep "${n}" ~/.eff_wordlist | cut -f2)"
+  done
+  echo "$p"
+}
+
