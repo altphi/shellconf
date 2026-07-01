@@ -1444,8 +1444,17 @@ local function configure_telescope_snippets()
   })
 end
 
+local function configure_readonly_files()
+  vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+    pattern = { "*.lock", "*/generated/*" },
+    callback = function()
+      vim.bo.modifiable = false
+      vim.bo.readonly = true
+    end,
+  })
+end
+
 configure_debugging()
-configure_syntax_highlighting()
 configure_general_options()
 configure_plugins()
 configure_treesitter()
@@ -1465,3 +1474,5 @@ configure_obsidian()
 configure_github_link_keymaps()
 configure_folding()
 configure_telescope_snippets()
+configure_readonly_files()
+configure_syntax_highlighting()
