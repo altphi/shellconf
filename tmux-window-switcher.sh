@@ -16,7 +16,7 @@ case "${1:-}" in
 esac
 
 window_args=()
-window_format=$'#{?#{@window_mru},#{@window_mru},#{window_activity}}\t#{window_id}\t#{session_name}\t#{window_index}\t#{window_name}\t#{window_panes}\t#{pane_current_command}\t#{s|^#{HOME}$|~|;s|^#{HOME}/|~/|:pane_current_path}'
+window_format=$'#{?#{@window_mru},#{@window_mru},#{window_activity}}\t#{window_id}\t#{session_name}\t#{window_index}\t#{window_name}\t#{window_panes}\t#{P:#{pane_current_command} }\t#{s|^#{HOME}$|~|;s|^#{HOME}/|~/|:pane_current_path}'
 
 if ((all_sessions)); then
   window_args=(-a)
@@ -26,7 +26,12 @@ selected="$(
   tmux list-windows "${window_args[@]}" -F "$window_format" |
     sort -t $'\t' -k1,1rn |
     awk -F '\t' '
+      BEGIN { OFS = FS }
       {
+        commands = $7
+        sub(/[[:space:]]+$/, "", commands)
+        gsub(/[[:space:]]+/, ",", commands)
+        $7 = commands
         rows[NR] = $0
         window_label = $4 ":" $5
         session_width = length($3) > session_width ? length($3) : session_width
