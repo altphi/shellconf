@@ -601,6 +601,7 @@ local function configure_statusline()
   local statusline_position = "%l:%c %P"
 
   vim.o.statusline = table.concat({
+    "%m ",
     "%=",
     statusline_diagnostics,
     " ",

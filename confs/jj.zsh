@@ -388,7 +388,7 @@ ghpr-list() {
 }
 
 _jj_prompt() {
-  local info upstream_status output nearest distance divergent_status
+  local info upstream_status output nearest distance
   output=$(jj log -r 'latest(::@ & (bookmarks() | remote_bookmarks()), 1)::@' \
     --no-graph --ignore-working-copy --reversed \
     -T 'coalesce(local_bookmarks, remote_bookmarks.filter(|b| b.remote() != "git"), "·") ++ "\n"' 2>/dev/null) || return
@@ -412,17 +412,10 @@ _jj_prompt() {
   else
     # No bookmark ancestor; show change_id + state indicators
     info=$(jj log -r @ --no-graph --ignore-working-copy \
-      -T 'change_id.shortest() ++ if(empty, " ∅") ++ if(conflict, " ⚠") ++ if(divergent, " ⑂")' \
+      -T 'change_id.shortest() ++ if(empty, " ∅") ++ if(conflict, " ⚠")' \
       2>/dev/null) || return
     upstream_status=""
   fi
 
-  if [[ -n "$(jj log -r 'divergent()' --no-graph --ignore-working-copy --limit 1 \
-    -T 'change_id.shortest()' 2>/dev/null)" ]]; then
-    divergent_status=" %F{red}divergent%f"
-  else
-    divergent_status=""
-  fi
-
-  printf '[%s%s%s]' "$info" "$upstream_status" "$divergent_status"
+  printf '[%s%s]' "$info" "$upstream_status"
 }

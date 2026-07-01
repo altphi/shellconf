@@ -4,6 +4,10 @@ if [[ -z "$TMUX" && "$TERM_PROGRAM" == "ghostty" ]]; then
   exec tmux new-session -s "ghostty-$$"
 fi
 
+if [[ -n ${ZSH_RUN_ZPROF:-} ]]; then
+  source "${ZSH_ZPROF_FILE:-$HOME/bin/confs/profiling.zsh}"
+fi
+
 set -o histverify
 
 export MANPAGER="nvim +Man!"
@@ -256,7 +260,7 @@ brightness() {
   hdmi-brightness "$1"
   brightnessctl set "${1}%"
 }
-alias b=` brightness`
+alias b='brightness'
 
 jr() {
   javac *.java && java $@
@@ -547,7 +551,6 @@ zle-keymap-select() {
   else
     _p_insert_mode_prompt
   fi
-  zle reset-prompt
 }
 zle-line-init() {
   zle -K viins
