@@ -326,13 +326,13 @@
   fonts = {
     packages = with pkgs; [
       dejavu_fonts
-      nerd-fonts.jetbrains-mono
-      nerd-fonts.fira-code
       nerd-fonts._0xproto
       nerd-fonts.iosevka-term-slab
-      nerd-fonts.iosevka
-      nerd-fonts.iosevka-term
-      nerd-fonts._3270
+      nerd-fonts.geist-mono
+      nerd-fonts.anonymice
+      nerd-fonts.aurulent-sans-mono
+      nerd-fonts.go-mono
+      nerd-fonts.envy-code-r
     ];
     enableDefaultPackages = true;
     fontDir.enable = true;
