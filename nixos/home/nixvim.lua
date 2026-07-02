@@ -964,6 +964,9 @@ local function configure_keymaps()
 
   -- jump to recent buffer
   map("n", "<leader><leader>", "<C-^>")
+
+  -- toggle comment
+  map("n", "<C-_>", "gcc", { remap = true, desc = "Toggle comment line" })
 end
 
 local function configure_lsp_formatting()
@@ -1357,8 +1360,8 @@ local function configure_folding()
     end,
   })
 
-  map("n", "<leader>z", "zMzv", { desc = "Close all folds except current line", })
-  map("n", "<leader>Z", "zMzO", { desc = "Close all folds except current fold", })
+  map("n", "<leader>z", "zMzO", { desc = "Close all folds except current fold", })
+  map("n", "<leader>Z", "zMzv", { desc = "Close all folds except current line", })
 end
 
 local function configure_telescope_snippets()
