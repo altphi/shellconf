@@ -1247,6 +1247,9 @@ local function configure_obsidian()
       nvim_cmp = true,
       min_chars = 2,
     },
+    sync = {
+      enabled = false,
+    },
     note_id_func = function(title)
       if title ~= nil then
         return title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
