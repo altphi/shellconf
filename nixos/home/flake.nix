@@ -139,6 +139,7 @@
             playerctl
             psmisc
             pdf4qt
+            pdftk
             swi-prolog
             ripgrep
             rpi-imager

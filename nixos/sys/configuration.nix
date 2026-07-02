@@ -59,8 +59,12 @@
   networking.firewall = {
     enable = true;
     trustedInterfaces = [ "docker0" ];
-    allowedTCPPorts = [ 5154 ];
-    allowedUDPPorts = [ 5154 ];
+    interfaces."wlp194s0" = {
+      # 22000 and 21027 => syncthing
+      # 5154 bzFlag
+      allowedTCPPorts = [ 22000 ];
+      allowedUDPPorts = [ 22000 21027 ];
+    };
     extraCommands = ''
       iptables -A INPUT -i br-+ -j ACCEPT
     '';
