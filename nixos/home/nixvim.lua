@@ -452,7 +452,7 @@ local function configure_completion()
     },
   })
   cmp.setup.filetype("markdown", {
-    completion = { autocomplete = false },
+    completion = { autocomplete = { cmp.TriggerEvent.TextChanged } },
   })
   cmp.setup.filetype("lua", {
     sources = {
@@ -1263,7 +1263,7 @@ local function configure_obsidian()
           buf = 0,
           desc = "Obsidian: Quick Switch",
         })
-        map("n", "<C-Space>", ":Obsidian toggle_checkbox<CR>", {
+        map("n", "<C-t>", ":Obsidian toggle_checkbox<CR>", {
           buf = 0,
           desc = "Obsidian: Toggle Checkbox",
         })
