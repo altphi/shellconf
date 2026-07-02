@@ -30,7 +30,6 @@
   let
     system = "x86_64-linux";
     allowedUnfree = [
-      "amp-cli"
       "anki-bin"
       "claude-code"
       "codex"
@@ -43,8 +42,6 @@
       "firefox-bin-unwrapped"
       "slack"
       "spotify"
-      "sublime-merge"
-      "todoist-electron"
       "vscode-extension-vadimcn-vscode-lldb"
     ];
 
@@ -106,6 +103,7 @@
             exiftool
             firefox-bin-unwrapped
             fd
+            fractal
             gdb
             ghostty
             git-filter-repo
