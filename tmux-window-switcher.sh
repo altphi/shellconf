@@ -72,15 +72,14 @@ selected="$(
 window_id="$(awk -F '\t' '{print $1}' <<< "$selected")"
 
 if ! tmux list-windows -a -F '#{window_id}' | grep -qxF "$window_id"; then
-  session="$selected"
+  win_name_prompt="$selected"
   start_dir="$HOME"
-  [ -d "$HOME/code/$session" ] && start_dir="$HOME/code/$session"
+  [ -d "$HOME/code/$win_name_prompt" ] && start_dir="$HOME/code/$win_name_prompt"
 
-  if tmux has-session -t "=$session" 2>/dev/null; then
-    tmux switch-client -t "=$session"
+  if tmux has-session -t "=$win_name_prompt" 2>/dev/null; then
+    tmux switch-client -t "=$win_name_prompt"
   else
-    tmux new-session -d -s "$session" -c "$start_dir"
-    tmux switch-client -t "=$session"
+    tmux new-window -c "$start_dir" -n "$win_name_prompt"
   fi
 elif ((all_sessions)); then
   tmux switch-client -t "$window_id"
