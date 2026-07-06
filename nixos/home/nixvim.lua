@@ -966,7 +966,7 @@ local function configure_keymaps()
   map("n", "<leader><leader>", "<C-^>")
 
   -- toggle comment
-  map("n", "<C-_>", "gcc", { remap = true, desc = "Toggle comment line" })
+  map({ "x", "n" }, "<C-_>", "gcc", { remap = true, desc = "Toggle comment line" })
 end
 
 local function configure_lsp_formatting()
