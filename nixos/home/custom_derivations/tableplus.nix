@@ -1,13 +1,13 @@
 { pkgs, ... }:
 let
   # Find this info at https://tableplus.com/blog/2020/01/changelogs-linux.html.
-  version = "1.5.5";
-  build-number = "300";
+  version = "1.6.3";
+  build-number = "306";
   pname = "tableplus";
   src = pkgs.fetchurl {
     url = "https://files.tableplus.com/linux/x64/${build-number}/TablePlus-x64.AppImage";
     # This will change when build numbers change.
-    hash = "sha256-MKoXxTZOWenhfyYUYT9FU8hAMf4IhtR1w4RADJlxGu8=";
+    hash = "sha256-3AaL3BIGYbJdFDPE08Npuy1fLlr35+USOCHRNMYYaTU=";
   };
   contents = pkgs.appimageTools.extract { inherit pname version src; };
 in
