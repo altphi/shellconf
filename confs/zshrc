@@ -128,7 +128,6 @@ alias d=' dirs `cat .zdirs &>/dev/null` &>/dev/null; dirs -pvl'
 alias h=' history 0'
 alias sr='rlwrap -r -c -f ~/code/sicp_exercises/etc/completion.txt mit-scheme --load'
 alias c-niri='vi ~/.config/niri/config.kdl'
-alias c-nvim='cd ~/bin/nixos/home/ && vi nixvim.lua'
 alias c-ghostty='vi ~/.config/ghostty/config'
 alias c-sys='vi ~/bin/nixos/sys/configuration.nix'
 alias c-home='vi ~/bin/nixos/home/flake.nix'
@@ -140,6 +139,11 @@ alias open=" xdg-open"
 alias ff=" fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
 alias nr=" npm run"
 alias ct="cargo test"
+
+c-nvim() (
+  cd ~/bin/nixos/home/
+  vi nixvim.lua
+)
 
 v() {
   local file

@@ -1360,7 +1360,42 @@ local function configure_folding()
     end,
   })
 
-  map("n", "<leader>z", "zMzO", { desc = "Close all folds except current fold", })
+
+  local function open_only_fold_at_level(target_level)
+    local cur = vim.api.nvim_win_get_cursor(0)
+    local lnum = cur[1]
+
+    if target_level < 1 then
+      vim.cmd("normal! zM")
+      vim.wo.foldlevel = 0
+      return
+    end
+
+    vim.cmd("normal! zM")
+    vim.wo.foldlevel = target_level - 1
+    local start = vim.fn.foldclosed(lnum)
+    if start == -1 then
+      start = lnum
+    end
+    vim.api.nvim_win_set_cursor(0, { start, 0 })
+    vim.cmd("normal! zO")
+    vim.api.nvim_win_set_cursor(0, cur)
+    vim.cmd("normal! zv")
+  end
+
+  local function focus_parent_fold()
+    local level = vim.fn.foldlevel(".")
+    if level <= 1 then
+      open_only_fold_at_level(level)
+    else
+      open_only_fold_at_level(level - 1)
+    end
+  end
+
+  vim.keymap.set("n", "<leader>z", focus_parent_fold, {
+    desc = "Open only parent fold subtree",
+  })
+
   map("n", "<leader>Z", "zMzv", { desc = "Close all folds except current line", })
 end
 
