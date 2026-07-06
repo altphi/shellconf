@@ -52,7 +52,7 @@ selected="$(
       --cycle \
       --bind='enter:accept-or-print-query,tab:down,btab:up' \
       --preview='tmux capture-pane -p -t {1}' \
-      --preview-window='right:70%,nowrap,follow'
+      --preview-window='right:60%,nowrap,follow'
 )" || exit 0
 
 [ -z "$selected" ] && exit 0
@@ -62,14 +62,11 @@ window_id="$(awk -F '\t' '{print $2}' <<< "$selected")"
 
 if ! tmux list-panes -a -F '#{pane_id}' | grep -qxF "$pane_id"; then
   session="$selected"
-  start_dir="$HOME"
-  [ -d "$HOME/code/$session" ] && start_dir="$HOME/code/$session"
 
   if tmux has-session -t "=$session" 2>/dev/null; then
     tmux switch-client -t "=$session"
   else
-    tmux new-session -d -s "$session" -c "$start_dir"
-    tmux switch-client -t "=$session"
+    tmux new-window -n "$selected"
   fi
 elif ((all_sessions)); then
   tmux switch-client -t "$pane_id"

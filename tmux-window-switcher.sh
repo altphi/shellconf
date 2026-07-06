@@ -64,7 +64,7 @@ selected="$(
       --cycle \
       --bind='enter:accept-or-print-query,tab:down,btab:up' \
       --preview='tmux capture-pane -p -t {1}' \
-      --preview-window='right:70%,nowrap,follow'
+      --preview-window='right:60%,nowrap,follow'
 )" || exit 0
 
 [ -z "$selected" ] && exit 0

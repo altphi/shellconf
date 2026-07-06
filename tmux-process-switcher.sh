@@ -17,7 +17,7 @@ bump_pane_mru() {
 }
 
 selection=$(
-    tmux list-panes -a -F '#{?#{@pane_mru},#{@pane_mru},0} #{pane_id} #S:#I.#P #{pane_current_command}' |
+  tmux list-panes -a -F '#{?#{@pane_mru},#{@pane_mru},0} #{pane_id} #S:#W:#{pane_current_command}' |
         sort -k1,1rn |
         awk '{
             pane_id = $2
