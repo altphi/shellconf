@@ -53,7 +53,7 @@ in
       autowriteall = false;
       clipboard = "unnamedplus";
       conceallevel = 2;
-      cursorline = true;
+      cursorline = false;
       cursorlineopt = "both";
       expandtab = true;
       foldlevel = 99;

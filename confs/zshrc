@@ -132,7 +132,6 @@ alias c-ghostty='vi ~/.config/ghostty/config'
 alias c-sys='vi ~/bin/nixos/sys/configuration.nix'
 alias c-home='vi ~/bin/nixos/home/flake.nix'
 alias c-tmux='vi ~/.tmux.conf'
-alias c-nixos='cd ~/bin/nixos/ && vi'
 alias c-styles='vi ~/bin/nixos/home/styles.nix'
 alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias open=" xdg-open"
@@ -143,6 +142,11 @@ alias ct="cargo test"
 c-nvim() (
   cd ~/bin/nixos/home/
   vi nixvim.lua
+)
+
+c-nixos() (
+  cd ~/bin/nixos/
+  vi
 )
 
 v() {

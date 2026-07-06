@@ -26,14 +26,15 @@ local function configure_general_options()
   vim.opt.undodir = vim.fn.stdpath("data") .. "/.nvim-undo//"
   vim.fn.mkdir(vim.fn.stdpath("cache"), "p")
 
+  -- leaving this off until I fix other formatting on newline issue
   -- disable comment continuation in normal mode
-  vim.opt.formatoptions:remove("o")
-  vim.api.nvim_create_autocmd("FileType", {
-    group = vim.api.nvim_create_augroup("DisableNormalModeCommentContinuation", { clear = true }),
-    callback = function()
-      vim.opt_local.formatoptions:remove("o")
-    end,
-  })
+  -- vim.opt.formatoptions:remove("o")
+  -- vim.api.nvim_create_autocmd("FileType", {
+  --   group = vim.api.nvim_create_augroup("DisableNormalModeCommentContinuation", { clear = true }),
+  --   callback = function()
+  --     vim.opt_local.formatoptions:remove("o")
+  --   end,
+  -- })
 end
 
 local function configure_plugins()
@@ -892,12 +893,12 @@ local function configure_handy_commands()
   local function toggle_cursor_line()
     vim.wo.cursorline = not vim.wo.cursorline
   end
-  vim.api.nvim_create_autocmd({ "InsertEnter", "InsertLeave" }, {
-    pattern = "*",
-    callback = function()
-      toggle_cursor_line()
-    end,
-  })
+  --vim.api.nvim_create_autocmd({ "InsertEnter", "InsertLeave" }, {
+  --  pattern = "*",
+  --  callback = function()
+  --    toggle_cursor_line()
+  --  end,
+  --})
   map("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor line" })
 end
 
@@ -1392,11 +1393,10 @@ local function configure_folding()
     end
   end
 
-  vim.keymap.set("n", "<leader>z", focus_parent_fold, {
+  vim.keymap.set("n", "<leader>Z", focus_parent_fold, {
     desc = "Open only parent fold subtree",
   })
-
-  map("n", "<leader>Z", "zMzv", { desc = "Close all folds except current line", })
+  map("n", "<leader>z", "zMzv", { desc = "Close all folds except current line", })
 end
 
 local function configure_telescope_snippets()
