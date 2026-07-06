@@ -157,18 +157,18 @@ symbols() {
   less $(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose
 }
 
-switch-sys() {
+switch-sys() (
   local flake_path="$HOME/bin/nixos/sys#euclid"
   sudo nixos-rebuild switch --flake "$flake_path"
   home-manager expire-generations "-7 days" --flake "$flake_path"
   notify-send "switch-sys finished, exit code: $?"
-}
-switch-home() {
+)
+
+switch-home() (
   local flake_path="$HOME/bin/nixos/home"
   home-manager switch -b backup --flake "$flake_path"
   home-manager expire-generations "-7 days" --flake "$flake_path"
-  cd -
-}
+)
 
 find_symbol() {
   grep -i "${1}" "$(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose"
@@ -272,10 +272,6 @@ jr() {
 
 rgrep() {
   grep -i --color=auto -r "$1" .
-}
-
-c() {
-  cd "$1" && ls
 }
 
 t() {
@@ -448,9 +444,9 @@ fname() {
 #  bash -c "sleep \"$((60*$1))\" && echo -e \"$2\" | notify-send --app-name=timer-script 'Time is up!' \"$2\"" &
 #}
 
-pass_insert() {
+pass_insert() (
   pass insert "$@" && cd ~/.password-store && git push origin main
-}
+)
 
 gpg_backup_keys() {
   tar --exclude='S.*' --no-xattrs -czf gnupg-backup.tar.gz -C ~ .gnupg
