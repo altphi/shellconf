@@ -32,7 +32,7 @@
   };
 
   boot.loader.systemd-boot.enable = false;
-  boot.kernelPackages = pkgs.linuxPackages_7_0;
+  boot.kernelPackages = pkgs.linuxPackages_7_1;
   boot.kernelModules = [ "i2c-dev" ];
   boot.kernelParams = [ "console=tty3" "resume=UUID=9c6645d4-4d56-444b-8f32-36890a1c8dae" "video=eDP-1:1920x1080@60" "video=DP-7:1920x1080@60" ];
   boot.loader.efi.canTouchEfiVariables = true;
@@ -254,7 +254,8 @@
     HandleLidSwitchExternalPower = "suspend-then-hibernate";
     HandleLidSwitchDocked = "ignore";
   };
-  systemd.sleep.settings.Sleep = { HibernateDelaySec = "1h"; };
+  # making sleep 12 hours until the hibernate bug (waking from sleep when peripherals are plugged in) in linux 7.1 is fixed
+  systemd.sleep.settings.Sleep = { HibernateDelaySec = "12h"; };
   services.locate.enable = true;
   security.rtkit.enable = true;
 
