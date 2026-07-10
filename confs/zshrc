@@ -198,6 +198,29 @@ docker-stop-rm-all() {
   docker volume prune -f
 }
 
+docker-compose-reset-service_volumes() {
+    local svc=${1:?service name}
+    local cids vols
+
+    cids=$(docker compose ps -aq "$svc")
+    [ -n "$cids" ] || {
+      echo "No container found for service: $svc" >&2
+      return 1
+    }
+
+    vols=$(docker inspect $cids \
+      --format '{{range .Mounts}}{{if eq .Type "volume"}}{{println .Name}}{{end}}{{end}}' \
+      | sort -u)
+
+    docker compose stop "$svc"
+    docker compose rm -sf "$svc"
+
+    [ -n "$vols" ] && echo "$vols" | xargs -r docker volume rm
+
+    docker compose up -d "$svc"
+  }
+
+
 docker-compose-rebuild-no-cache() {
   if [ -z "$1" ]; then
     echo "Usage: docker-compose-rebuild-no-cache <all|service>"
@@ -676,3 +699,5 @@ diceware() {
   done
   echo "$p"
 }
+
+
