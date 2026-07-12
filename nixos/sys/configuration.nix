@@ -135,6 +135,8 @@
     gnumake
     i2c-tools
     jq
+    man-pages
+    man-pages-posix
     pass-wayland
     pavucontrol
     pciutils
@@ -341,6 +343,11 @@
     ];
     enableDefaultPackages = true;
     fontDir.enable = true;
+  };
+
+  documentation.man.cache = {
+    enable = true;
+    generateAtRuntime = true;
   };
 
   security.polkit.enable = true;

@@ -143,6 +143,7 @@
             nmap
             nodejs_24
             openssl
+            pcalc
             playerctl
             psmisc
             pdf4qt

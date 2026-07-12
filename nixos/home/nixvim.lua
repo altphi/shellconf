@@ -6,7 +6,74 @@ local function configure_debugging()
   local function dlog(x)
     vim.cmd("silent verbose echomsg " .. vim.fn.string(vim.inspect(x)))
   end
-  dlog('loading nixvim.lua');
+  dlog('loading nixvim.lua')
+
+  -- Set up termdebug configuration
+  vim.g.termdebug_config = {
+    -- Disable overriding the 'K' map globally to keep it clean.
+    map_K = 0,
+    -- We can set variables/disasm windows to 0 by default to avoid clutter.
+    variables_window = 0,
+  }
+
+  -- Define custom commands to launch GDB / rust-gdb on demand
+  vim.api.nvim_create_user_command("Gdb", function(opts)
+    vim.g.termdebugger = "gdb"
+    vim.cmd("packadd termdebug")
+    if opts.args ~= "" then
+      vim.cmd("Termdebug " .. opts.args)
+    else
+      vim.cmd("Termdebug")
+    end
+  end, { nargs = "?", complete = "file", desc = "Start termdebug with gdb" })
+
+  vim.api.nvim_create_user_command("RustGdb", function(opts)
+    if vim.fn.executable("rust-gdb") == 1 then
+      vim.g.termdebugger = "rust-gdb"
+    else
+      vim.notify("rust-gdb not found in PATH; falling back to gdb", vim.log.levels.WARN)
+      vim.g.termdebugger = "gdb"
+    end
+    vim.cmd("packadd termdebug")
+    if opts.args ~= "" then
+      vim.cmd("Termdebug " .. opts.args)
+    else
+      vim.cmd("Termdebug")
+    end
+  end, { nargs = "?", complete = "file", desc = "Start termdebug with rust-gdb" })
+
+  -- Set up keymaps that only exist when a debugging session is active.
+  local group = vim.api.nvim_create_augroup("TermdebugKeymaps", { clear = true })
+
+  vim.api.nvim_create_autocmd("User", {
+    group = group,
+    pattern = "TermdebugStartPost",
+    callback = function()
+      map("n", "<leader>db", "<cmd>Break<CR>", { desc = "Debugger: Toggle breakpoint" })
+      map("n", "<leader>dx", "<cmd>Clear<CR>", { desc = "Debugger: Clear breakpoint" })
+      map("n", "<leader>dc", "<cmd>Continue<CR>", { desc = "Debugger: Continue" })
+      map("n", "<leader>dn", "<cmd>Over<CR>", { desc = "Debugger: Step over (next)" })
+      map("n", "<leader>di", "<cmd>Step<CR>", { desc = "Debugger: Step into (step)" })
+      map("n", "<leader>do", "<cmd>Finish<CR>", { desc = "Debugger: Step out (finish)" })
+      map("n", "<leader>de", "<cmd>Evaluate<CR>", { desc = "Debugger: Evaluate expression" })
+      map("v", "<leader>de", ":Evaluate<CR>", { desc = "Debugger: Evaluate selection" })
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("User", {
+    group = group,
+    pattern = "TermdebugStopPre",
+    callback = function()
+      local active_maps = {
+        "<leader>db", "<leader>dx", "<leader>dc", "<leader>dn",
+        "<leader>di", "<leader>do", "<leader>de"
+      }
+      for _, lhs in ipairs(active_maps) do
+        pcall(vim.keymap.del, "n", lhs)
+      end
+      pcall(vim.keymap.del, "v", "<leader>de")
+    end,
+  })
 end
 
 local function configure_syntax_highlighting()
