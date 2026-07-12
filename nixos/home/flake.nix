@@ -24,13 +24,19 @@
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    antigravity-cli = {
+      url = "github:jacopone/antigravity-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nix-index-database, home-manager, nixvim, zen-browser, nixpkgs-unstable, ... }@inputs:
+  outputs = { self, nixpkgs, nix-index-database, home-manager, nixvim, zen-browser, nixpkgs-unstable, antigravity-cli, ... }@inputs:
   let
     system = "x86_64-linux";
     allowedUnfree = [
       "anki-bin"
+      "antigravity"
       "claude-code"
       "codex"
       "discord"
@@ -73,6 +79,7 @@
           home.stateVersion = "25.05";  # did you read the comment?
 
           home.packages = with pkgs; [
+            antigravity-cli.packages.${system}.google-antigravity-cli
             aerc
             akkuPackages.scheme-langserver
             #algol68g
