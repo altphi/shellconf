@@ -18,6 +18,13 @@ local function configure_syntax_highlighting()
         client.server_capabilities.semanticTokensProvider = nil
         vim.lsp.semantic_tokens.enable(false, { client_id = client.id })
       end
+
+      local filetype = vim.bo[args.buf].filetype
+      if filetype == "markdown" then
+        vim.cmd("syntax on")
+      else
+        vim.cmd("syntax off")
+      end
     end,
   })
 end
@@ -1157,6 +1164,7 @@ local function configure_lsp_formatting()
     scheme = "file",
     typescript = "hunks",
     typescriptreact = "hunks",
+    c = "file",
     -- sh, has no range formatter and too many others
   }
 
@@ -1233,9 +1241,10 @@ local function configure_obsidian()
   end
 
   require("obsidian").setup({
+    ui = { enable = true, },
     legacy_commands = false,
     checkbox = {
-      order = { " ", "~", "x" },
+      order = { " ", "x" },
     },
     workspaces = {
       { name = "personal", path = "~/vaults/sdb" },
