@@ -25,13 +25,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    antigravity-cli = {
+    antigravity-nix = {
       url = "github:jacopone/antigravity-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, nix-index-database, home-manager, nixvim, zen-browser, nixpkgs-unstable, antigravity-cli, ... }@inputs:
+  outputs = { self, nixpkgs, nix-index-database, home-manager, nixvim, zen-browser, nixpkgs-unstable, antigravity-nix, ... }@inputs:
   let
     system = "x86_64-linux";
     allowedUnfree = [
@@ -79,7 +79,7 @@
           home.stateVersion = "25.05";  # did you read the comment?
 
           home.packages = with pkgs; [
-            antigravity-cli.packages.${system}.google-antigravity-cli
+            antigravity-nix.packages.${system}.google-antigravity-cli
             aerc
             akkuPackages.scheme-langserver
             #algol68g

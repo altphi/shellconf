@@ -391,7 +391,7 @@ _jj_prompt() {
   local info upstream_status output nearest distance
   output=$(jj log -r 'latest(::@ & (bookmarks() | remote_bookmarks()), 1)::@' \
     --no-graph --ignore-working-copy --reversed \
-    -T 'coalesce(local_bookmarks, remote_bookmarks.filter(|b| b.remote() != "git"), "·") ++ "\n"' 2>/dev/null) || return
+    -T 'coalesce(description, local_bookmarks, remote_bookmarks.filter(|b| b.remote() != "git"), "·") ++ "\n"' 2>/dev/null) || return
 
   if [ -n "$output" ]; then
     local -a lines=("${(@f)output}")

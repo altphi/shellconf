@@ -2,7 +2,6 @@
 set -a
 
 SRC_CONFIG="${HOME}/.config/"
-SRC_NIX="${HOME}/nixos/"
 SRC_VAULTS="${HOME}/vaults/"
 SRC_TODOS="${HOME}/todos/"
 
@@ -27,7 +26,6 @@ sync() {
 		--exclude="zsh/.zcompdump*" \
 		"${SRC_CONFIG}" "${1}dotconfig/"
 
-	rsync -aP --delete "${SRC_NIX}" "${1}nixos/"
 	rsync -aP --delete "${SRC_VAULTS}" "${1}vaults/"
 	rsync -aP --delete "${SRC_TODOS}" "${1}todos/"
 }

@@ -9,6 +9,10 @@ let
     pcall(vim.treesitter.stop)
     vim.bo.syntax = "OFF"
   '';
+  markdownFtplugin = ''
+    pcall(vim.treesitter.start)
+    vim.bo.syntax = "OFF"
+  '';
   luaAfterFtplugin = ''
     pcall(vim.treesitter.stop)
     vim.bo.syntax = "lua"
@@ -254,7 +258,7 @@ in
     extraFiles = {
       "after/ftplugin/help.lua".text = disableSyntaxAfterFtplugin;
       "after/ftplugin/lua.lua".text = luaAfterFtplugin;
-      "after/ftplugin/markdown.lua".text = disableSyntaxAfterFtplugin;
+      "after/ftplugin/markdown.lua".text = markdownFtplugin;
       "after/ftplugin/query.lua".text = disableSyntaxAfterFtplugin;
       "after/indent/lua.lua".text = ''
         vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"

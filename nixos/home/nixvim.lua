@@ -86,12 +86,7 @@ local function configure_syntax_highlighting()
         vim.lsp.semantic_tokens.enable(false, { client_id = client.id })
       end
 
-      local filetype = vim.bo[args.buf].filetype
-      if filetype == "markdown" then
-        vim.cmd("syntax on")
-      else
-        vim.cmd("syntax off")
-      end
+      vim.cmd("syntax off")
     end,
   })
 end
@@ -380,6 +375,7 @@ local function configure_telescope_symbol_search()
     objcpp = lsp_document_symbols,
     rust = treesitter_symbols,
     lua = lsp_document_symbols,
+    typescript = lsp_document_symbols,
   }
 
   local function buffer_symbols()
