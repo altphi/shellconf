@@ -5,3 +5,4 @@ docker compose --profile all up
 docker compose --profile all --profile elgato up
 niri-flatten-workspaces.sh
 npm run nuclear-option
+nmcli device wifi list
