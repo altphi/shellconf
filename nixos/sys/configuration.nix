@@ -3,7 +3,6 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, lib, pkgs, modulesPath, unstable, inputs, ... }:
-
 {
   imports = [
     ./hardware-configuration.nix
@@ -40,7 +39,7 @@
     enable = true;
     device = "nodev";
     efiSupport = true;
-    useOSProber = true;
+    useOSProber = false;
     configurationLimit = 5;
     memtest86.enable = true;
   };
@@ -340,6 +339,8 @@
       nerd-fonts.aurulent-sans-mono
       nerd-fonts.go-mono
       nerd-fonts.envy-code-r
+      cm_unicode
+      newcomputermodern
     ];
     enableDefaultPackages = true;
     fontDir.enable = true;
