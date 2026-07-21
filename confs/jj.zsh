@@ -388,34 +388,9 @@ ghpr-list() {
 }
 
 _jj_prompt() {
-  local info upstream_status output nearest distance
-  output=$(jj log -r 'latest(::@ & (bookmarks() | remote_bookmarks()), 1)::@' \
-    --no-graph --ignore-working-copy --reversed \
-    -T 'coalesce(description, local_bookmarks, remote_bookmarks.filter(|b| b.remote() != "git"), "·") ++ "\n"' 2>/dev/null) || return
-
-  if [ -n "$output" ]; then
-    local -a lines=("${(@f)output}")
-    distance=$((${#lines} - 1))
-    nearest="${lines[1]}"
-    case "$nearest" in
-    *\*)
-      upstream_status=" ↑"
-      nearest="${nearest%\*}"
-      ;;
-    *) upstream_status="" ;;
-    esac
-    if [ "$distance" -eq 0 ]; then
-      info="$nearest"
-    else
-      info="$nearest +$distance"
-    fi
-  else
-    # No bookmark ancestor; show change_id + state indicators
-    info=$(jj log -r @ --no-graph --ignore-working-copy \
-      -T 'change_id.shortest() ++ if(empty, " ∅") ++ if(conflict, " ⚠")' \
-      2>/dev/null) || return
-    upstream_status=""
-  fi
-
-  printf '[%s%s]' "$info" "$upstream_status"
+  local info
+  info=$(jj log -r @ --no-graph --ignore-working-copy \
+    -T 'if(description, description.first_line().substr(0, 60), "∅") ++ if(empty, " ○") ++ if(conflict, " ⚠") ++ if(divergent, " ⇋") ++ if(immutable, " 🔒")' 2>/dev/null) || return
+  printf '[%s]' "$info"
 }
+
