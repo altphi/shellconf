@@ -29,9 +29,14 @@
       url = "github:jacopone/antigravity-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    herdr = {
+      url = "github:ogulcancelik/herdr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nix-index-database, home-manager, nixvim, zen-browser, nixpkgs-unstable, antigravity-nix, ... }@inputs:
+  outputs = { self, nixpkgs, nix-index-database, home-manager, nixvim, zen-browser, nixpkgs-unstable, antigravity-nix, herdr, ... }@inputs:
   let
     system = "x86_64-linux";
     allowedUnfree = [
@@ -46,6 +51,7 @@
       "fastmail-desktop"
       "firefox-bin"
       "firefox-bin-unwrapped"
+      "datagrip"
       "slack"
       "spotify"
       "vscode-extension-vadimcn-vscode-lldb"
@@ -117,11 +123,13 @@
             git-open
             gnuplot_qt
             grim
+            herdr
             hyprlock
             imagemagick
             iw
             delta
             difftastic
+            jetbrains.datagrip
             kubeaudit
             kubetui
             kube-bench
@@ -187,7 +195,7 @@
             awscli2
             # libreoffice  TODO move me to a separate nix flake in a directory to avoid heavy updates
           ] ++ [
-            pkgs-unstable.fastmail-desktop
+            # pkgs-unstable.fastmail-desktop
             pkgs-unstable.claude-code
             pkgs-unstable.spotify
             pkgs-unstable.codex
@@ -202,7 +210,13 @@
             chromium.enable = true;
             gh.enable = true;
             mpv.enable = true;
-            zathura.enable = true;
+            zathura =  {
+              enable = true;
+                options = {
+                  selection-clipboard = "clipboard";
+                  render-loading = false;
+              };
+            };
             direnv = {
               enable = true;
               enableZshIntegration = true;
