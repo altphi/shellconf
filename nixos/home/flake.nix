@@ -51,6 +51,7 @@
       "fastmail-desktop"
       "firefox-bin"
       "firefox-bin-unwrapped"
+      "grok-build"
       "datagrip"
       "slack"
       "spotify"
@@ -123,6 +124,7 @@
             git-open
             gnuplot_qt
             grim
+            grok-build
             herdr
             hyprlock
             imagemagick

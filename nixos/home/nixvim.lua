@@ -1369,6 +1369,97 @@ local function configure_obsidian()
   apply_checkbox_chars(Obsidian._opts and Obsidian._opts.ui)
   apply_checkbox_chars(Obsidian.opts and Obsidian.opts.ui)
 
+  -- Upstream `Obsidian links` feeds bare link strings into picker.pick.
+  -- Telescope only attaches a file previewer when entries are tables with
+  -- `filename`, so the Links picker shows an empty preview pane. Resolve each
+  -- link to a path and rebuild the command.
+  local function resolve_link_picker_entry(link, source_note)
+    local util = require("obsidian.util")
+    local search = require("obsidian.search")
+    local location, _, link_type = util.parse_link(link, { exclude = { "Tag", "BlockID" } })
+    local entry = {
+      text = link,
+      user_data = link,
+    }
+
+    if not location or not link_type then
+      return entry
+    end
+
+    location = vim.uri_decode(location)
+
+    if link_type == "HeaderLink" or link_type == "BlockLink" then
+      if source_note and source_note.path then
+        entry.filename = tostring(source_note.path)
+        local resolved
+        if link_type == "HeaderLink" and source_note.resolve_anchor_link then
+          resolved = source_note:resolve_anchor_link(location)
+        elseif link_type == "BlockLink" and source_note.resolve_block then
+          resolved = source_note:resolve_block(location)
+        end
+        if resolved and resolved.line then
+          entry.lnum = resolved.line
+        end
+      end
+      return entry
+    end
+
+    local block_link, anchor_link
+    location, block_link = util.strip_block_links(location)
+    location, anchor_link = util.strip_anchor_links(location)
+
+    if util.is_uri(location) then
+      return entry
+    end
+
+    local notes = search.resolve_note(location, {
+      notes = {
+        collect_anchor_links = anchor_link ~= nil,
+        collect_blocks = block_link ~= nil,
+      },
+    })
+    if notes and notes[1] and notes[1].path then
+      entry.filename = tostring(notes[1].path)
+      if block_link or anchor_link then
+        local loc = notes[1]:_location({ block = block_link, anchor = anchor_link })
+        if loc and loc.range and loc.range.start and loc.range.start.line then
+          entry.lnum = loc.range.start.line + 1
+        end
+      end
+    end
+    return entry
+  end
+
+  require("obsidian.commands").register("links", {
+    nargs = 0,
+    note_action = true,
+    func = function()
+      local api = require("obsidian.api")
+      local note = api.current_note(0, {
+        collect_anchor_links = true,
+        collect_blocks = true,
+      })
+      if not note then
+        return vim.notify("not in a note", vim.log.levels.INFO, { title = "Obsidian.nvim" })
+      end
+
+      local entries = vim.tbl_map(function(match)
+        return resolve_link_picker_entry(match.link, note)
+      end, note:links())
+
+      if #entries == 0 then
+        return vim.notify("no links in note", vim.log.levels.INFO, { title = "Obsidian.nvim" })
+      end
+
+      Obsidian.picker.pick(entries, {
+        prompt_title = "Links",
+        callback = function(entry)
+          api.follow_link(entry.user_data or entry.text)
+        end,
+      })
+    end,
+  })
+
   local function load_clt_workspace()
     vim.cmd("Obsidian workspace work")
   end
