@@ -390,7 +390,7 @@ ghpr-list() {
 _jj_prompt() {
   local info
   info=$(jj log -r @ --no-graph --ignore-working-copy \
-    -T 'if(description, description.first_line().substr(0, 60), "∅") ++ if(empty, " ○") ++ if(conflict, " ⚠") ++ if(divergent, " ⇋") ++ if(immutable, " 🔒")' 2>/dev/null) || return
+    -T 'if(description, description.first_line().substr(0, 60), "∅") ++ if(empty, " ◌") ++ if(conflict, " ⚠") ++ if(divergent, " ⇋") ++ if(immutable, " 🔒")' 2>/dev/null) || return
   printf '[%s]' "$info"
 }
 

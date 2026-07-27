@@ -1304,7 +1304,9 @@ local function configure_obsidian()
   end
 
   require("obsidian").setup({
-    ui = { enable = true, },
+    -- Don't set ui.checkboxes here: normalize() warns whenever that key is
+    -- present (even for display-only overrides). Patch chars after setup.
+    ui = { enable = true },
     legacy_commands = false,
     checkbox = {
       order = { " ", "x" },
@@ -1350,6 +1352,23 @@ local function configure_obsidian()
       end,
     },
   })
+
+  -- Prefer plain Unicode over Nerd PUA icons (New CM Mono draws those as junk/χ).
+  -- Mutate _opts so workspace switches that re-normalize from _opts keep the glyphs.
+  local checkbox_chars = { [" "] = "☐", ["x"] = "✓" }
+  local function apply_checkbox_chars(ui)
+    if not (ui and ui.checkboxes) then
+      return
+    end
+    for key, char in pairs(checkbox_chars) do
+      if ui.checkboxes[key] then
+        ui.checkboxes[key].char = char
+      end
+    end
+  end
+  apply_checkbox_chars(Obsidian._opts and Obsidian._opts.ui)
+  apply_checkbox_chars(Obsidian.opts and Obsidian.opts.ui)
+
   local function load_clt_workspace()
     vim.cmd("Obsidian workspace work")
   end
