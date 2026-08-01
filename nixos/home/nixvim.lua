@@ -390,11 +390,6 @@ local function configure_telescope_symbol_search()
 
   map("n", "<leader>:", builtin.command_history, { desc = "nvim command history" })
   map("n", "<leader>c", builtin.git_status, { desc = "Telescope: Changed files" })
-  map("n", "<leader>G",
-    function() builtin.live_grep({ grep_open_files = true, prompt_title = "Telescope: Grep Open Files" }) end,
-    { desc = "Telescope: Live grep" })
-  map("n", "<leader>g", function() builtin.live_grep({ prompt_title = "Telescope: Grep Project" }) end,
-    { desc = "Telescope: Live grep" })
   map("n", "<leader>b", function() builtin.buffers({ sort_mru = true, sort_lastused = true }) end,
     { desc = "Telescope: Buffers" })
   map("n", "<leader>m", builtin.marks, { desc = "Telescope: Marks" })
@@ -408,9 +403,6 @@ local function configure_telescope_symbol_search()
   end, { desc = "Telescope: lsp_references (usages only)" })
   map("n", "<leader>rr", builtin.registers, { desc = "Registers" })
   map("n", "<leader>ic", builtin.lsp_incoming_calls, { desc = "Telescope: lsp_incoming_calls" })
-  map("n", "<leader>f", function()
-    require("telescope").extensions.frecency.frecency({ workspace = "CWD" })
-  end, { desc = "Telescope: Frecent files" })
 end
 
 local function configure_completion()
@@ -548,10 +540,34 @@ local function configure_treesitter_context()
   vim.api.nvim_set_hl(0, "TreesitterContextSeparator", { fg = "#555577" })
 end
 
-local function configure_telescope()
-  -- Telescope
+local function configure_fff()
+  require("fff").setup({
+    lazy_sync = true,
+    layout = {
+      height = 0.85,
+      width = 0.85,
+      preview_position = "right",
+      preview_size = 0.5,
+    },
+  })
 
-  -- Telescope
+  local fff = require("fff")
+  map("n", "<leader>f", function() fff.find_files() end, { desc = "FFF: Find files" })
+  map("n", "<leader>g", function() fff.live_grep() end, { desc = "FFF: Live grep" })
+  map("n", "<leader>G", function()
+    fff.live_grep({ query = vim.fn.expand("<cword>") })
+  end, { desc = "FFF: Grep word under cursor" })
+  map("x", "<leader>G", function()
+    local lines = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), { type = vim.fn.mode() })
+    local selection = vim.trim(table.concat(lines, " "))
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+    if selection ~= "" then
+      fff.live_grep({ query = selection })
+    end
+  end, { desc = "FFF: Grep selection" })
+end
+
+local function configure_telescope()
   local telescope = require("telescope")
   telescope.setup({
     defaults = {
@@ -568,23 +584,11 @@ local function configure_telescope()
         },
       },
     },
-    pickers = {
-      find_files = { hidden = true },
-      live_grep = {
-        additional_args = function()
-          return { "--hidden", "--glob", "!**.git/*" }
-        end,
-      },
-    },
     extensions = {
       fzf = {
         fuzzy = true,
         case_mode = "ignore_case",
         hidden = true,
-      },
-      file_browser = { hidden = true },
-      frecency = {
-        db_safe_mode = false,
       },
       ast_grep = {
         command = {
@@ -597,7 +601,6 @@ local function configure_telescope()
     },
   })
   telescope.load_extension("fzf")
-  telescope.load_extension("file_browser")
   telescope.load_extension("ast_grep")
 end
 
@@ -1307,6 +1310,33 @@ local function configure_obsidian()
     end
   end
 
+  local function vault_path()
+    local obsidian_state = rawget(_G, "Obsidian")
+    local dir = obsidian_state and obsidian_state.dir
+    if dir then
+      return tostring(dir)
+    end
+    local workspace = obsidian_state and obsidian_state.workspace
+    if workspace and workspace.path then
+      return tostring(workspace.path)
+    end
+    return vim.fn.expand("~/vaults/sdb")
+  end
+
+  local function fff_vault_find()
+    require("fff").find_files({
+      title = "Vault notes",
+      cwd = vault_path(),
+    })
+  end
+
+  local function fff_vault_grep()
+    require("fff").live_grep({
+      title = "Vault search",
+      cwd = vault_path(),
+    })
+  end
+
   require("obsidian").setup({
     -- Don't set ui.checkboxes here: normalize() warns whenever that key is
     -- present (even for display-only overrides). Patch chars after setup.
@@ -1349,9 +1379,10 @@ local function configure_obsidian()
             { name = "obsidian_new" },
           },
         })
-        map("n", "<leader>o", ":Obsidian quick_switch<CR>", {
+        -- Hot paths via fff; other Obsidian pickers stay on Telescope.
+        map("n", "<leader>o", fff_vault_find, {
           buf = 0,
-          desc = "Obsidian: Quick Switch",
+          desc = "Obsidian: Quick Switch (fff)",
         })
         map("n", "<leader>n", ":Obsidian unique_note<CR>", {
           buf = 0,
@@ -1361,9 +1392,9 @@ local function configure_obsidian()
           buf = 0,
           desc = "Obsidian: Orphans",
         })
-        map("n", "<leader>g", ":Obsidian search<CR>", {
+        map("n", "<leader>g", fff_vault_grep, {
           buf = 0,
-          desc = "Obsidian: Search",
+          desc = "Obsidian: Search (fff)",
         })
         map("n", "<C-t>", ":Obsidian toggle_checkbox<CR>", {
           buf = 0,
@@ -1848,6 +1879,7 @@ configure_treesitter()
 configure_telescope_symbol_search()
 configure_completion()
 configure_treesitter_context()
+configure_fff()
 configure_telescope()
 configure_statusline()
 configure_lsp()

@@ -223,6 +223,7 @@ in
       cmp-path
       cmp_luasnip
       cmp-ctags
+      fff-nvim
       fidget-nvim
       friendly-snippets
       gitlinker-nvim
@@ -246,11 +247,9 @@ in
       plenary-nvim
       rustaceanvim
       tabout-nvim
-      telescope-file-browser-nvim
       telescope-fzf-native-nvim
       telescope-nvim
       telescope-sg
-      telescope-frecency-nvim
       treesitter
       trouble-nvim
       vim-tmux-navigator
