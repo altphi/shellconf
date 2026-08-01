@@ -6,3 +6,9 @@ docker compose --profile all --profile elgato up
 niri-flatten-workspaces.sh
 npm run nuclear-option
 nmcli device wifi list
+ip -br link
+nmcli radio wifi off
+nmcli radio wifi on
+nmcli device wifi list
+sudo nix-collect-garbage -d
+nix-collect-garbage -d

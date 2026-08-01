@@ -549,6 +549,10 @@ local function configure_fff()
       preview_position = "right",
       preview_size = 0.5,
     },
+    hl = {
+      matched = "Special",
+      grep_match = "Special",
+    },
   })
 
   local fff = require("fff")
@@ -740,8 +744,17 @@ local function configure_lsp()
     "scheme_langserver",
   })
 
+  -- vtsls
+  vim.lsp.config("vtsls", {
+    settings = {
+      vtsls = {
+        autoUseWorkspaceTsdk = true,
+      },
+    },
+  })
+
   -- LSP diagnostics
-  vim.diagnostic.config({ virtual_text = false, })
+  vim.diagnostic.config({ virtual_text = true, })
 
   -- Rustacean
   local extension_path = vim.env.HOME .. "/.nix-profile/share/vscode/extensions/vadimcn.vscode-lldb/"
@@ -967,16 +980,27 @@ local function configure_handy_commands()
 
   --
 
-  local function toggle_cursor_line()
+  vim.api.nvim_create_user_command("CursorLineToggle", function()
     vim.wo.cursorline = not vim.wo.cursorline
-  end
-  --vim.api.nvim_create_autocmd({ "InsertEnter", "InsertLeave" }, {
-  --  pattern = "*",
-  --  callback = function()
-  --    toggle_cursor_line()
-  --  end,
-  --})
-  map("n", "<leader>cl", toggle_cursor_line, { desc = "Toggle cursor line" })
+  end, {});
+
+  --
+
+  vim.api.nvim_create_user_command("GithubCopyLink", function()
+    require("gitlinker").get_buf_range_url("n")
+  end, {});
+
+  vim.api.nvim_create_user_command("GithubCopyLinkSelection", function()
+    require("gitlinker").get_buf_range_url("v")
+  end, {});
+
+  vim.api.nvim_create_user_command("GithubOpenLink", function()
+    require("gitlinker").get_buf_range_url("n", { action_callback = require("gitlinker.actions").open_in_browser })
+  end, {});
+
+  vim.api.nvim_create_user_command("GithubOpenLink", function()
+    require("gitlinker").get_buf_range_url("v", { action_callback = require("gitlinker.actions").open_in_browser })
+  end, {});
 end
 
 local function configure_keymaps()
@@ -1045,6 +1069,40 @@ local function configure_keymaps()
 
   -- toggle comment
   map({ "x", "n" }, "<C-_>", "gcc", { remap = true, desc = "Toggle comment line" })
+
+  -- toggle diagnostics display
+  local show_diagnostics = true
+
+  vim.keymap.set('n', '<leader>td', function()
+    show_diagnostics = not show_diagnostics
+    vim.diagnostic.config({
+      virtual_text = show_diagnostics,
+      signs = show_diagnostics,
+      underline = show_diagnostics,
+    })
+  end, { desc = 'Toggle diagnostic display' })
+
+
+  -- Ctrl+Backspace → delete previous word
+  -- <C-H> is what many terminals actually send for Ctrl+Backspace
+  vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete word backward" })
+  vim.keymap.set("i", "<C-H>", "<C-w>", { desc = "Delete word backward (terminal)" })
+
+  -- Ctrl+Shift+Backspace → delete current line, stay in insert
+  vim.keymap.set("i", "<C-S-BS>", "<C-o>dd", { desc = "Delete current line" })
+
+  local opts = { silent = true, desc = "Select by word" }
+  -- leave insert without moving the cursor, then start visual
+  vim.keymap.set("i", "<C-S-Left>", "<C-\\><C-n>vb", opts)
+  vim.keymap.set("i", "<C-S-Right>", "<C-\\><C-n>ve", opts)
+
+  -- normal mode
+  vim.keymap.set("n", "<C-S-Left>", "vb", opts)
+  vim.keymap.set("n", "<C-S-Right>", "ve", opts)
+
+  -- already in visual: extend by word
+  vim.keymap.set("x", "<C-S-Left>", "b", opts)
+  vim.keymap.set("x", "<C-S-Right>", "e", opts)
 end
 
 local function configure_lsp_formatting()
@@ -1224,8 +1282,8 @@ local function configure_lsp_formatting()
   })
 
   local lsp_format_on_save_filetypes = {
-    javascript = "hunks",
-    javascriptreact = "hunks",
+    javascript = "file",
+    javascriptreact = "file",
     lua = "file",
     nix = "file",
     php = "hunks",
@@ -1683,22 +1741,6 @@ local function configure_obsidian()
   end, { desc = "Open Personal daily" })
 end
 
-local function configure_github_link_keymaps()
-  -- TODO turn these into commands and not keybindings
-  --map("n", "<leader>Gy", function()
-  --  require("gitlinker").get_buf_range_url("n")
-  --end, { desc = "Copy GitHub link" })
-  --map("v", "<leader>Gy", function()
-  --  require("gitlinker").get_buf_range_url("v")
-  --end, { desc = "Copy GitHub link (selection)" })
-  --map("n", "<leader>Go", function()
-  --  require("gitlinker").get_buf_range_url("n", { action_callback = require("gitlinker.actions").open_in_browser })
-  --end, { desc = "Open GitHub link" })
-  --map("v", "<leader>Go", function()
-  --  require("gitlinker").get_buf_range_url("v", { action_callback = require("gitlinker.actions").open_in_browser })
-  --end, { desc = "Open GitHub link (selection)" })
-end
-
 local function configure_folding()
   local lsp_fold_filetypes = {
     c = true,
@@ -1709,6 +1751,44 @@ local function configure_folding()
   vim.o.foldmethod = 'expr'
   vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
   vim.o.foldlevel = 99
+
+  -- treesitter foldexpr walks injected languages too (e.g. rust inside
+  -- ```rust fences), so notes get noisy nested folds. Heading-only outline.
+  -- Applied from after/ftplugin/markdown.lua (window-local).
+  function _G.markdown_heading_foldexpr()
+    local lnum = vim.v.lnum
+    local line = vim.fn.getline(lnum)
+    local hashes = line:match("^%s*(#+)%s")
+    if hashes then
+      return ">" .. #hashes
+    end
+    return "="
+  end
+
+  local function apply_markdown_folds(buf)
+    buf = buf or vim.api.nvim_get_current_buf()
+    if vim.bo[buf].filetype ~= "markdown" then
+      return
+    end
+    for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+      vim.wo[win].foldmethod = "expr"
+      vim.wo[win].foldexpr = "v:lua.markdown_heading_foldexpr()"
+      vim.wo[win].foldenable = true
+    end
+  end
+
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = "markdown",
+    callback = function(ev)
+      apply_markdown_folds(ev.buf)
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("BufWinEnter", {
+    callback = function(ev)
+      apply_markdown_folds(ev.buf)
+    end,
+  })
 
   vim.opt.foldtext = "v:lua.custom_foldtext()"
   vim.opt.foldcolumn = "0"
@@ -1890,7 +1970,6 @@ configure_handy_commands()
 configure_keymaps()
 configure_lsp_formatting()
 configure_obsidian()
-configure_github_link_keymaps()
 configure_folding()
 configure_telescope_snippets()
 configure_readonly_files()

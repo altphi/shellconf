@@ -15,6 +15,11 @@ let
     -- Hard-wrap prose as you type (global textwidth is 0 / wrap is off).
     vim.bo.textwidth = 80
     vim.opt_local.formatoptions:append("t")
+    -- Heading-only folds (see markdown_heading_foldexpr in nixvim.lua).
+    -- Must live here: FileType autocmds are easy to lose to later window-local resets.
+    vim.wo.foldmethod = "expr"
+    vim.wo.foldexpr = "v:lua.markdown_heading_foldexpr()"
+    vim.wo.foldenable = true
   '';
   luaAfterFtplugin = ''
     pcall(vim.treesitter.stop)
@@ -78,9 +83,9 @@ in
       linespace = 2;
       modeline = false;
       modelines = 0;
-      number = true;
+      number = false;
       pumborder = "rounded";
-      relativenumber = true;
+      relativenumber = false;
       scrolloff = 5;
       shiftwidth = 2;
       sidescrolloff = 5;

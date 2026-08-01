@@ -348,7 +348,6 @@ bindkey "^B" backward-char
 bindkey "^D" delete-char-or-list
 bindkey "^E" end-of-line
 bindkey "^G" send-break
-bindkey "^H" backward-delete-char
 bindkey "^I" expand-or-complete
 bindkey "^L" clear-screen
 _p_clear_scrollback() { print -n $'\e[3J'; }
@@ -358,6 +357,13 @@ bindkey "^P" up-line-or-history
 bindkey "^R" history-incremental-search-backward
 bindkey "^Y" yank
 bindkey "^[/" _history-complete-older
+
+# Ctrl+Backspace → delete word backward
+bindkey '^?'     backward-delete-char
+bindkey '^H'     backward-kill-word
+bindkey '^W'     backward-kill-word
+# Ctrl+Shift+Backspace → delete whole line
+bindkey '^U'     kill-whole-line
 
 autoload -Uz edit-command-line
 zle -N edit-command-line
@@ -386,10 +392,6 @@ else
     _p_userhost=''
   fi
   _p_path='%F{green}%(5~|…/%4~|%~)%f'
-  #_p_env() {
-  #  [[ -n $IN_NIX_SHELL ]] && print -n '%F{cyan}❄ %f'
-  #  [[ -n $DIRENV_DIR ]]   && print -n '%F{magenta}◆ %f'
-  #}
   _p_exit='%(?..%F{red}✗ %?%f)'
   _p_jobs='%(1j.%F{yellow}[%j]%f .)'
 
@@ -471,10 +473,6 @@ fname() {
 #t() {
 #  bash -c "sleep \"$((60*$1))\" && echo -e \"$2\" | notify-send --app-name=timer-script 'Time is up!' \"$2\"" &
 #}
-
-pass_insert() (
-  pass insert "$@" && cd ~/.password-store && git push origin main
-)
 
 gpg_backup_keys() {
   tar --exclude='S.*' --no-xattrs -czf gnupg-backup.tar.gz -C ~ .gnupg
@@ -701,4 +699,20 @@ diceware() {
   echo "$p"
 }
 
+ojt() {
+  cargo build --release && oj t -c "$HOME/code/rusty/atcoder/target/release/atcoder" "$@"
+}
+
+uva() {
+  local id=$1
+  [[ -z $id ]] && { echo "Usage: uva <problem_number>"; return 1 }
+  local vol=$((id / 100))
+  wget -O "uva_${id}.pdf" "https://onlinejudge.org/external/${vol}/p${id}.pdf"
+}
+
+kattis() {
+  local name=$1
+  [[ -z $name ]] && { echo "Usage: kattis <problem_name>"; return 1 }
+  open "https://open.kattis.com/problems/${name}"
+}
 

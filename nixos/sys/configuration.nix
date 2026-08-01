@@ -124,7 +124,6 @@
     cryptsetup
     curl
     ddcutil
-    ffmpeg
     foot
     fuzzel
     fzf
@@ -139,12 +138,14 @@
     pass-wayland
     pavucontrol
     pciutils
+    perf
     php
     pinentry-all
     pipewire
     plocate
     powertop
     pstree
+    pulseaudio
     pwvucontrol
     rocmPackages.rocminfo
     runit

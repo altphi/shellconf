@@ -25,18 +25,17 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    antigravity-nix = {
-      url = "github:jacopone/antigravity-nix";
+    toofan = {
+      url = "github:vyrx-dev/toofan";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, nix-index-database, home-manager, nixvim, zen-browser, nixpkgs-unstable, antigravity-nix, ... }@inputs:
+  outputs = { self, nixpkgs, nix-index-database, home-manager, nixvim, zen-browser, nixpkgs-unstable, toofan, ... }@inputs:
   let
     system = "x86_64-linux";
     allowedUnfree = [
       "anki-bin"
-      "antigravity"
       "claude-code"
       "codex"
       "discord"
@@ -81,7 +80,7 @@
           home.stateVersion = "25.05";  # did you read the comment?
 
           home.packages = with pkgs; [
-            antigravity-nix.packages.${system}.google-antigravity-cli
+            toofan.packages.${pkgs.stdenv.hostPlatform.system}.default
             aerc
             akkuPackages.scheme-langserver
             #algol68g
@@ -104,6 +103,7 @@
             dropbox
             easyeffects
             eksctl
+            element-desktop
             emmylua-ls
             etlegacy
             etlegacy-assets
@@ -120,7 +120,9 @@
             gnuplot_qt
             grim
             grok-build
+            gtypist
             hyprlock
+            iamb
             imagemagick
             iw
             delta
@@ -168,6 +170,8 @@
             telegram-desktop
             timer
             tree-sitter
+            tt
+            ttyper
             # TODO move to flake
             # (texlive.combine {
             # inherit (texlive) scheme-medium
@@ -199,6 +203,7 @@
             pkgs-unstable.jjui
             pkgs-unstable.jujutsu
             pkgs-unstable.herdr
+            pkgs-unstable.ffmpeg_9
           ];
 
           programs = {
