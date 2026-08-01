@@ -522,8 +522,12 @@ local function configure_completion()
       { name = "path" },
     },
   })
+  -- Markdown: no generic autocomplete noise. Obsidian injects its own sources
+  -- (wiki-links after [[, tags after #) on vault note enter; those sources only
+  -- return items in-context. Outside vaults, sources stay empty.
   cmp.setup.filetype("markdown", {
     completion = { autocomplete = { cmp.TriggerEvent.TextChanged } },
+    sources = {},
   })
   cmp.setup.filetype("lua", {
     sources = {
@@ -1337,9 +1341,29 @@ local function configure_obsidian()
     end,
     callbacks = {
       enter_note = function()
+        -- Obsidian's inject_sources also pulls in global cmp sources + tags.
+        -- Keep only wiki-link completion (fires inside [[ ... ]]).
+        require("cmp").setup.buffer({
+          sources = {
+            { name = "obsidian" },
+            { name = "obsidian_new" },
+          },
+        })
         map("n", "<leader>o", ":Obsidian quick_switch<CR>", {
           buf = 0,
           desc = "Obsidian: Quick Switch",
+        })
+        map("n", "<leader>n", ":Obsidian unique_note<CR>", {
+          buf = 0,
+          desc = "Obsidian: Unique Note",
+        })
+        map("n", "<leader>N", ":Obsidian orphans<CR>", {
+          buf = 0,
+          desc = "Obsidian: Orphans",
+        })
+        map("n", "<leader>g", ":Obsidian search<CR>", {
+          buf = 0,
+          desc = "Obsidian: Search",
         })
         map("n", "<C-t>", ":Obsidian toggle_checkbox<CR>", {
           buf = 0,
@@ -1455,6 +1479,146 @@ local function configure_obsidian()
         prompt_title = "Links",
         callback = function(entry)
           api.follow_link(entry.user_data or entry.text)
+        end,
+      })
+    end,
+  })
+
+  -- Notes with no incoming links from other notes (vault-wide orphan scan).
+  -- One pass builds a ref-string index; a second pass marks outbound targets.
+  -- Self-links do not count as backlinks.
+  require("obsidian.commands").register("orphans", {
+    nargs = 0,
+    func = function()
+      local api = require("obsidian.api")
+      local Note = require("obsidian.note")
+      local search = require("obsidian.search")
+      local util = require("obsidian.util")
+
+      local vault = Obsidian.dir
+      if not vault then
+        return vim.notify("no workspace", vim.log.levels.WARN, { title = "Obsidian.nvim" })
+      end
+
+      vim.notify("Scanning vault for orphans…", vim.log.levels.INFO, { title = "Obsidian.nvim" })
+
+      ---@type { path: string, note: obsidian.Note }[]
+      local notes = {}
+      ---@type table<string, string[]>
+      local ref_index = {}
+
+      local function index_ref(ref, path)
+        if not ref or ref == "" then
+          return
+        end
+        local key = string.lower(ref)
+        local list = ref_index[key]
+        if not list then
+          list = {}
+          ref_index[key] = list
+        end
+        for i = 1, #list do
+          if list[i] == path then
+            return
+          end
+        end
+        list[#list + 1] = path
+      end
+
+      for path in api.dir(vault) do
+        local ok, note = pcall(Note.from_file, path)
+        if ok and note and note.path then
+          local abs = tostring(note.path)
+          notes[#notes + 1] = {
+            path = abs,
+            note = note,
+          }
+          for _, ref in ipairs(note:reference_ids({ lowercase = true })) do
+            index_ref(ref, abs)
+          end
+          for _, ref in ipairs(note:get_reference_paths()) do
+            index_ref(ref, abs)
+          end
+        end
+      end
+
+      ---@type table<string, boolean>
+      local has_backlink = {}
+
+      local function mark_targets(location, source_path)
+        if not location or location == "" or util.is_uri(location) then
+          return
+        end
+        location = vim.uri_decode(location)
+        location = select(1, util.strip_block_links(location))
+        location = select(1, util.strip_anchor_links(location))
+        if not location or location == "" or vim.startswith(location, "#") then
+          return
+        end
+        location = location:gsub("^%./", ""):gsub("^/", "")
+
+        local candidates = {
+          location,
+          location:gsub("%.md$", ""),
+          location .. (vim.endswith(location, ".md") and "" or ".md"),
+          vim.fs.basename(location),
+          vim.fs.basename(location):gsub("%.md$", ""),
+        }
+        for _, candidate in ipairs(candidates) do
+          if candidate ~= "" then
+            local targets = ref_index[string.lower(candidate)]
+            if targets then
+              for _, target in ipairs(targets) do
+                if target ~= source_path then
+                  has_backlink[target] = true
+                end
+              end
+            end
+          end
+        end
+      end
+
+      for _, entry in ipairs(notes) do
+        local ok, matches = pcall(search.find_links, entry.note)
+        if ok then
+          for _, match in ipairs(matches) do
+            local location, _, link_type =
+                util.parse_link(match.link, { exclude = { "Tag", "BlockID" } })
+            if location and link_type ~= "HeaderLink" and link_type ~= "BlockLink" then
+              mark_targets(location, entry.path)
+            end
+          end
+        end
+      end
+
+      ---@type obsidian.PickerEntry[]
+      local orphans = {}
+      for _, entry in ipairs(notes) do
+        if not has_backlink[entry.path] then
+          -- filename only: picker make_display already shows vault-relative path;
+          -- setting text too duplicates the same string in the list.
+          orphans[#orphans + 1] = {
+            filename = entry.path,
+          }
+        end
+      end
+
+      table.sort(orphans, function(a, b)
+        return a.filename < b.filename
+      end)
+
+      if #orphans == 0 then
+        return vim.notify(
+          string.format("no orphans among %d notes", #notes),
+          vim.log.levels.INFO,
+          { title = "Obsidian.nvim" }
+        )
+      end
+
+      Obsidian.picker.pick(orphans, {
+        prompt_title = string.format("Orphans (%d / %d)", #orphans, #notes),
+        callback = function(picked)
+          api.open_note(picked)
         end,
       })
     end,
