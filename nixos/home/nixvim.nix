@@ -12,6 +12,9 @@ let
   markdownFtplugin = ''
     pcall(vim.treesitter.start)
     vim.bo.syntax = "OFF"
+    -- Hard-wrap prose as you type (global textwidth is 0 / wrap is off).
+    vim.bo.textwidth = 80
+    vim.opt_local.formatoptions:append("t")
   '';
   luaAfterFtplugin = ''
     pcall(vim.treesitter.stop)

@@ -29,14 +29,9 @@
       url = "github:jacopone/antigravity-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    herdr = {
-      url = "github:ogulcancelik/herdr";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, nix-index-database, home-manager, nixvim, zen-browser, nixpkgs-unstable, antigravity-nix, herdr, ... }@inputs:
+  outputs = { self, nixpkgs, nix-index-database, home-manager, nixvim, zen-browser, nixpkgs-unstable, antigravity-nix, ... }@inputs:
   let
     system = "x86_64-linux";
     allowedUnfree = [
@@ -125,7 +120,6 @@
             gnuplot_qt
             grim
             grok-build
-            herdr
             hyprlock
             imagemagick
             iw
@@ -204,6 +198,7 @@
             pkgs-unstable.ncspot
             pkgs-unstable.jjui
             pkgs-unstable.jujutsu
+            pkgs-unstable.herdr
           ];
 
           programs = {
