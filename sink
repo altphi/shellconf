@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+default="$(pactl get-default-sink)"
+
+selected="$(
+  pw-dump --color=never | jq -r --arg default "$default" '
+    .[]
+    | select(.type == "PipeWire:Interface:Node")
+    | .info.props // empty
+    | select(."media.class" == "Audio/Sink")
+    | select(."node.name" | test("HDMI|easyeffects"; "i") | not)
+    | select((."node.description" // "") | test("HDMI|Easy Effects"; "i") | not)
+    | [
+        ."node.name",
+        (if ."node.name" == $default then "* " else "  " end)
+          + (."node.description" // ."node.nick" // ."node.name")
+      ]
+    | @tsv
+  ' | fzf \
+        -e \
+        --delimiter=$'\t' \
+        --with-nth=2 \
+        --no-sort \
+        --reverse \
+        --cycle \
+        --bind 'tab:down,btab:up' \
+        --prompt='sink> '
+)" || exit 0
+
+[[ -z "$selected" ]] && exit 0
+
+name="$(printf '%s\n' "$selected" | cut -f1)"
+pactl set-default-sink "$name"
