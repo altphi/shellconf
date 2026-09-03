@@ -137,7 +137,6 @@ alias updatedb-user='updatedb -l 0 -o ~/.locate.db -U "$HOME"'
 alias open=" xdg-open"
 alias ff=" fzf --walker-skip='.git,node_modules,.direnv,renv,build'"
 alias nr=" npm run"
-alias ct="cargo test"
 
 c-nvim() (
   cd ~/bin/nixos/home/
@@ -151,11 +150,11 @@ c-nixos() (
 
 v() {
   local file
-  file=$(rg --files --hidden --glob '!.git' | fzf --exact --select-1 --query="${1:-}") || return
+  file=$(rg -i --files --hidden --glob '!.git' | fzf --exact --select-1 --query="${1:-}") || return
   [[ -n "$file" ]] && nvim "$file"
 }
 
-vg() { local sel=$(rg --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --exact --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}"; }
+vg() { local sel=$(rg -i --glob='!{.git,node_modules,.direnv,renv,build}' --line-number "${1:-.}" | fzf --exact --query="${2:-}" | cut -d: -f1-2) && nvim "+${sel#*:}" "${sel%%:*}"; }
 
 symbols() {
   less $(nix-build '<nixpkgs>' -A xorg.libX11 --no-out-link)/share/X11/locale/en_US.UTF-8/Compose
