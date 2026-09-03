@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+shopt -s nullglob
+
+PROBLEM="${PWD##*/}"
+TEST_NUM="$1"
+GREEN=$'\033[32m'
+RED=$'\033[31m'
+RESET=$'\033[0m'
+
+cargo build
+
+run_test () {
+  ACTUAL=$(cat test/"${1}".in | target/debug/"$PROBLEM")
+  EXPECTED=$(cat test/"${1}".out)
+
+  if [[ "$ACTUAL" == "$EXPECTED" ]]; then
+    if [[ "$TEST_NUM" != "ALL" ]]; then
+      echo "---"
+      printf '%sAC%s\n' "$GREEN" "$RESET"
+    fi
+  else
+    echo "---"
+    printf "%sTest $1 failed%s\n" "$RED" "$RESET"
+    echo "$ACTUAL"
+    echo "$EXPECTED"
+  fi
+}
+
+if [[ "$TEST_NUM" == "ALL" ]]; then
+  mapfile -t nums < <(printf '%s\n' ./test/*.in | sed 's|.*/||; s|\.in$||' | sort -n)
+  for n in "${nums[@]}"; do
+    run_test "$n"
+  done
+else
+  run_test "$TEST_NUM"
+fi
+echo "---"
