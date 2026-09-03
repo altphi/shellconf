@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+dry=0
+[[ ${1-} == -n || ${1-} == --dry-run ]] && { dry=1; shift; }
+root=$(cd -- "${1:-.}" && pwd)
+
+n=0
+while IFS= read -r -d '' toml; do
+  printf '%s\n' "${toml%/*}"
+  if (( !dry )); then cargo clean --manifest-path "$toml"; fi
+  n=$((n + 1))
+done < <(find "$root" \( -name target -o -name vendor -o -name .git \) -type d -prune -o \
+         -name Cargo.toml -type f -print0)
+
+if (( n == 0 )); then printf 'no Cargo.toml under %s\n' "$root" >&2; fi
+if (( dry )); then msg=would\ clean; else msg=cleaned; fi
+printf '%s %d project(s)\n' "$msg" "$n"
